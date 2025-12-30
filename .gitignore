@@ -29,4 +29,16 @@ coverage/
 .nyc_output/
 .target/
 
+#python
+__pycache__/
+.pytest_cache/
+venv/
+
+#java
+target/
+.classpath
+.project
+.settings/
+.idea/
+.vscode/
 
