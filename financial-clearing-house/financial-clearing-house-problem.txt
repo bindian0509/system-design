@@ -1,0 +1,42 @@
+We want to build the system design and code snippet for a clearing house.
+First step is to simply write software to sort a list of transactions with a payer, payee and amount and calculate all balances between each pair of banks.
+Optimization consists of trying to reduce the amount of transactions by settling all banks together. with "->" means "owes" if A -> 300 B, and B -> 300 C, then you can reduce the amount of transactions from 2 to 1 by having A paying C 300 directly.
+Architecture: How would you scale? handle network failures, lag, late transactions, etc.? How would you design for security/compliance?
+
+Assuming you have a collection of checks (issuing bank, receiving bank, amount)
+Assuming full solvency (i.e., ability of a bank to pay) and 0 fraud
+
+problem breakdown -
+First part: Calculate the credit/debit balances for each bank at the end of the day.
+Second part: From those bank-to-bank balances, find the least amount of money movement necessary to solve those balances. eg: If 'BoA' owes 200 to 'Chase', and 'Chase' owes 150 to 'Wells Fargo', 'BoA' pays 50 to 'Chase' and 150 to 'Wells Fargo'.
+Sample Input Transactions -
+  {"payee": "BoA", "amount": 132, "payer": "Chase"},
+  {"payee": "BoA", "amount": 827, "payer": "Chase"},
+  {"payee": "Wells Fargo", "amount": 751, "payer": "BoA"},
+  {"payee": "BoA", "amount": 585, "payer": "Chase"},
+  {"payee": "Chase", "amount": 877, "payer": "Wells Fargo"},
+  {"payee": "Wells Fargo", "amount": 157, "payer": "Chase"},
+  {"payee": "Wells Fargo", "amount": 904, "payer": "Chase"},
+  {"payee": "Chase", "amount": 548, "payer": "Wells Fargo"},
+  {"payee": "Chase", "amount": 976, "payer": "BoA"},
+  {"payee": "BoA", "amount": 872, "payer": "Wells Fargo"},
+Output -
+Result: {('BoA', 'Wells Fargo'): -121.0, ('Chase', 'Wells Fargo'): 207.0, ('BoA', 'Chase'): -568.0}
+For the second part of the problem (reduce the amount of transactions): The solution can be modeled as a directed graph where nodes are banks and "amount owed" is the edge.
+Problems solving -
+Breaking the problem down
+What are requirements ask if required
+Integration with banks (input and output)
+Check bouncing and fraud issues
+Data structures / algorithm -
+Debit/credit balance calculations
+Storing of information, including binary data (images of checks)
+How to reduce the amount of transactions? (directed graph problem)
+API Design/Scaling -
+API Implementation Can be processed as a batch (banks send all transactions at once at the end of the day and balances are then calculated) or real time (banks send each transaction as it happens)
+Integration with bank's softwares
+What happens when a check bounces
+What happens when a bank's api is down for payment/withdrawal
+Scalability (processing billions of transactions/day)
+Security/Compliance
+Persistence? How could a bank check their balance live, or historical (previous days') balance?
