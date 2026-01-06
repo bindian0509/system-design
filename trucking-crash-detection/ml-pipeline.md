@@ -6,7 +6,66 @@ The ML pipeline provides intelligent crash detection and risk prediction beyond 
 
 ---
 
-## Model Architecture
+## ML Pipeline Overview
+
+```mermaid
+flowchart TB
+    subgraph Training["🎓 Training Pipeline (Batch)"]
+        DATA[(Historical Data<br/>50K crashes)] --> FS[(Feature Store)]
+        FS --> TRAIN[SageMaker Training]
+        TRAIN --> REG[(Model Registry<br/>MLflow)]
+    end
+
+    subgraph Serving["⚡ Inference Pipeline (Real-time)"]
+        subgraph Models["Deployed Models"]
+            M1["🚨 Crash Detection<br/>CNN-LSTM, <50ms"]
+            M2["📊 Severity<br/>XGBoost, <100ms"]
+            M3["⚠️ Risk Score<br/>XGBoost, <100ms"]
+        end
+
+        TR[Triton Server] --> Models
+        GPU[GPU Cluster<br/>T4/A10G] --> TR
+    end
+
+    subgraph Monitor["📈 Monitoring"]
+        DRIFT[Data Drift]
+        PERF[Performance]
+        AB[A/B Testing]
+    end
+
+    REG --> TR
+    TR --> Monitor
+
+    style Training fill:#e8f5e9
+    style Serving fill:#fff3e0
+    style Monitor fill:#f3e5f5
+```
+
+## Model Architecture Comparison
+
+```mermaid
+flowchart LR
+    subgraph Realtime["⚡ Real-time Models"]
+        direction TB
+        RT1["🚨 Crash Detection<br/>━━━━━━━━━━━━<br/>Input: 1s sensor window<br/>Model: CNN-LSTM<br/>Size: 15MB<br/>Latency: <50ms"]
+        RT2["📊 Severity Classifier<br/>━━━━━━━━━━━━<br/>Input: Crash features<br/>Model: XGBoost<br/>Size: 5MB<br/>Latency: <100ms"]
+        RT3["⚠️ Risk Predictor<br/>━━━━━━━━━━━━<br/>Input: 5min behavior<br/>Model: XGBoost<br/>Size: 5MB<br/>Latency: <100ms"]
+    end
+
+    subgraph Async["🕐 Async Models"]
+        direction TB
+        AS1["🎥 Video Analysis<br/>━━━━━━━━━━━━<br/>Model: YOLO + LLM<br/>Latency: <5s"]
+        AS2["👤 Driver Profiling<br/>━━━━━━━━━━━━<br/>Model: Deep FM<br/>Schedule: Daily"]
+        AS3["🔍 Anomaly Detection<br/>━━━━━━━━━━━━<br/>Model: Isolation Forest<br/>Schedule: Hourly"]
+    end
+
+    style Realtime fill:#e8f5e9
+    style Async fill:#fff3e0
+```
+
+---
+
+## Model Architecture Detail
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────────┐

@@ -4,6 +4,72 @@
 
 A real-time IoT-based system for automated crash detection and prediction for commercial trucking fleets. The system processes telematics sensor data from ~1M vehicles to provide instant crash alerts, predictive warnings, and streamlined claims processing.
 
+## System Architecture (High-Level)
+
+```mermaid
+flowchart LR
+    subgraph Sources["🚚 Data Sources"]
+        V[1M Vehicles]
+        P[100+ Providers]
+    end
+
+    subgraph Ingestion["📥 Ingestion"]
+        GW[API Gateway]
+        NORM[Normalizer]
+    end
+
+    subgraph Stream["⚡ Processing"]
+        K[(Kafka<br/>10M/s)]
+        F[Flink]
+        ML[ML Models]
+    end
+
+    subgraph Alert["🚨 Alerts"]
+        AR[Router]
+        N[Notify]
+    end
+
+    subgraph Output["📱 Output"]
+        D[Dashboard]
+        M[Mobile]
+        C[Claims]
+    end
+
+    V --> P --> GW --> NORM --> K --> F <--> ML
+    F --> AR --> N --> D & M & C
+
+    style Sources fill:#e1f5fe
+    style Ingestion fill:#fff3e0
+    style Stream fill:#e8f5e9
+    style Alert fill:#fce4ec
+    style Output fill:#e3f2fd
+```
+
+## End-to-End Data Flow
+
+```mermaid
+sequenceDiagram
+    participant V as 🚚 Vehicle
+    participant P as 📡 Provider
+    participant I as 📥 Ingestion
+    participant K as 📨 Kafka
+    participant F as ⚡ Flink
+    participant M as 🧠 ML
+    participant A as 🚨 Alert
+    participant U as 👤 User
+
+    V->>P: Sensor data (10-50/sec)
+    P->>I: Push/Pull (~50ms)
+    I->>K: Produce (~10ms)
+    K->>F: Consume
+    F->>M: Inference request
+    M->>F: Crash detected (0.92)
+    F->>A: Crash event
+    A->>U: SMS + Push (<30s)
+
+    Note over V,U: Total: ~500ms detection, <30s notification
+```
+
 ## Business Context
 
 ### Problem Statement

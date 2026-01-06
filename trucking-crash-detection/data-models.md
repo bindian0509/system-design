@@ -6,7 +6,105 @@ This document defines the core data models used throughout the crash detection s
 
 ---
 
-## Entity Relationship Diagram
+## Entity Relationship Diagram (Mermaid)
+
+```mermaid
+erDiagram
+    CUSTOMER ||--o{ POLICY : has
+    POLICY ||--o{ VEHICLE : covers
+    POLICY ||--o{ CONTACT : has
+    VEHICLE ||--o{ TELEMETRY_EVENT : generates
+    VEHICLE ||--o{ TRIP : makes
+    VEHICLE }o--|| PROVIDER : monitored_by
+    VEHICLE }o--o| DRIVER : assigned_to
+
+    TELEMETRY_EVENT ||--o| CRASH_EVENT : triggers
+    CRASH_EVENT ||--|| ALERT : generates
+    ALERT ||--o{ NOTIFICATION : sends
+    CRASH_EVENT ||--o| CLAIM : initiates
+
+    CUSTOMER {
+        uuid id PK
+        string name
+        string email
+    }
+
+    POLICY {
+        uuid id PK
+        uuid customer_id FK
+        string policy_number UK
+        string status
+        int vehicle_count
+    }
+
+    VEHICLE {
+        uuid id PK
+        uuid policy_id FK
+        uuid provider_id FK
+        string vin UK
+        string make
+        string model
+    }
+
+    CRASH_EVENT {
+        uuid id PK
+        uuid vehicle_id FK
+        string crash_type
+        int severity
+        decimal confidence
+    }
+
+    ALERT {
+        uuid id PK
+        uuid crash_event_id FK
+        string priority
+        string status
+    }
+
+    NOTIFICATION {
+        uuid id PK
+        uuid alert_id FK
+        string channel
+        string status
+    }
+```
+
+## Data Flow Through System
+
+```mermaid
+flowchart LR
+    subgraph Sources["📡 Data Sources"]
+        VH[Vehicle Sensors]
+        PR[Provider API]
+    end
+
+    subgraph Streaming["📨 Streaming"]
+        K1[(raw-data)]
+        K2[(normalized)]
+        K3[(crash-events)]
+    end
+
+    subgraph Storage["💾 Storage"]
+        TS[(TimescaleDB<br/>Telemetry<br/>90 days)]
+        PG[(PostgreSQL<br/>Operational<br/>Forever)]
+        RD[(Redis<br/>State Cache<br/>24 hours)]
+        S3[(S3<br/>Archive<br/>1+ year)]
+    end
+
+    VH --> PR --> K1 --> K2 --> K3
+    K2 --> TS
+    K3 --> PG
+    K2 --> RD
+    TS --> S3
+
+    style Sources fill:#e3f2fd
+    style Streaming fill:#f3e5f5
+    style Storage fill:#e8f5e9
+```
+
+---
+
+## Entity Relationship Diagram (ASCII)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────────┐

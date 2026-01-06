@@ -6,7 +6,51 @@ The ingestion layer handles the complexity of integrating with 100+ telematics p
 
 ---
 
-## Integration Patterns
+## Integration Patterns Overview
+
+```mermaid
+flowchart LR
+    subgraph Providers["Telematics Providers"]
+        PA["🚚 Samsara<br/>(Push)"]
+        PB["🚛 Geotab<br/>(Pull)"]
+        PC["🚐 Verizon<br/>(MQTT)"]
+    end
+
+    subgraph Gateway["API Gateway"]
+        TLS[🔐 TLS]
+        AUTH[🔑 mTLS Auth]
+        RATE[⏱️ Rate Limit]
+    end
+
+    subgraph Process["Processing"]
+        VAL[✅ Validate]
+        NORM[🔄 Normalize]
+        ENRICH[📝 Enrich]
+        DEDUP[🔍 Dedup]
+    end
+
+    subgraph Output["Output"]
+        KAFKA[(📨 Kafka)]
+        DLQ[(❌ DLQ)]
+    end
+
+    PA -->|Webhook| Gateway
+    PB -->|Poll| Gateway
+    PC -->|MQTT| Gateway
+
+    Gateway --> Process
+    Process -->|Valid| KAFKA
+    Process -->|Invalid| DLQ
+
+    style Providers fill:#e3f2fd
+    style Gateway fill:#fff3e0
+    style Process fill:#e8f5e9
+    style Output fill:#fce4ec
+```
+
+---
+
+## Integration Patterns Detail
 
 ### Push Model Architecture
 

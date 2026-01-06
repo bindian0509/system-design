@@ -2,6 +2,83 @@
 
 ## High-Level Architecture Overview
 
+### Mermaid Diagram
+
+```mermaid
+flowchart TB
+    subgraph External["🌐 External Data Sources"]
+        P1[("Provider A<br/>Push/Webhook")]
+        P2[("Provider B<br/>Pull/REST")]
+        P3[("Provider C<br/>MQTT")]
+    end
+
+    subgraph Ingestion["📥 Ingestion Layer"]
+        GW[API Gateway]
+        WH[Webhook Handler]
+        MQTT[MQTT Bridge]
+        NORM[Normalization Service]
+    end
+
+    subgraph Streaming["📨 Message Streaming - Kafka"]
+        K1[(raw-sensor-data)]
+        K2[(normalized-telemetry)]
+        K3[(crash-events)]
+        K4[(alerts-topic)]
+    end
+
+    subgraph Processing["⚡ Stream Processing - Flink"]
+        CD[Crash Detection Job]
+        RS[Risk Scoring Job]
+        VS[Vehicle State Job]
+    end
+
+    subgraph ML["🧠 ML Inference - Triton"]
+        M1[Crash Detection Model]
+        M2[Severity Classifier]
+        M3[Risk Predictor]
+    end
+
+    subgraph Alerts["🚨 Alert & Notification"]
+        AR[Alert Router]
+        ND[Notification Dispatcher]
+        CP[Claims Pre-fill]
+    end
+
+    subgraph Storage["💾 Data Storage"]
+        TS[(TimescaleDB)]
+        PG[(PostgreSQL)]
+        RD[(Redis)]
+        S3[(S3 Lake)]
+    end
+
+    subgraph UI["📱 Presentation"]
+        DB[Dashboard]
+        MA[Mobile App]
+    end
+
+    P1 & P2 & P3 --> Ingestion
+    GW & WH & MQTT --> NORM
+    NORM --> K1 --> K2 --> Processing
+    CD & RS & VS <--> ML
+    CD --> K3 --> AR
+    RS --> K4 --> AR
+    AR --> ND --> MA
+    AR --> CP
+    Processing --> Storage
+    AR --> DB
+
+    style External fill:#e1f5fe
+    style Ingestion fill:#fff3e0
+    style Streaming fill:#f3e5f5
+    style Processing fill:#e8f5e9
+    style ML fill:#fce4ec
+    style Alerts fill:#fff8e1
+    style Storage fill:#f5f5f5
+    style UI fill:#e3f2fd
+```
+
+### ASCII Diagram
+
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────────┐
 │                              EXTERNAL DATA SOURCES                                       │

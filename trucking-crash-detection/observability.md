@@ -6,7 +6,93 @@ Comprehensive observability is critical for a real-time safety system. This docu
 
 ---
 
-## Observability Architecture
+## Observability Stack Overview
+
+```mermaid
+flowchart TB
+    subgraph Apps["🖥️ Application Layer"]
+        ING[Ingestion]
+        FLK[Flink]
+        MLS[ML Service]
+        ALT[Alerts]
+        API[API]
+    end
+
+    subgraph Collect["📡 Collection"]
+        OTEL["OpenTelemetry<br/>Traces"]
+        FB["Fluent Bit<br/>Logs"]
+        PROM["Prometheus<br/>Metrics"]
+    end
+
+    subgraph Store["💾 Storage"]
+        TEMPO[(Tempo/Jaeger<br/>14 days)]
+        LOKI[(Loki<br/>30 days)]
+        PROMS[(Prometheus<br/>90 days)]
+    end
+
+    subgraph Viz["📊 Visualization"]
+        GRAF[Grafana Dashboards]
+        EXEC["📈 Executive KPIs"]
+        OPS["🎯 Operations"]
+        ENG["🔧 Engineering"]
+    end
+
+    subgraph Alert["🚨 Alerting"]
+        AM[AlertManager]
+        PD[PagerDuty]
+        SL[Slack]
+    end
+
+    Apps -->|Traces| OTEL --> TEMPO
+    Apps -->|Logs| FB --> LOKI
+    Apps -->|Metrics| PROM --> PROMS
+
+    TEMPO & LOKI & PROMS --> GRAF
+    GRAF --> EXEC & OPS & ENG
+    PROMS --> AM --> PD & SL
+
+    style Apps fill:#e3f2fd
+    style Collect fill:#fff3e0
+    style Store fill:#f3e5f5
+    style Viz fill:#e8f5e9
+    style Alert fill:#fce4ec
+```
+
+## SLA Dashboard
+
+```mermaid
+flowchart LR
+    subgraph SLAs["🎯 Critical SLAs"]
+        SLA1["Crash Detection<br/>━━━━━━━━━━━━<br/>Target: p99 < 5s<br/>Current: 2.3s ✅"]
+        SLA2["P0 Notification<br/>━━━━━━━━━━━━<br/>Target: p95 < 30s<br/>Current: 18s ✅"]
+        SLA3["Uptime<br/>━━━━━━━━━━━━<br/>Target: 99.95%<br/>Current: 99.98% ✅"]
+        SLA4["False Positive<br/>━━━━━━━━━━━━<br/>Target: < 5%<br/>Current: 3.2% ✅"]
+    end
+
+    subgraph Health["🏥 Component Health"]
+        H1["✅ Ingestion"]
+        H2["✅ Kafka"]
+        H3["✅ Flink"]
+        H4["⚠️ Provider X"]
+        H5["✅ ML"]
+        H6["✅ Notifications"]
+    end
+
+    subgraph Metrics["📊 Key Metrics"]
+        M1["Events/sec: 9.2M"]
+        M2["Active Vehicles: 312K"]
+        M3["Kafka Lag: 342"]
+        M4["ML p99: 45ms"]
+    end
+
+    style SLAs fill:#e8f5e9
+    style Health fill:#fff3e0
+    style Metrics fill:#e3f2fd
+```
+
+---
+
+## Observability Architecture (Detailed)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────────┐

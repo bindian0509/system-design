@@ -6,7 +6,86 @@ The alert system handles the critical path from crash detection to customer noti
 
 ---
 
-## Alert Flow Architecture
+## Alert Flow Overview
+
+```mermaid
+flowchart TB
+    subgraph Input["📥 Input"]
+        CE[(crash-events<br/>Kafka)]
+    end
+
+    subgraph Router["🔀 Alert Router"]
+        DEDUP[🔍 Dedup] --> CLASS[📊 Classify Priority] --> ROUTE[📋 Route]
+    end
+
+    subgraph Priority["🎯 Priority Levels"]
+        P0["🔴 P0 Critical<br/>< 15 seconds"]
+        P1["🟠 P1 High<br/>< 30 seconds"]
+        P2["🟡 P2 Medium<br/>< 2 minutes"]
+        P3["🟢 P3 Low<br/>< 5 minutes"]
+    end
+
+    subgraph Channels["📱 Notification Channels"]
+        SMS["📲 SMS<br/>Twilio → SNS"]
+        PUSH["🔔 Push<br/>Firebase FCM"]
+        VOICE["📞 Voice<br/>P0 only"]
+        EMAIL["📧 Email<br/>SendGrid"]
+    end
+
+    subgraph Output["📤 Outputs"]
+        DASH["📊 Dashboard"]
+        MOBILE["📱 Mobile App"]
+        CLAIMS["📋 Claims Link"]
+    end
+
+    CE --> Router
+    ROUTE --> Priority
+    P0 --> SMS & PUSH & VOICE
+    P1 --> SMS & PUSH
+    P2 --> SMS
+    P3 --> PUSH
+
+    Channels --> Output
+
+    style Input fill:#f3e5f5
+    style Router fill:#e8f5e9
+    style Priority fill:#fff3e0
+    style Channels fill:#e3f2fd
+    style Output fill:#fce4ec
+```
+
+## Escalation Timeline
+
+```mermaid
+gantt
+    title Alert Escalation Timeline (P0 Critical)
+    dateFormat mm:ss
+    axisFormat %M:%S
+
+    section Detection
+    Crash Detected           :milestone, m1, 00:00, 0s
+
+    section Initial (T+0)
+    SMS Fleet Manager        :a1, 00:00, 15s
+    Push Notification        :a2, 00:00, 10s
+    Dashboard Update         :a3, 00:00, 5s
+
+    section Level 1 (T+2min)
+    Voice Call Primary       :b1, 02:00, 30s
+    SMS Regional Manager     :b2, 02:00, 15s
+
+    section Level 2 (T+5min)
+    All Policy Contacts      :c1, 05:00, 20s
+    Voice Secondary          :c2, 05:00, 30s
+
+    section Level 3 (T+10min)
+    VP + On-call            :d1, 10:00, 15s
+    Emergency Page          :d2, 10:00, 10s
+```
+
+---
+
+## Alert Flow Architecture (Detailed)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────────┐

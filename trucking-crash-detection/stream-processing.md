@@ -6,7 +6,89 @@ The stream processing layer is responsible for real-time analysis of telemetry d
 
 ---
 
-## Processing Pipeline Architecture
+## Processing Pipeline Overview
+
+```mermaid
+flowchart TB
+    subgraph Input["📥 Kafka Input"]
+        KT[(normalized-telemetry<br/>~10M events/sec)]
+    end
+
+    subgraph Flink["⚡ Apache Flink"]
+        subgraph Job1["🚨 Crash Detection"]
+            W1[Window 100ms] --> F1[Extract Features] --> ML1[ML Inference] --> D1{Confidence?}
+        end
+
+        subgraph Job2["⚠️ Risk Scoring"]
+            W2[Window 5min] --> BA[Behavior Analysis] --> SC[Risk Score]
+        end
+
+        subgraph Job3["📍 State Tracking"]
+            SM[State Machine] --> SESS[Session Mgr]
+        end
+    end
+
+    subgraph Output["📤 Output Topics"]
+        KC[(crash-events)]
+        KR[(risk-alerts)]
+        KS[(vehicle-state)]
+    end
+
+    KT --> Job1 & Job2 & Job3
+    D1 -->|>0.65| KC
+    SC --> KR
+    SESS --> KS
+
+    style Input fill:#f3e5f5
+    style Flink fill:#e8f5e9
+    style Output fill:#fff3e0
+```
+
+## Crash Detection Signal Flow
+
+```mermaid
+flowchart LR
+    subgraph Sensors["📡 Sensor Data"]
+        ACC[Accelerometer<br/>X,Y,Z]
+        GYRO[Gyroscope<br/>Roll,Pitch,Yaw]
+        GPS[GPS<br/>Speed,Location]
+    end
+
+    subgraph Analysis["🔬 Signal Analysis"]
+        S1["G-Force<br/>40% weight"]
+        S2["Angular Velocity<br/>25% weight"]
+        S3["Speed Change<br/>20% weight"]
+        S4["GPS Context<br/>15% weight"]
+    end
+
+    subgraph Fusion["🧮 Fusion"]
+        CALC[Weighted Sum]
+        DEC{Score?}
+    end
+
+    subgraph Result["📋 Result"]
+        CONF["✅ >0.85<br/>CONFIRMED"]
+        PROB["⚠️ >0.65<br/>PROBABLE"]
+        POSS["❓ >0.40<br/>POSSIBLE"]
+        NO["❌ ≤0.40<br/>NO CRASH"]
+    end
+
+    ACC --> S1
+    GYRO --> S2
+    GPS --> S3 & S4
+
+    S1 & S2 & S3 & S4 --> CALC --> DEC
+    DEC --> CONF & PROB & POSS & NO
+
+    style Sensors fill:#e3f2fd
+    style Analysis fill:#fff3e0
+    style Fusion fill:#e8f5e9
+    style Result fill:#fce4ec
+```
+
+---
+
+## Processing Pipeline Architecture (Detailed)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────────┐
