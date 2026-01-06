@@ -4,25 +4,71 @@ This document defines the REST API specifications for the Seller-Side Payment Sy
 
 ## API Overview
 
-| API Group | Base Path | Purpose |
-|-----------|-----------|---------|
-| Seller API | `/api/v1/sellers` | Seller-facing endpoints |
-| Internal API | `/internal/v1` | Service-to-service communication |
-| Admin API | `/admin/v1` | Administrative operations |
+```mermaid
+flowchart TB
+    subgraph Clients [API Clients]
+        SellerApp[Seller Dashboard]
+        AdminApp[Admin Portal]
+        InternalSvc[Internal Services]
+    end
+
+    subgraph Gateway [API Gateway]
+        Auth[Authentication]
+        RateLimit[Rate Limiting]
+        Router[Request Router]
+    end
+
+    subgraph APIs [API Endpoints]
+        SellerAPI["/api/v1/sellers/*"]
+        AdminAPI["/admin/v1/*"]
+        InternalAPI["/internal/v1/*"]
+    end
+
+    subgraph Services [Backend Services]
+        StatusSvc[Status Service]
+        PaymentSvc[Payment Service]
+        AuditSvc[Audit Service]
+    end
+
+    SellerApp --> Auth
+    AdminApp --> Auth
+    InternalSvc --> Auth
+
+    Auth --> RateLimit
+    RateLimit --> Router
+
+    Router --> SellerAPI
+    Router --> AdminAPI
+    Router --> InternalAPI
+
+    SellerAPI --> StatusSvc
+    AdminAPI --> PaymentSvc
+    InternalAPI --> PaymentSvc
+    PaymentSvc --> AuditSvc
+```
+
+| API Group    | Base Path         | Purpose                          |
+| ------------ | ----------------- | -------------------------------- |
+| Seller API   | `/api/v1/sellers` | Seller-facing endpoints          |
+| Internal API | `/internal/v1`    | Service-to-service communication |
+| Admin API    | `/admin/v1`       | Administrative operations        |
 
 ## Authentication & Authorization
 
 ### Seller API
+
 - **Authentication**: OAuth 2.0 Bearer Token
 - **Authorization**: Sellers can only access their own data
 - **Rate Limiting**: 100 requests/minute per seller
 
 ### Internal API
+
 - **Authentication**: mTLS (mutual TLS)
 - **Authorization**: Service identity validation
 - **Rate Limiting**: None (trusted services)
 
 ### Admin API
+
 - **Authentication**: OAuth 2.0 with admin scopes
 - **Authorization**: Role-based (SUPPORT, FINANCE, ADMIN)
 - **Rate Limiting**: 1000 requests/minute per user
@@ -30,6 +76,29 @@ This document defines the REST API specifications for the Seller-Side Payment Sy
 ---
 
 ## Seller API Endpoints
+
+### API Flow Overview
+
+```mermaid
+sequenceDiagram
+    participant Seller as Seller App
+    participant API as Status API
+    participant Cache as Redis Cache
+    participant DB as Payment DB
+
+    Seller->>API: GET /payments/status
+    API->>Cache: Check cache
+
+    alt Cache Hit
+        Cache-->>API: Cached data
+    else Cache Miss
+        API->>DB: Query balance & payouts
+        DB-->>API: Data
+        API->>Cache: Update cache (TTL: 30s)
+    end
+
+    API-->>Seller: Payment status response
+```
 
 ### 1. Get Payment Status
 
@@ -45,13 +114,14 @@ GET /api/v1/sellers/{sellerId}/payments/status
 | sellerId | string | Yes | Seller identifier |
 
 **Response**: `200 OK`
+
 ```json
 {
   "sellerId": "S001",
   "currentBalance": {
-    "available": 1250.00,
-    "pending": 340.00,
-    "held": 0.00,
+    "available": 1250.0,
+    "pending": 340.0,
+    "held": 0.0,
     "currency": "USD"
   },
   "payoutPreference": {
@@ -61,18 +131,18 @@ GET /api/v1/sellers/{sellerId}/payments/status
     "thresholdAmount": null
   },
   "nextPayoutDate": "2026-01-10T22:00:00Z",
-  "estimatedNextPayout": 1590.00,
+  "estimatedNextPayout": 1590.0,
   "recentPayouts": [
     {
       "payoutId": "PO-2026-01-03-S001",
-      "amount": 2100.00,
+      "amount": 2100.0,
       "status": "COMPLETED",
       "paymentMethod": "WIRE",
       "completedAt": "2026-01-03T22:45:00Z"
     },
     {
       "payoutId": "PO-2025-12-27-S001",
-      "amount": 1850.00,
+      "amount": 1850.0,
       "status": "COMPLETED",
       "paymentMethod": "WIRE",
       "completedAt": "2025-12-27T22:30:00Z"
@@ -107,11 +177,12 @@ GET /api/v1/sellers/{sellerId}/payments/{payoutId}
 | payoutId | string | Yes | Payout identifier |
 
 **Response**: `200 OK`
+
 ```json
 {
   "payoutId": "PO-2026-01-03-S001",
   "sellerId": "S001",
-  "amount": 2100.00,
+  "amount": 2100.0,
   "currency": "USD",
   "paymentMethod": "WIRE",
   "status": "COMPLETED",
@@ -122,12 +193,12 @@ GET /api/v1/sellers/{sellerId}/payments/{payoutId}
   "orders": [
     {
       "orderId": "ORD-001",
-      "amount": 45.00,
+      "amount": 45.0,
       "orderDate": "2025-12-28T10:30:00Z"
     },
     {
       "orderId": "ORD-002",
-      "amount": 89.00,
+      "amount": 89.0,
       "orderDate": "2025-12-29T14:15:00Z"
     }
   ],
@@ -154,11 +225,12 @@ GET /api/v1/sellers/{sellerId}/payments/{payoutId}
 ```
 
 **Failed Payout Response** (status = FAILED):
+
 ```json
 {
   "payoutId": "PO-2026-01-06-S002",
   "sellerId": "S002",
-  "amount": 500.00,
+  "amount": 500.0,
   "currency": "USD",
   "paymentMethod": "WIRE",
   "status": "FAILED",
@@ -218,13 +290,14 @@ GET /api/v1/sellers/{sellerId}/payments/history
 | to | ISO8601 | No | - | End date filter |
 
 **Response**: `200 OK`
+
 ```json
 {
   "sellerId": "S001",
   "payouts": [
     {
       "payoutId": "PO-2026-01-03-S001",
-      "amount": 2100.00,
+      "amount": 2100.0,
       "status": "COMPLETED",
       "paymentMethod": "WIRE",
       "createdAt": "2026-01-03T22:00:00Z",
@@ -240,7 +313,7 @@ GET /api/v1/sellers/{sellerId}/payments/history
     "hasPrevious": false
   },
   "summary": {
-    "totalPaid": 45600.00,
+    "totalPaid": 45600.0,
     "totalPayouts": 52,
     "averagePayoutAmount": 876.92
   }
@@ -253,29 +326,53 @@ GET /api/v1/sellers/{sellerId}/payments/history
 
 Request an immediate payout (for sellers with ON_DEMAND schedule or any seller with available balance).
 
+```mermaid
+sequenceDiagram
+    participant Seller as Seller App
+    participant API as Payment API
+    participant DB as Payment DB
+    participant Queue as Payout Queue
+
+    Seller->>API: POST /payments/request
+    API->>DB: Check available balance
+
+    alt Insufficient Balance
+        API-->>Seller: 400 INSUFFICIENT_BALANCE
+    else Payout In Progress
+        API->>DB: Check existing PENDING/PROCESSING
+        API-->>Seller: 409 PAYOUT_IN_PROGRESS
+    else Valid Request
+        API->>DB: Create PayoutRecord (PENDING)
+        API->>Queue: Enqueue for processing
+        API-->>Seller: 202 Accepted
+    end
+```
+
 ```
 POST /api/v1/sellers/{sellerId}/payments/request
 ```
 
 **Request Body**:
+
 ```json
 {
-  "amount": 500.00,
+  "amount": 500.0,
   "note": "Urgent cash flow need"
 }
 ```
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| amount | decimal | No | Specific amount (defaults to full available balance) |
-| note | string | No | Optional note for records |
+| Field  | Type    | Required | Description                                          |
+| ------ | ------- | -------- | ---------------------------------------------------- |
+| amount | decimal | No       | Specific amount (defaults to full available balance) |
+| note   | string  | No       | Optional note for records                            |
 
 **Response**: `202 Accepted`
+
 ```json
 {
   "payoutId": "PO-2026-01-06-S001-OD",
   "sellerId": "S001",
-  "amount": 500.00,
+  "amount": 500.0,
   "status": "PENDING",
   "estimatedCompletionTime": "2026-01-06T15:30:00Z",
   "message": "Your payout request has been submitted and will be processed shortly."
@@ -301,6 +398,7 @@ GET /api/v1/sellers/{sellerId}/payments/preferences
 ```
 
 **Response**: `200 OK`
+
 ```json
 {
   "sellerId": "S001",
@@ -308,7 +406,7 @@ GET /api/v1/sellers/{sellerId}/payments/preferences
   "preferredDay": "FRIDAY",
   "thresholdAmount": null,
   "paymentMethod": "WIRE",
-  "minimumPayout": 10.00,
+  "minimumPayout": 10.0,
   "paymentDetails": {
     "type": "WIRE",
     "bankName": "Chase Bank",
@@ -331,27 +429,29 @@ PUT /api/v1/sellers/{sellerId}/payments/preferences
 ```
 
 **Request Body**:
+
 ```json
 {
   "schedule": "THRESHOLD",
-  "thresholdAmount": 500.00,
+  "thresholdAmount": 500.0,
   "paymentMethod": "WIRE"
 }
 ```
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| schedule | enum | No | DAILY, WEEKLY, THRESHOLD, ON_DEMAND |
-| preferredDay | string | No | Day for WEEKLY (MONDAY-SUNDAY) |
-| thresholdAmount | decimal | No | Amount for THRESHOLD schedule |
-| paymentMethod | enum | No | CHECK or WIRE |
+| Field           | Type    | Required | Description                         |
+| --------------- | ------- | -------- | ----------------------------------- |
+| schedule        | enum    | No       | DAILY, WEEKLY, THRESHOLD, ON_DEMAND |
+| preferredDay    | string  | No       | Day for WEEKLY (MONDAY-SUNDAY)      |
+| thresholdAmount | decimal | No       | Amount for THRESHOLD schedule       |
+| paymentMethod   | enum    | No       | CHECK or WIRE                       |
 
 **Response**: `200 OK`
+
 ```json
 {
   "sellerId": "S001",
   "schedule": "THRESHOLD",
-  "thresholdAmount": 500.00,
+  "thresholdAmount": 500.0,
   "paymentMethod": "WIRE",
   "message": "Preferences updated successfully",
   "effectiveFrom": "2026-01-07T00:00:00Z"
@@ -378,13 +478,14 @@ GET /api/v1/sellers/{sellerId}/earnings
 | to | ISO8601 | No | - | End date |
 
 **Response**: `200 OK`
+
 ```json
 {
   "sellerId": "S001",
   "earnings": [
     {
       "orderId": "ORD-123",
-      "amount": 45.00,
+      "amount": 45.0,
       "status": "SETTLED",
       "orderDate": "2026-01-05T10:30:00Z",
       "settlementDate": "2026-01-12T00:00:00Z",
@@ -392,7 +493,7 @@ GET /api/v1/sellers/{sellerId}/earnings
     },
     {
       "orderId": "ORD-122",
-      "amount": 89.00,
+      "amount": 89.0,
       "status": "PAID",
       "orderDate": "2025-12-28T14:15:00Z",
       "payoutId": "PO-2026-01-03-S001"
@@ -405,10 +506,10 @@ GET /api/v1/sellers/{sellerId}/earnings
     "totalPages": 8
   },
   "totals": {
-    "pending": 340.00,
-    "settled": 1250.00,
-    "paid": 45600.00,
-    "cancelled": 150.00
+    "pending": 340.0,
+    "settled": 1250.0,
+    "paid": 45600.0,
+    "cancelled": 150.0
   }
 }
 ```
@@ -416,6 +517,38 @@ GET /api/v1/sellers/{sellerId}/earnings
 ---
 
 ## Internal API Endpoints
+
+### Internal Service Communication Flow
+
+```mermaid
+flowchart LR
+    subgraph External [External Services]
+        OrderSvc[OrderService]
+        SellerSvc[SellerService]
+        Gateway[Payment Gateway]
+    end
+
+    subgraph Internal [Payment System Internal APIs]
+        OrderEvents["/orders/events"]
+        PaymentDetails["/sellers/{id}/payment-details"]
+        Webhook["/webhooks/payment-gateway"]
+    end
+
+    subgraph Core [Core Services]
+        BalanceSvc[Balance Service]
+        ProcessorSvc[Payment Processor]
+        ReconcileSvc[Reconciliation]
+    end
+
+    OrderSvc -->|mTLS| OrderEvents
+    OrderEvents --> BalanceSvc
+
+    ProcessorSvc -->|mTLS| PaymentDetails
+    PaymentDetails --> SellerSvc
+
+    Gateway -->|Webhook| Webhook
+    Webhook --> ReconcileSvc
+```
 
 ### 1. Process Order Event
 
@@ -426,6 +559,7 @@ POST /internal/v1/orders/events
 ```
 
 **Request Body**:
+
 ```json
 {
   "eventId": "EVT-20260106-001",
@@ -437,13 +571,13 @@ POST /internal/v1/orders/events
     {
       "productId": "P789",
       "sellerId": "S001",
-      "sellerPrice": 45.00,
+      "sellerPrice": 45.0,
       "quantity": 2
     },
     {
       "productId": "P790",
       "sellerId": "S002",
-      "sellerPrice": 30.00,
+      "sellerPrice": 30.0,
       "quantity": 1
     }
   ]
@@ -451,6 +585,7 @@ POST /internal/v1/orders/events
 ```
 
 **Response**: `202 Accepted`
+
 ```json
 {
   "eventId": "EVT-20260106-001",
@@ -472,6 +607,7 @@ GET /internal/v1/sellers/{sellerId}/payment-details
 ```
 
 **Response**: `200 OK`
+
 ```json
 {
   "sellerId": "S001",
@@ -507,6 +643,7 @@ POST /internal/v1/webhooks/payment-gateway
 ```
 
 **Request Body**:
+
 ```json
 {
   "webhookId": "WH-789",
@@ -520,6 +657,7 @@ POST /internal/v1/webhooks/payment-gateway
 ```
 
 **Response**: `200 OK`
+
 ```json
 {
   "webhookId": "WH-789",
@@ -530,6 +668,43 @@ POST /internal/v1/webhooks/payment-gateway
 ---
 
 ## Admin API Endpoints
+
+### Admin Operations Flow
+
+```mermaid
+flowchart TD
+    subgraph AdminActions [Admin Operations]
+        Search[Search Payouts]
+        Retry[Retry Failed]
+        Cancel[Cancel Payout]
+        Manual[Manual Payout]
+        Adjust[Adjust Balance]
+        Audit[View Audit]
+    end
+
+    subgraph Validation [Validation Layer]
+        AuthZ[Authorization Check]
+        BizRules[Business Rules]
+    end
+
+    subgraph Execution [Execution Layer]
+        DB[(Payment DB)]
+        Queue[Payout Queue]
+        AuditLog[(Audit Log)]
+    end
+
+    Search --> AuthZ
+    Retry --> AuthZ
+    Cancel --> AuthZ
+    Manual --> AuthZ
+    Adjust --> AuthZ
+    Audit --> AuthZ
+
+    AuthZ --> BizRules
+    BizRules --> DB
+    BizRules --> Queue
+    BizRules --> AuditLog
+```
 
 ### 1. Search Payouts
 
@@ -553,6 +728,7 @@ GET /admin/v1/payouts
 | size | integer | Page size |
 
 **Response**: `200 OK`
+
 ```json
 {
   "payouts": [...],
@@ -580,6 +756,7 @@ POST /admin/v1/payouts/{payoutId}/retry
 ```
 
 **Request Body**:
+
 ```json
 {
   "reason": "Bank details updated by seller",
@@ -588,6 +765,7 @@ POST /admin/v1/payouts/{payoutId}/retry
 ```
 
 **Response**: `202 Accepted`
+
 ```json
 {
   "payoutId": "PO-2026-01-06-S002",
@@ -608,6 +786,7 @@ POST /admin/v1/payouts/{payoutId}/cancel
 ```
 
 **Request Body**:
+
 ```json
 {
   "reason": "Seller account suspended",
@@ -617,6 +796,7 @@ POST /admin/v1/payouts/{payoutId}/cancel
 ```
 
 **Response**: `200 OK`
+
 ```json
 {
   "payoutId": "PO-2026-01-06-S002",
@@ -637,10 +817,11 @@ POST /admin/v1/payouts/manual
 ```
 
 **Request Body**:
+
 ```json
 {
   "sellerId": "S001",
-  "amount": 100.00,
+  "amount": 100.0,
   "reason": "Compensation for delayed payment",
   "adminId": "admin@company.com",
   "skipBalanceCheck": true
@@ -648,6 +829,7 @@ POST /admin/v1/payouts/manual
 ```
 
 **Response**: `201 Created`
+
 ```json
 {
   "payoutId": "PO-2026-01-06-S001-MANUAL",
@@ -667,10 +849,11 @@ POST /admin/v1/sellers/{sellerId}/balance/adjust
 ```
 
 **Request Body**:
+
 ```json
 {
   "adjustmentType": "CREDIT",
-  "amount": 50.00,
+  "amount": 50.0,
   "balanceType": "available",
   "reason": "Goodwill credit for service issue",
   "adminId": "admin@company.com",
@@ -679,18 +862,19 @@ POST /admin/v1/sellers/{sellerId}/balance/adjust
 ```
 
 **Response**: `200 OK`
+
 ```json
 {
   "sellerId": "S001",
   "adjustment": {
     "type": "CREDIT",
-    "amount": 50.00,
+    "amount": 50.0,
     "balanceType": "available"
   },
   "newBalance": {
-    "available": 1300.00,
-    "pending": 340.00,
-    "held": 0.00
+    "available": 1300.0,
+    "pending": 340.0,
+    "held": 0.0
   },
   "auditId": "AUD-20260106-099"
 }
@@ -717,6 +901,7 @@ GET /admin/v1/audit
 | actor | string | Filter by actor |
 
 **Response**: `200 OK`
+
 ```json
 {
   "auditRecords": [
@@ -753,8 +938,8 @@ All error responses follow a consistent format:
     "code": "INSUFFICIENT_BALANCE",
     "message": "Requested amount exceeds available balance",
     "details": {
-      "requestedAmount": 500.00,
-      "availableBalance": 250.00
+      "requestedAmount": 500.0,
+      "availableBalance": 250.0
     },
     "timestamp": "2026-01-06T14:30:00Z",
     "traceId": "abc123def456"
@@ -764,28 +949,28 @@ All error responses follow a consistent format:
 
 ## Common Error Codes
 
-| Code | HTTP Status | Description |
-|------|-------------|-------------|
-| UNAUTHORIZED | 401 | Invalid or missing authentication |
-| FORBIDDEN | 403 | Insufficient permissions |
-| SELLER_NOT_FOUND | 404 | Seller does not exist |
-| PAYOUT_NOT_FOUND | 404 | Payout does not exist |
-| INSUFFICIENT_BALANCE | 400 | Not enough balance |
-| MINIMUM_NOT_MET | 400 | Below minimum payout amount |
-| PAYOUT_IN_PROGRESS | 409 | Concurrent payout conflict |
-| INVALID_STATUS_TRANSITION | 409 | Invalid state change |
-| TOO_MANY_REQUESTS | 429 | Rate limit exceeded |
-| GATEWAY_UNAVAILABLE | 503 | Payment gateway down |
-| INTERNAL_ERROR | 500 | Unexpected server error |
+| Code                      | HTTP Status | Description                       |
+| ------------------------- | ----------- | --------------------------------- |
+| UNAUTHORIZED              | 401         | Invalid or missing authentication |
+| FORBIDDEN                 | 403         | Insufficient permissions          |
+| SELLER_NOT_FOUND          | 404         | Seller does not exist             |
+| PAYOUT_NOT_FOUND          | 404         | Payout does not exist             |
+| INSUFFICIENT_BALANCE      | 400         | Not enough balance                |
+| MINIMUM_NOT_MET           | 400         | Below minimum payout amount       |
+| PAYOUT_IN_PROGRESS        | 409         | Concurrent payout conflict        |
+| INVALID_STATUS_TRANSITION | 409         | Invalid state change              |
+| TOO_MANY_REQUESTS         | 429         | Rate limit exceeded               |
+| GATEWAY_UNAVAILABLE       | 503         | Payment gateway down              |
+| INTERNAL_ERROR            | 500         | Unexpected server error           |
 
 ## Rate Limits
 
-| API | Limit | Window |
-|-----|-------|--------|
-| Seller API | 100 requests | 1 minute |
-| On-demand Payout | 5 requests | 1 hour |
-| Admin API | 1000 requests | 1 minute |
-| Internal API | Unlimited | - |
+| API              | Limit         | Window   |
+| ---------------- | ------------- | -------- |
+| Seller API       | 100 requests  | 1 minute |
+| On-demand Payout | 5 requests    | 1 hour   |
+| Admin API        | 1000 requests | 1 minute |
+| Internal API     | Unlimited     | -        |
 
 ## Versioning
 
@@ -793,4 +978,3 @@ All error responses follow a consistent format:
 - Breaking changes require new major version
 - Deprecated endpoints include `Sunset` header with deprecation date
 - Minimum 6-month deprecation notice before removal
-

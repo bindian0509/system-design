@@ -6,27 +6,96 @@ This document details the components, interactions, and design rationale for the
 
 The system consists of six core components that work together to process seller payouts reliably and efficiently.
 
+```mermaid
+flowchart TB
+    subgraph ExistingServices [Existing Microservices]
+        OrderSvc[OrderService]
+        SellerSvc[SellerService]
+        ProductSvc[ProductService]
+    end
+
+    subgraph PaymentSystem [Seller Payment System]
+        direction TB
+        EventConsumer[Order Event Consumer]
+        BalanceService[Seller Balance Service]
+        PayoutScheduler[Payout Scheduler]
+        PaymentProcessor[Payment Processor]
+        StatusAPI[Payment Status API]
+        AuditService[Audit Log Service]
+    end
+
+    subgraph DataStores [Data Layer]
+        PaymentDB[(Payment DB)]
+        AuditLog[(Audit Log)]
+        Cache[(Redis Cache)]
+        EventQueue[Message Queue]
+    end
+
+    subgraph External [External]
+        PaymentGateway[Third Party Gateway]
+    end
+
+    OrderSvc -->|Order Events| EventQueue
+    EventQueue --> EventConsumer
+    EventConsumer --> BalanceService
+    BalanceService --> PaymentDB
+
+    PayoutScheduler --> PaymentDB
+    PayoutScheduler --> PaymentProcessor
+
+    PaymentProcessor --> PaymentGateway
+    PaymentProcessor --> AuditService
+    PaymentProcessor --> PaymentDB
+
+    AuditService --> AuditLog
+
+    StatusAPI --> PaymentDB
+    StatusAPI --> Cache
+
+    SellerSvc -.->|Payment Details| PaymentProcessor
 ```
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                              SELLER PAYMENT SYSTEM                               │
-├─────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                 │
-│   ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐          │
-│   │  Order Event    │     │  Seller Balance │     │    Payout       │          │
-│   │   Consumer      │────▶│    Service      │────▶│   Scheduler     │          │
-│   └─────────────────┘     └─────────────────┘     └────────┬────────┘          │
-│                                                            │                    │
-│   ┌─────────────────┐     ┌─────────────────┐             │                    │
-│   │  Payment Status │◀────│    Payment      │◀────────────┘                    │
-│   │      API        │     │   Processor     │                                  │
-│   └─────────────────┘     └────────┬────────┘                                  │
-│                                    │                                           │
-│   ┌─────────────────┐              │                                           │
-│   │  Audit Log      │◀─────────────┘                                           │
-│   │   Service       │                                                          │
-│   └─────────────────┘                                                          │
-│                                                                                 │
-└─────────────────────────────────────────────────────────────────────────────────┘
+
+### Component Interaction Flow
+
+```mermaid
+flowchart LR
+    subgraph Ingestion [Event Ingestion]
+        OrderEvents[Order Events]
+        Consumer[Event Consumer]
+    end
+
+    subgraph Processing [Balance Processing]
+        BalanceCalc[Balance Calculator]
+        BalanceStore[Balance Store]
+    end
+
+    subgraph Scheduling [Payout Scheduling]
+        Scheduler[Scheduler]
+        EligibilityCheck[Eligibility Check]
+    end
+
+    subgraph Execution [Payment Execution]
+        Processor[Payment Processor]
+        GatewayClient[Gateway Client]
+    end
+
+    subgraph Monitoring [Status and Audit]
+        StatusAPI[Status API]
+        AuditWriter[Audit Writer]
+    end
+
+    OrderEvents --> Consumer
+    Consumer --> BalanceCalc
+    BalanceCalc --> BalanceStore
+
+    BalanceStore --> EligibilityCheck
+    Scheduler --> EligibilityCheck
+    EligibilityCheck --> Processor
+
+    Processor --> GatewayClient
+    Processor --> AuditWriter
+
+    BalanceStore --> StatusAPI
 ```
 
 ## Component Details
@@ -39,7 +108,26 @@ The system consists of six core components that work together to process seller 
 
 **Output**: Balance updates to Seller Balance Service
 
+```mermaid
+sequenceDiagram
+    participant OS as OrderService
+    participant MQ as Message Queue
+    participant EC as Event Consumer
+    participant BS as Balance Service
+    participant DB as Payment DB
+
+    OS->>MQ: Publish ORDER_COMPLETED
+    MQ->>EC: Deliver event
+    EC->>DB: Check duplicate (order_id)
+    DB-->>EC: Not found
+    EC->>BS: Credit balance request
+    BS->>DB: Update pending_balance
+    BS-->>EC: Success
+    EC->>MQ: ACK message
+```
+
 **Key Operations**:
+
 - Subscribe to order completion topic
 - Extract seller earnings from order data
 - Calculate seller amount (sellerPrice × quantity for each product)
@@ -47,22 +135,23 @@ The system consists of six core components that work together to process seller 
 - Handle order cancellation events to reverse credits
 
 **Design Considerations**:
+
 - At-least-once delivery with idempotent processing
 - Use orderID as deduplication key
 - Batch processing for high throughput
 - Dead letter queue for poison messages
 
-```
-Order Event Structure:
+```json
+// Order Event Structure
 {
-  "eventType": "ORDER_COMPLETED" | "ORDER_CANCELLED",
+  "eventType": "ORDER_COMPLETED",
   "orderId": "ORD-123",
   "buyerId": "B456",
   "products": [
     {
       "productId": "P789",
       "sellerId": "S001",
-      "sellerPrice": 45.00,
+      "sellerPrice": 45.0,
       "buyerPrice": 59.99,
       "quantity": 2
     }
@@ -82,7 +171,25 @@ Order Event Structure:
 | `availableBalance` | Ready for payout | Settlement window passed → move from pending |
 | `heldBalance` | Held for disputes/chargebacks | Dispute opened → move from available |
 
+```mermaid
+stateDiagram-v2
+    [*] --> PendingBalance: Order Completed
+
+    PendingBalance --> AvailableBalance: Settlement Window (7 days)
+    PendingBalance --> [*]: Order Cancelled
+
+    AvailableBalance --> HeldBalance: Dispute Opened
+    AvailableBalance --> PaidOut: Payout Completed
+
+    HeldBalance --> AvailableBalance: Dispute Won
+    HeldBalance --> Refunded: Dispute Lost
+
+    PaidOut --> [*]
+    Refunded --> [*]
+```
+
 **Key Operations**:
+
 - Credit pending balance on order completion
 - Move pending to available after settlement window (e.g., 7 days)
 - Deduct from available on successful payout
@@ -90,6 +197,7 @@ Order Event Structure:
 - Reverse pending balance on order cancellation
 
 **Concurrency Control**:
+
 - Optimistic locking with version field
 - Atomic balance updates using database transactions
 - Prevent negative balances with CHECK constraints
@@ -109,7 +217,34 @@ WHERE seller_id = :sellerId
 
 **Responsibility**: Determine which sellers are eligible for payout and initiate processing.
 
+```mermaid
+flowchart TD
+    Start([Scheduler Triggered]) --> AcquireLock{Acquire Leader Lock}
+
+    AcquireLock -->|Failed| Standby[Wait as Standby]
+    AcquireLock -->|Success| QueryDaily[Query DAILY Sellers]
+
+    QueryDaily --> QueryWeekly[Query WEEKLY Sellers]
+    QueryWeekly --> QueryThreshold[Query THRESHOLD Sellers]
+    QueryThreshold --> QueryOnDemand[Query ON_DEMAND Queue]
+
+    QueryOnDemand --> MergeList[Merge Eligible Sellers]
+    MergeList --> Loop{For Each Seller}
+
+    Loop --> CheckExists{Payout Exists?}
+    CheckExists -->|Yes| Skip[Skip - Idempotent]
+    CheckExists -->|No| CreatePayout[Create PayoutRecord]
+
+    CreatePayout --> EnqueuePayout[Enqueue for Processing]
+    EnqueuePayout --> Loop
+    Skip --> Loop
+
+    Loop -->|Done| ReleaseLock[Release Lock]
+    ReleaseLock --> End([End Cycle])
+```
+
 **Scheduling Logic**:
+
 ```
 For each payout cycle run:
   1. Query sellers with DAILY schedule → if current time is EOD
@@ -132,6 +267,21 @@ For each payout cycle run:
 | ON_DEMAND | Event-driven from API request |
 
 **Leader Election**:
+
+```mermaid
+stateDiagram-v2
+    [*] --> Follower: Instance starts
+
+    Follower --> TryAcquire: Heartbeat timeout
+    TryAcquire --> Leader: Lock acquired
+    TryAcquire --> Follower: Lock held by other
+
+    Leader --> Leader: Refresh lock every 10s
+    Leader --> Follower: Lock lost / crashed
+
+    note right of Leader: Only one active scheduler
+```
+
 - Only one scheduler instance should be active
 - Use distributed lock (Redis/ZooKeeper) for leader election
 - Heartbeat every 10 seconds to maintain leadership
@@ -141,7 +291,43 @@ For each payout cycle run:
 
 **Responsibility**: Execute payments through the third-party gateway.
 
+```mermaid
+sequenceDiagram
+    participant Queue as Payout Queue
+    participant PP as Payment Processor
+    participant DB as Payment DB
+    participant SS as SellerService
+    participant GW as Payment Gateway
+    participant AL as Audit Log
+
+    Queue->>PP: Dequeue payout
+    PP->>DB: UPDATE status = PROCESSING
+    PP->>AL: Log PAYOUT_SUBMITTED
+    PP->>SS: GET payment details
+    SS-->>PP: Wire/Check details
+
+    alt Wire Transfer
+        PP->>GW: sendWire(wireDetails, amount)
+    else Check
+        PP->>GW: sendCheck(checkDetails, amount)
+    end
+
+    Note over GW: ~1 minute processing
+
+    alt Success
+        GW-->>PP: transactionId
+        PP->>DB: UPDATE status = COMPLETED
+        PP->>DB: Deduct seller balance
+        PP->>AL: Log PAYOUT_COMPLETED
+    else Failure
+        GW-->>PP: error
+        PP->>DB: UPDATE status = FAILED
+        PP->>AL: Log PAYOUT_FAILED
+    end
+```
+
 **Processing Flow**:
+
 ```
 1. Receive payout request (payoutId, sellerId, amount, method)
 2. Update PayoutRecord status to PROCESSING
@@ -161,11 +347,13 @@ For each payout cycle run:
 ```
 
 **Concurrency**:
+
 - Process multiple sellers in parallel (configurable pool size)
 - One payout per seller at a time (distributed lock per seller)
 - Timeout handling for gateway calls (2 minutes max)
 
 **Idempotency**:
+
 - Use payoutId as idempotency key with gateway
 - Check for existing COMPLETED payout before processing
 - Store gateway transaction ID for reconciliation
@@ -186,18 +374,19 @@ For each payout cycle run:
 **Status Resolution**:
 For failed payments, provide actionable guidance:
 
-| Error Code | Message | Required Action |
-|------------|---------|-----------------|
-| `INVALID_ACCOUNT` | Bank account invalid | Update bank details |
-| `INSUFFICIENT_INFO` | Missing payment info | Complete profile |
-| `ACCOUNT_CLOSED` | Account no longer active | Provide new account |
-| `GATEWAY_ERROR` | Temporary gateway issue | Automatic retry scheduled |
+| Error Code          | Message                  | Required Action           |
+| ------------------- | ------------------------ | ------------------------- |
+| `INVALID_ACCOUNT`   | Bank account invalid     | Update bank details       |
+| `INSUFFICIENT_INFO` | Missing payment info     | Complete profile          |
+| `ACCOUNT_CLOSED`    | Account no longer active | Provide new account       |
+| `GATEWAY_ERROR`     | Temporary gateway issue  | Automatic retry scheduled |
 
 ### 6. Audit Log Service
 
 **Responsibility**: Maintain immutable record of all payment-related events.
 
 **Event Types**:
+
 - `PAYOUT_CREATED` - New payout record created
 - `PAYOUT_SUBMITTED` - Sent to payment gateway
 - `PAYOUT_COMPLETED` - Successfully processed
@@ -210,6 +399,7 @@ For failed payments, provide actionable guidance:
 - `BALANCE_RELEASED` - Hold released
 
 **Audit Record Structure**:
+
 ```json
 {
   "auditId": "AUD-20260106-001",
@@ -234,15 +424,63 @@ For failed payments, provide actionable guidance:
 ```
 
 **Storage**:
+
 - Append-only table in PostgreSQL with no UPDATE/DELETE permissions
 - Optionally replicate to S3 for long-term retention
 - Retention: 7 years for financial compliance
 
 ## Data Store Architecture
 
+```mermaid
+flowchart TB
+    subgraph Application [Application Layer]
+        API[Status API]
+        Processor[Payment Processor]
+        Consumer[Event Consumer]
+        Scheduler[Scheduler]
+    end
+
+    subgraph Primary [Primary Data Store]
+        PG[(PostgreSQL Primary)]
+    end
+
+    subgraph Replica [Read Replicas]
+        PGRead[(PostgreSQL Replica)]
+    end
+
+    subgraph Queue [Message Queue]
+        Kafka[Kafka Cluster]
+        DLQ[Dead Letter Queue]
+    end
+
+    subgraph Cache [Cache Layer]
+        Redis[(Redis Cluster)]
+    end
+
+    subgraph Archive [Archive Storage]
+        S3[S3 / Object Store]
+    end
+
+    Consumer --> Kafka
+    Consumer --> PG
+
+    Processor --> PG
+    Processor --> Redis
+
+    Scheduler --> PG
+    Scheduler --> Redis
+
+    API --> PGRead
+    API --> Redis
+
+    PG --> PGRead
+    PG --> S3
+```
+
 ### Primary Database (PostgreSQL)
 
 **Tables**:
+
 - `seller_payout_preference` - Payout configuration per seller
 - `seller_balance` - Current balance state
 - `payout_record` - Payment records with full lifecycle
@@ -250,6 +488,7 @@ For failed payments, provide actionable guidance:
 - `audit_log` - Immutable event log
 
 **Indexes**:
+
 ```sql
 -- For scheduler queries
 CREATE INDEX idx_balance_available ON seller_balance(available_balance)
@@ -276,6 +515,7 @@ CREATE INDEX idx_payout_processing ON payout_record(status, processed_at)
 ### Cache (Redis)
 
 **Use Cases**:
+
 - Seller balance cache for status API (TTL: 30 seconds)
 - Distributed locks for scheduler and per-seller processing
 - Rate limiting for API endpoints
@@ -302,6 +542,7 @@ Response:
 ### With OrderService
 
 **Event Subscription**:
+
 - Topic: `order-events`
 - Consumer Group: `seller-payment-system`
 - Events: `ORDER_COMPLETED`, `ORDER_CANCELLED`
@@ -332,42 +573,78 @@ interface ThirdPartyPaymentGateway {
 
 ### Horizontal Scaling
 
-| Component | Scaling Strategy |
-|-----------|-----------------|
-| Order Event Consumer | Scale by Kafka partitions (by sellerId) |
-| Seller Balance Service | Stateless, scale horizontally |
-| Payout Scheduler | Single active with standby (leader election) |
-| Payment Processor | Thread pool per instance, multiple instances |
-| Status API | Stateless, scale horizontally behind LB |
-| Audit Service | Async writes, batch inserts |
+```mermaid
+flowchart TB
+    subgraph LoadBalancer [Load Balancer]
+        ALB[Application LB]
+    end
+
+    subgraph APITier [API Tier - Stateless]
+        API1[API Pod 1]
+        API2[API Pod 2]
+        API3[API Pod N]
+    end
+
+    subgraph Workers [Worker Tier]
+        subgraph Consumers [Event Consumers]
+            C1[Consumer 1]
+            C2[Consumer 2]
+            C3[Consumer N]
+        end
+        subgraph Processors [Payment Processors]
+            P1[Processor 1]
+            P2[Processor 2]
+            P3[Processor N]
+        end
+        subgraph Schedulers [Scheduler - Active/Standby]
+            S1[Scheduler Active]
+            S2[Scheduler Standby]
+        end
+    end
+
+    ALB --> API1
+    ALB --> API2
+    ALB --> API3
+```
+
+| Component              | Scaling Strategy                             |
+| ---------------------- | -------------------------------------------- |
+| Order Event Consumer   | Scale by Kafka partitions (by sellerId)      |
+| Seller Balance Service | Stateless, scale horizontally                |
+| Payout Scheduler       | Single active with standby (leader election) |
+| Payment Processor      | Thread pool per instance, multiple instances |
+| Status API             | Stateless, scale horizontally behind LB      |
+| Audit Service          | Async writes, batch inserts                  |
 
 ### Performance Targets
 
-| Metric | Target |
-|--------|--------|
-| Order event processing | < 100ms p99 |
+| Metric                        | Target      |
+| ----------------------------- | ----------- |
+| Order event processing        | < 100ms p99 |
 | Payout creation to submission | < 5 seconds |
-| Gateway call timeout | 2 minutes |
-| Status API response | < 50ms p99 |
-| Daily payout capacity | 1M+ sellers |
+| Gateway call timeout          | 2 minutes   |
+| Status API response           | < 50ms p99  |
+| Daily payout capacity         | 1M+ sellers |
 
 ## Security
 
 ### Authentication & Authorization
+
 - Internal services: mTLS with certificate validation
 - Status API: OAuth 2.0 with seller-specific scopes
 - Audit log: Read-only access for compliance team
 
 ### Data Protection
+
 - PII encryption at rest (bank details, addresses)
 - TLS 1.3 for all network communication
 - Secrets in HashiCorp Vault or AWS Secrets Manager
 
 ### Access Control
-| Role | Permissions |
-|------|-------------|
-| Seller | View own balance, payouts, preferences |
-| Support | View any seller, cannot modify |
-| Finance | View all, trigger manual payouts |
-| Admin | Full access including config changes |
 
+| Role    | Permissions                            |
+| ------- | -------------------------------------- |
+| Seller  | View own balance, payouts, preferences |
+| Support | View any seller, cannot modify         |
+| Finance | View all, trigger manual payouts       |
+| Admin   | Full access including config changes   |

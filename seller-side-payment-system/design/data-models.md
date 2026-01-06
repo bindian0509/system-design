@@ -4,54 +4,94 @@ This document defines the database schema for the Seller-Side Payment System, in
 
 ## Entity Relationship Diagram
 
+```mermaid
+erDiagram
+    SELLER_PAYOUT_PREFERENCE ||--|| SELLER_BALANCE : "has"
+    SELLER_BALANCE ||--o{ PAYOUT_RECORD : "generates"
+    PAYOUT_RECORD ||--o{ ORDER_PAYOUT_MAPPING : "includes"
+    PAYOUT_RECORD ||--o{ AUDIT_LOG : "creates"
+    SELLER_BALANCE ||--o{ ORDER_PAYOUT_MAPPING : "tracks"
+
+    SELLER_PAYOUT_PREFERENCE {
+        string seller_id PK
+        enum payout_schedule
+        decimal threshold_amount
+        int preferred_day
+        enum payment_method
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    SELLER_BALANCE {
+        string seller_id PK
+        decimal available_balance
+        decimal pending_balance
+        decimal held_balance
+        bigint version
+        timestamp last_updated
+    }
+
+    PAYOUT_RECORD {
+        string payout_id PK
+        string seller_id FK
+        decimal amount
+        enum payment_method
+        enum status
+        string gateway_txn_id
+        string error_code
+        string error_message
+        int retry_count
+        timestamp period_start
+        timestamp period_end
+        timestamp created_at
+        timestamp processed_at
+        timestamp completed_at
+    }
+
+    ORDER_PAYOUT_MAPPING {
+        bigint id PK
+        string order_id FK
+        string payout_id FK
+        string seller_id FK
+        decimal seller_amount
+        enum status
+        timestamp order_timestamp
+        timestamp settlement_date
+        timestamp created_at
+    }
+
+    AUDIT_LOG {
+        string audit_id PK
+        string payout_id FK
+        string seller_id
+        enum event_type
+        json previous_state
+        json new_state
+        string actor
+        timestamp timestamp
+        json metadata
+    }
 ```
-┌─────────────────────────┐     ┌─────────────────────────┐
-│  SellerPayoutPreference │     │      SellerBalance      │
-├─────────────────────────┤     ├─────────────────────────┤
-│ seller_id (PK, FK)      │     │ seller_id (PK, FK)      │
-│ payout_schedule         │     │ available_balance       │
-│ threshold_amount        │     │ pending_balance         │
-│ preferred_day           │     │ held_balance            │
-│ created_at              │     │ version                 │
-│ updated_at              │     │ last_updated            │
-└─────────────────────────┘     └─────────────────────────┘
-            │                               │
-            │                               │
-            └───────────┬───────────────────┘
-                        │
-                        ▼
-            ┌─────────────────────────┐
-            │      PayoutRecord       │
-            ├─────────────────────────┤
-            │ payout_id (PK)          │
-            │ seller_id (FK)          │◀──────────────────┐
-            │ amount                  │                   │
-            │ payment_method          │     ┌─────────────┴─────────────┐
-            │ status                  │     │   OrderPayoutMapping      │
-            │ gateway_txn_id          │     ├───────────────────────────┤
-            │ error_code              │     │ order_id (PK, FK)         │
-            │ error_message           │     │ payout_id (FK)            │
-            │ period_start            │     │ seller_id (FK)            │
-            │ period_end              │     │ seller_amount             │
-            │ created_at              │     │ created_at                │
-            │ processed_at            │     └───────────────────────────┘
-            │ completed_at            │
-            └───────────┬─────────────┘
-                        │
-                        ▼
-            ┌─────────────────────────┐
-            │        AuditLog         │
-            ├─────────────────────────┤
-            │ audit_id (PK)           │
-            │ payout_id (FK)          │
-            │ seller_id               │
-            │ event_type              │
-            │ previous_state          │
-            │ new_state               │
-            │ actor                   │
-            │ timestamp               │
-            │ metadata                │
-            └─────────────────────────┘
+
+### Data Flow Between Tables
+
+```mermaid
+flowchart LR
+    subgraph OrderFlow [Order Processing]
+        Order[Order Event] --> OPM[OrderPayoutMapping]
+        OPM --> SB[SellerBalance]
+    end
+
+    subgraph PayoutFlow [Payout Processing]
+        SB --> PR[PayoutRecord]
+        PR --> AL[AuditLog]
+    end
+
+    subgraph Config [Configuration]
+        SPP[SellerPayoutPreference]
+    end
+
+    SPP -.-> PR
 ```
 
 ## Table Definitions
@@ -136,6 +176,7 @@ CREATE INDEX idx_balance_threshold ON seller_balance(seller_id, available_balanc
 | last_updated | TIMESTAMP | Last modification time |
 
 **Balance Transitions**:
+
 ```
 ORDER_COMPLETED:  pending_balance += seller_amount
 SETTLEMENT_COMPLETE: available_balance += amount, pending_balance -= amount
@@ -215,26 +256,26 @@ CREATE INDEX idx_payout_gateway_txn ON payout_record(gateway_txn_id)
 | completed_at | TIMESTAMP | When confirmed complete |
 
 **Status State Machine**:
-```
-                    ┌──────────────┐
-                    │   PENDING    │
-                    └──────┬───────┘
-                           │ Process started
-                           ▼
-                    ┌──────────────┐
-          ┌─────────│  PROCESSING  │─────────┐
-          │         └──────────────┘         │
-          │ Gateway success          Gateway error
-          ▼                                  ▼
-   ┌──────────────┐                  ┌──────────────┐
-   │  COMPLETED   │                  │    FAILED    │
-   └──────────────┘                  └──────┬───────┘
-                                           │ Retry or
-                                           │ Manual cancel
-                                           ▼
-                                    ┌──────────────┐
-                                    │  CANCELLED   │
-                                    └──────────────┘
+
+```mermaid
+stateDiagram-v2
+    [*] --> PENDING: Payout Created
+
+    PENDING --> PROCESSING: Processing Started
+    PENDING --> CANCELLED: Manual Cancel
+
+    PROCESSING --> COMPLETED: Gateway Success
+    PROCESSING --> FAILED: Gateway Error
+
+    FAILED --> PENDING: Retry Scheduled
+    FAILED --> CANCELLED: Max Retries / Manual Cancel
+
+    COMPLETED --> [*]
+    CANCELLED --> [*]
+
+    note right of PENDING: Idempotent creation
+    note right of PROCESSING: Max 2 min timeout
+    note right of FAILED: Up to 5 retries
 ```
 
 ### 4. order_payout_mapping
@@ -288,11 +329,23 @@ CREATE INDEX idx_mapping_seller ON order_payout_mapping(seller_id, created_at DE
 | created_at | TIMESTAMP | When record was created |
 
 **Mapping Status Transitions**:
-```
-ORDER_COMPLETED → PENDING (in settlement window)
-SETTLEMENT_WINDOW_PASSED → SETTLED (available for payout)
-ORDER_CANCELLED → CANCELLED
-PAYOUT_COMPLETED → PAID (linked to payout_id)
+
+```mermaid
+stateDiagram-v2
+    [*] --> PENDING: Order Completed
+
+    PENDING --> SETTLED: Settlement Window Passed (7 days)
+    PENDING --> CANCELLED: Order Cancelled
+
+    SETTLED --> PAID: Payout Completed
+    SETTLED --> CANCELLED: Late Cancellation
+
+    PAID --> [*]
+    CANCELLED --> [*]
+
+    note right of PENDING: In settlement window
+    note right of SETTLED: Ready for payout
+    note right of PAID: Linked to payout_id
 ```
 
 ### 5. audit_log
@@ -407,6 +460,7 @@ CREATE TRIGGER audit_log_immutable
 ## Database Configuration
 
 ### Connection Pool Settings
+
 ```yaml
 datasource:
   hikari:
@@ -445,25 +499,48 @@ CREATE TABLE payout_record (
 ```
 
 ### Replication Setup
-```
-Primary (writes) ──► Sync Replica (failover)
-                 └─► Async Replica (reads for Status API)
-                 └─► Async Replica (analytics/reporting)
+
+```mermaid
+flowchart LR
+    subgraph Primary [Primary Region]
+        PG1[(PostgreSQL Primary)]
+        App1[Application]
+    end
+
+    subgraph Failover [Failover]
+        PG2[(Sync Replica)]
+    end
+
+    subgraph ReadReplicas [Read Replicas]
+        PG3[(Async Replica - API)]
+        PG4[(Async Replica - Analytics)]
+    end
+
+    subgraph Backup [Backup]
+        S3[S3 Backup]
+    end
+
+    App1 -->|Writes| PG1
+    PG1 -->|Sync| PG2
+    PG1 -->|Async| PG3
+    PG1 -->|Async| PG4
+    PG1 -->|WAL Archive| S3
 ```
 
 ## Data Retention Policy
 
-| Table | Retention | Archive Strategy |
-|-------|-----------|------------------|
-| seller_payout_preference | Indefinite | N/A |
-| seller_balance | Indefinite | N/A |
-| payout_record | 7 years | Move to cold storage after 2 years |
-| order_payout_mapping | 7 years | Move to cold storage after 2 years |
-| audit_log | 7 years | Archive to S3 after 1 year |
+| Table                    | Retention  | Archive Strategy                   |
+| ------------------------ | ---------- | ---------------------------------- |
+| seller_payout_preference | Indefinite | N/A                                |
+| seller_balance           | Indefinite | N/A                                |
+| payout_record            | 7 years    | Move to cold storage after 2 years |
+| order_payout_mapping     | 7 years    | Move to cold storage after 2 years |
+| audit_log                | 7 years    | Archive to S3 after 1 year         |
 
 ## Migration Scripts
 
 ### Initial Schema Creation
+
 ```sql
 -- Run in order:
 -- 1. Create ENUM types (if using PostgreSQL enums)
@@ -478,6 +555,7 @@ Primary (writes) ──► Sync Replica (failover)
 ```
 
 ### Rollback Strategy
+
 Each migration should have a corresponding rollback script. Example:
 
 ```sql
@@ -487,4 +565,3 @@ CREATE TABLE seller_balance (...);
 -- V1__create_seller_balance_rollback.sql
 DROP TABLE IF EXISTS seller_balance;
 ```
-

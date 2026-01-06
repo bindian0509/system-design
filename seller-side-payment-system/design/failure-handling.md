@@ -2,13 +2,39 @@
 
 This document covers failure scenarios, recovery strategies, and resilience patterns for the Seller-Side Payment System.
 
-## Failure Categories
+## Failure Categories Overview
 
-| Category | Examples | Impact | Recovery |
-|----------|----------|--------|----------|
-| **Transient** | Network timeout, temporary gateway unavailable | Low | Automatic retry |
-| **Recoverable** | Invalid payment details, insufficient funds | Medium | User action required |
-| **Fatal** | Data corruption, security breach | Critical | Manual intervention |
+```mermaid
+flowchart TD
+    Failure[Failure Detected] --> Classify{Classify Failure}
+
+    Classify -->|Transient| Transient[Transient Failure]
+    Classify -->|Recoverable| Recoverable[Recoverable Failure]
+    Classify -->|Fatal| Fatal[Fatal Failure]
+
+    Transient --> Retry[Automatic Retry]
+    Retry --> Success{Success?}
+    Success -->|Yes| Complete[Complete]
+    Success -->|No| MaxRetries{Max Retries?}
+    MaxRetries -->|No| Retry
+    MaxRetries -->|Yes| DLQ[Dead Letter Queue]
+
+    Recoverable --> NotifySeller[Notify Seller]
+    NotifySeller --> WaitAction[Wait for Action]
+    WaitAction --> Resolved{Resolved?}
+    Resolved -->|Yes| Retry
+    Resolved -->|No| Rollover[Rollover to Next Cycle]
+
+    Fatal --> Alert[Alert Operations]
+    Alert --> Manual[Manual Intervention]
+    Manual --> Investigate[Root Cause Analysis]
+```
+
+| Category        | Examples                                       | Impact   | Recovery             |
+| --------------- | ---------------------------------------------- | -------- | -------------------- |
+| **Transient**   | Network timeout, temporary gateway unavailable | Low      | Automatic retry      |
+| **Recoverable** | Invalid payment details, insufficient funds    | Medium   | User action required |
+| **Fatal**       | Data corruption, security breach               | Critical | Manual intervention  |
 
 ---
 
@@ -19,39 +45,69 @@ This document covers failure scenarios, recovery strategies, and resilience patt
 When the third-party payment gateway is down or unreachable.
 
 **Detection**:
+
 - Connection timeout (> 5 seconds)
 - HTTP 5xx responses
 - Circuit breaker trips
 
 **Recovery Strategy**:
 
+```mermaid
+flowchart TD
+    Start([Gateway Call]) --> Call[Call Payment Gateway]
+
+    Call --> Result{Result?}
+
+    Result -->|Success| Complete[Payment Complete]
+    Result -->|Timeout/Error| CheckCircuit{Circuit Breaker State?}
+
+    CheckCircuit -->|OPEN| Blocked[Request Blocked]
+    Blocked --> WaitRecovery[Wait for Recovery]
+    WaitRecovery --> HalfOpen[Try Half-Open]
+
+    CheckCircuit -->|CLOSED/HALF_OPEN| IncrementFailure[Increment Failure Count]
+    IncrementFailure --> CheckThreshold{Threshold Reached?}
+
+    CheckThreshold -->|Yes| OpenCircuit[Open Circuit Breaker]
+    CheckThreshold -->|No| Retry{Retry Count < Max?}
+
+    Retry -->|Yes| Backoff[Exponential Backoff]
+    Backoff --> Call
+
+    Retry -->|No| DLQ[Move to Dead Letter Queue]
+    DLQ --> AlertOps[Alert Operations]
+
+    OpenCircuit --> DLQ
+
+    Complete --> CloseCircuit[Reset Circuit Breaker]
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    GATEWAY FAILURE HANDLING                      │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  1. RETRY with exponential backoff:                             │
-│     Attempt 1: wait 1 second                                    │
-│     Attempt 2: wait 2 seconds                                   │
-│     Attempt 3: wait 4 seconds                                   │
-│     Attempt 4: wait 8 seconds                                   │
-│     Attempt 5: wait 16 seconds                                  │
-│     Max attempts: 5                                             │
-│                                                                 │
-│  2. CIRCUIT BREAKER:                                            │
-│     After 3 consecutive failures → OPEN circuit                 │
-│     Wait 60 seconds → HALF-OPEN (try one request)              │
-│     Success → CLOSED, Failure → OPEN again                      │
-│                                                                 │
-│  3. DEAD LETTER QUEUE:                                          │
-│     After max retries → Move to DLQ                             │
-│     Alert operations team                                       │
-│     Manual review and retry                                     │
-│                                                                 │
-│  4. ROLLOVER:                                                   │
-│     Failed payouts automatically included in next cycle         │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
+
+**Retry with Exponential Backoff**:
+| Attempt | Wait Time | Cumulative |
+|---------|-----------|------------|
+| 1 | 1 second | 1s |
+| 2 | 2 seconds | 3s |
+| 3 | 4 seconds | 7s |
+| 4 | 8 seconds | 15s |
+| 5 | 16 seconds | 31s |
+
+**Circuit Breaker States**:
+
+```mermaid
+stateDiagram-v2
+    [*] --> CLOSED: Initial State
+
+    CLOSED --> CLOSED: Success
+    CLOSED --> OPEN: 3 consecutive failures
+
+    OPEN --> HALF_OPEN: 60s recovery timeout
+
+    HALF_OPEN --> CLOSED: Test request succeeds
+    HALF_OPEN --> OPEN: Test request fails
+
+    note right of CLOSED: Normal operation
+    note right of OPEN: All requests blocked
+    note right of HALF_OPEN: Single test request allowed
 ```
 
 **Implementation**:
@@ -113,15 +169,15 @@ def process_with_retry(payout, max_attempts=5):
 
 Handling specific error codes from the gateway:
 
-| Error Code | Meaning | Action |
-|------------|---------|--------|
-| `INVALID_ACCOUNT` | Bank account invalid | Mark FAILED, notify seller |
-| `INVALID_ROUTING` | Routing number invalid | Mark FAILED, notify seller |
-| `ACCOUNT_CLOSED` | Account no longer exists | Mark FAILED, notify seller |
-| `INSUFFICIENT_INFO` | Missing required fields | Mark FAILED, notify seller |
-| `RATE_LIMITED` | Too many requests | Retry with backoff |
-| `MAINTENANCE` | Scheduled downtime | Retry after window |
-| `INTERNAL_ERROR` | Gateway internal issue | Retry with backoff |
+| Error Code          | Meaning                  | Action                     |
+| ------------------- | ------------------------ | -------------------------- |
+| `INVALID_ACCOUNT`   | Bank account invalid     | Mark FAILED, notify seller |
+| `INVALID_ROUTING`   | Routing number invalid   | Mark FAILED, notify seller |
+| `ACCOUNT_CLOSED`    | Account no longer exists | Mark FAILED, notify seller |
+| `INSUFFICIENT_INFO` | Missing required fields  | Mark FAILED, notify seller |
+| `RATE_LIMITED`      | Too many requests        | Retry with backoff         |
+| `MAINTENANCE`       | Scheduled downtime       | Retry after window         |
+| `INTERNAL_ERROR`    | Gateway internal issue   | Retry with backoff         |
 
 ```python
 def handle_gateway_error(payout, error):
@@ -155,16 +211,52 @@ def handle_gateway_error(payout, error):
 
 ## Scheduled Job Failures
 
+### Job Failure Decision Tree
+
+```mermaid
+flowchart TD
+    JobIssue[Job Issue Detected] --> WhatFailed{What Failed?}
+
+    WhatFailed -->|Didn't Start| FailedStart[Job Failed to Start]
+    WhatFailed -->|Partial Progress| PartialFail[Failed After Some Records]
+    WhatFailed -->|Mid-Record| MidRecord[Failed Mid-Processing]
+    WhatFailed -->|DB Down| DBFail[Database Unavailable]
+
+    FailedStart --> CheckLeader{Leader Election}
+    CheckLeader --> StaleLock{Stale Lock?}
+    StaleLock -->|Yes| ForceRelease[Force Release Lock]
+    StaleLock -->|No| RestartPod[Restart Scheduler Pod]
+    ForceRelease --> RestartPod
+    RestartPod --> Verify[Verify New Leader]
+
+    PartialFail --> ResumeCheckpoint[Resume from Checkpoint]
+    ResumeCheckpoint --> SkipCompleted[Skip COMPLETED Records]
+    SkipCompleted --> Continue[Continue Processing]
+
+    MidRecord --> QueryGateway[Query Gateway for Status]
+    QueryGateway --> GatewayStatus{Gateway Status?}
+    GatewayStatus -->|COMPLETED| MarkComplete[Mark COMPLETED Locally]
+    GatewayStatus -->|FAILED| MarkFailed[Mark FAILED]
+    GatewayStatus -->|NOT_FOUND| ResetPending[Reset to PENDING]
+    GatewayStatus -->|UNKNOWN| ManualReview[Manual Review]
+
+    DBFail --> PauseProcessing[Pause All Processing]
+    PauseProcessing --> WaitDB[Wait for DB Recovery]
+    WaitDB --> ResumeProcessing[Resume Processing]
+```
+
 ### Job Fails to Start
 
 **Scenario**: The payout scheduler cron job doesn't trigger.
 
 **Prevention**:
+
 - Leader election with multiple scheduler instances
 - Heartbeat monitoring
 - External job scheduler (Airflow/Temporal) with built-in retries
 
 **Detection**:
+
 - Missing heartbeat alert (no ping for > 5 minutes)
 - No payouts created during expected window
 - Job execution lag metric
@@ -218,11 +310,13 @@ class PayoutSchedulerLeader:
 **Scenario**: Scheduler crashes after processing 50 of 1000 eligible sellers.
 
 **Prevention**:
+
 - Idempotent processing (check for existing PENDING/PROCESSING payouts)
 - Checkpoint progress to database
 - Process in small batches with commits
 
 **Recovery**:
+
 - On restart, query for eligible sellers without recent payouts
 - Skip sellers with PENDING/PROCESSING status
 - Resume from last checkpoint
@@ -267,6 +361,7 @@ def resume_from_checkpoint():
 **Scenario**: System crashes while calling payment gateway.
 
 **Detection**:
+
 - Payout stuck in PROCESSING state for > 10 minutes
 - Reconciliation job finds orphaned records
 
@@ -316,11 +411,13 @@ def reconcile_stuck_payouts():
 **Impact**: All writes blocked, system effectively down.
 
 **Prevention**:
+
 - Multi-AZ deployment with synchronous replica
 - Automatic failover (RDS Multi-AZ, Cloud SQL HA)
 - Connection pool health checks
 
 **Recovery**:
+
 - Automatic failover to replica (< 60 seconds)
 - Payment processor pauses and retries
 - Queue buffers incoming events
@@ -352,16 +449,19 @@ class DatabaseConnectionManager:
 ### Data Corruption
 
 **Prevention**:
+
 - Database constraints (CHECK, FOREIGN KEY)
 - Application-level validation
 - Immutable audit log for recovery
 
 **Detection**:
+
 - Balance mismatch (sum of order earnings ≠ total payouts + current balance)
 - Orphaned records
 - Checksum failures
 
 **Recovery**:
+
 ```sql
 -- Detect balance discrepancies
 SELECT
@@ -385,10 +485,12 @@ HAVING sb.available_balance + sb.pending_balance + sb.held_balance !=
 ### Event Consumer Lag
 
 **Detection**:
+
 - Consumer lag metric > threshold (e.g., 1000 messages)
 - Processing time increasing
 
 **Recovery**:
+
 - Scale up consumers
 - Increase batch size
 - Skip to latest (with data loss acknowledgment)
@@ -398,6 +500,7 @@ HAVING sb.available_balance + sb.pending_balance + sb.held_balance !=
 Messages that cause repeated processing failures.
 
 **Handling**:
+
 ```python
 def consume_with_dlq(message, max_attempts=3):
     attempts = message.headers.get('retry_count', 0)
@@ -426,11 +529,48 @@ def consume_with_dlq(message, max_attempts=3):
 
 ## Duplicate Prevention
 
+### Multi-Layer Protection Architecture
+
+```mermaid
+flowchart TB
+    Request([Payout Request]) --> Layer1
+
+    subgraph Layer1 [Layer 1: Idempotency Key]
+        IdempKey[Generate Idempotency Key]
+        IdempKey --> CheckKey{Key Exists?}
+        CheckKey -->|Yes| Return1[Return Existing Result]
+        CheckKey -->|No| Pass1[Pass to Layer 2]
+    end
+
+    subgraph Layer2 [Layer 2: Status Check]
+        Pass1 --> QueryDB[Query Existing Payouts]
+        QueryDB --> StatusCheck{PENDING/PROCESSING Exists?}
+        StatusCheck -->|Yes| Return2[Reject - In Progress]
+        StatusCheck -->|No| Pass2[Pass to Layer 3]
+    end
+
+    subgraph Layer3 [Layer 3: Distributed Lock]
+        Pass2 --> AcquireLock{Acquire Seller Lock}
+        AcquireLock -->|Failed| Return3[Reject - Locked]
+        AcquireLock -->|Success| Pass3[Pass to Layer 4]
+    end
+
+    subgraph Layer4 [Layer 4: Gateway Idempotency]
+        Pass3 --> CallGateway[Call Gateway with Reference ID]
+        CallGateway --> GatewayCheck{Gateway Dedup Check}
+        GatewayCheck -->|Duplicate| Return4[Return Existing TxnId]
+        GatewayCheck -->|New| Process[Process Payment]
+    end
+
+    Process --> Success([Payment Complete])
+```
+
 ### Duplicate Payment Detection
 
 Multiple layers of protection against duplicate payments:
 
 **Layer 1: Idempotency Key**
+
 ```python
 payout_id = f"PO-{date}-{seller_id}-{hash(period_start + period_end)}"
 
@@ -441,6 +581,7 @@ ON CONFLICT (payout_id) DO NOTHING;
 ```
 
 **Layer 2: Status Check**
+
 ```python
 def can_create_payout(seller_id: str) -> bool:
     existing = db.query("""
@@ -452,6 +593,7 @@ def can_create_payout(seller_id: str) -> bool:
 ```
 
 **Layer 3: Distributed Lock**
+
 ```python
 with redis_lock(f"payout:{seller_id}", timeout=120):
     if can_create_payout(seller_id):
@@ -459,6 +601,7 @@ with redis_lock(f"payout:{seller_id}", timeout=120):
 ```
 
 **Layer 4: Gateway Idempotency**
+
 ```python
 # Include payout_id as reference for gateway
 response = gateway.send_wire(
@@ -492,29 +635,29 @@ def process_order_event(event):
 
 ### Critical Alerts (P1 - Immediate Response)
 
-| Alert | Condition | Action |
-|-------|-----------|--------|
-| Payment Gateway Down | Circuit breaker OPEN | On-call page |
-| Database Unavailable | Connection failures > 3 | On-call page |
-| Payment Failure Rate High | > 10% in 15 minutes | On-call page |
-| DLQ Growing | > 50 messages | On-call page |
+| Alert                     | Condition               | Action       |
+| ------------------------- | ----------------------- | ------------ |
+| Payment Gateway Down      | Circuit breaker OPEN    | On-call page |
+| Database Unavailable      | Connection failures > 3 | On-call page |
+| Payment Failure Rate High | > 10% in 15 minutes     | On-call page |
+| DLQ Growing               | > 50 messages           | On-call page |
 
 ### Warning Alerts (P2 - Response within 1 hour)
 
-| Alert | Condition | Action |
-|-------|-----------|--------|
-| Stuck Payouts | PROCESSING > 15 min | Slack notification |
-| Consumer Lag | > 5000 messages | Slack notification |
-| Gateway Latency High | p99 > 90 seconds | Slack notification |
-| Job Execution Delayed | > 30 min late | Slack notification |
+| Alert                 | Condition           | Action             |
+| --------------------- | ------------------- | ------------------ |
+| Stuck Payouts         | PROCESSING > 15 min | Slack notification |
+| Consumer Lag          | > 5000 messages     | Slack notification |
+| Gateway Latency High  | p99 > 90 seconds    | Slack notification |
+| Job Execution Delayed | > 30 min late       | Slack notification |
 
 ### Informational Alerts (P3 - Next business day)
 
-| Alert | Condition | Action |
-|-------|-----------|--------|
-| Balance Discrepancy | Detected in audit | Email to finance |
-| Manual Intervention Queue | > 10 items | Email to support |
-| Retry Rate High | > 5% of payouts | Email to engineering |
+| Alert                     | Condition         | Action               |
+| ------------------------- | ----------------- | -------------------- |
+| Balance Discrepancy       | Detected in audit | Email to finance     |
+| Manual Intervention Queue | > 10 items        | Email to support     |
+| Retry Rate High           | > 5% of payouts   | Email to engineering |
 
 ---
 
@@ -522,10 +665,10 @@ def process_order_event(event):
 
 ### RPO and RTO Targets
 
-| Metric | Target | Strategy |
-|--------|--------|----------|
-| RPO (Recovery Point Objective) | < 1 minute | Synchronous replication |
-| RTO (Recovery Time Objective) | < 5 minutes | Automated failover |
+| Metric                         | Target      | Strategy                |
+| ------------------------------ | ----------- | ----------------------- |
+| RPO (Recovery Point Objective) | < 1 minute  | Synchronous replication |
+| RTO (Recovery Time Objective)  | < 5 minutes | Automated failover      |
 
 ### Failover Procedure
 
@@ -540,15 +683,14 @@ def process_order_event(event):
 
 ### Backup Strategy
 
-| Data | Backup Frequency | Retention | Location |
-|------|------------------|-----------|----------|
-| Payment DB | Continuous (WAL) | 30 days | Cross-region S3 |
-| Audit Log | Daily snapshot | 7 years | Glacier |
-| Configuration | On change | 90 days | Git repository |
+| Data          | Backup Frequency | Retention | Location        |
+| ------------- | ---------------- | --------- | --------------- |
+| Payment DB    | Continuous (WAL) | 30 days   | Cross-region S3 |
+| Audit Log     | Daily snapshot   | 7 years   | Glacier         |
+| Configuration | On change        | 90 days   | Git repository  |
 
 ### Recovery Testing
 
 - Monthly: Failover drill to replica
 - Quarterly: Full restore from backup
 - Annually: Cross-region disaster recovery test
-

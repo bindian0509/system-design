@@ -4,15 +4,43 @@ This document details the end-to-end payment processing flows, from order comple
 
 ## High-Level Flow Overview
 
+```mermaid
+flowchart LR
+    subgraph Phase1 [Phase 1: Order Processing]
+        A[Order Completed] --> B[Balance Updated]
+    end
+
+    subgraph Phase2 [Phase 2: Settlement]
+        B --> C[Settlement Window]
+        C --> D[Available Balance]
+    end
+
+    subgraph Phase3 [Phase 3: Payout]
+        D --> E[Payout Scheduled]
+        E --> F[Gateway Payment]
+    end
+
+    subgraph Phase4 [Phase 4: Completion]
+        F --> G[Payment Confirmed]
+    end
 ```
-┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│   Order     │    │  Balance    │    │   Payout    │    │  Gateway    │
-│ Completed   │───▶│  Updated    │───▶│  Scheduled  │───▶│  Payment    │
-└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
-       │                  │                  │                  │
-       ▼                  ▼                  ▼                  ▼
-   Pending           Available           Processing        Completed
-   Balance           Balance             Status            Status
+
+### End-to-End Timeline
+
+```mermaid
+gantt
+    title Seller Payment Timeline
+    dateFormat  YYYY-MM-DD
+    section Order
+    Order Placed           :a1, 2026-01-01, 1d
+    section Settlement
+    Settlement Window      :a2, after a1, 7d
+    section Payout
+    Balance Available      :a3, after a2, 1d
+    Payout Scheduled       :a4, after a3, 1d
+    Gateway Processing     :a5, after a4, 1d
+    section Complete
+    Payment Confirmed      :milestone, after a5, 0d
 ```
 
 ## Flow 1: Order to Balance
@@ -21,45 +49,33 @@ When an order is completed, the seller's balance is credited.
 
 ### Sequence Diagram
 
-```
-┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐
-│  Order   │     │  Event   │     │ Balance  │     │ Payment  │     │  Audit   │
-│ Service  │     │  Queue   │     │ Service  │     │    DB    │     │   Log    │
-└────┬─────┘     └────┬─────┘     └────┬─────┘     └────┬─────┘     └────┬─────┘
-     │                │                │                │                │
-     │ Publish Event  │                │                │                │
-     │───────────────▶│                │                │                │
-     │                │                │                │                │
-     │                │ Consume Event  │                │                │
-     │                │───────────────▶│                │                │
-     │                │                │                │                │
-     │                │                │ Check Duplicate│                │
-     │                │                │───────────────▶│                │
-     │                │                │◀───────────────│                │
-     │                │                │                │                │
-     │                │                │  BEGIN TXN     │                │
-     │                │                │───────────────▶│                │
-     │                │                │                │                │
-     │                │                │ Update Balance │                │
-     │                │                │───────────────▶│                │
-     │                │                │                │                │
-     │                │                │ Create Mapping │                │
-     │                │                │───────────────▶│                │
-     │                │                │                │                │
-     │                │                │  COMMIT TXN    │                │
-     │                │                │───────────────▶│                │
-     │                │                │                │                │
-     │                │                │                │  Log Event    │
-     │                │                │                │───────────────▶│
-     │                │                │                │                │
-     │                │   ACK Event    │                │                │
-     │                │◀───────────────│                │                │
-     │                │                │                │                │
+```mermaid
+sequenceDiagram
+    participant OS as OrderService
+    participant MQ as Message Queue
+    participant BS as Balance Service
+    participant DB as Payment DB
+    participant AL as Audit Log
+
+    OS->>MQ: Publish ORDER_COMPLETED
+    MQ->>BS: Deliver event
+
+    BS->>DB: Check duplicate (order_id)
+    DB-->>BS: Not found
+
+    BS->>DB: BEGIN TRANSACTION
+    BS->>DB: UPDATE seller_balance (pending +amount)
+    BS->>DB: INSERT order_payout_mapping
+    BS->>DB: COMMIT
+
+    BS->>AL: Log BALANCE_CREDITED
+    BS-->>MQ: ACK event
 ```
 
 ### Processing Steps
 
 **Step 1: Event Publication (OrderService)**
+
 ```json
 {
   "eventId": "EVT-20260106-001",
@@ -69,7 +85,7 @@ When an order is completed, the seller's balance is credited.
     {
       "productId": "P789",
       "sellerId": "S001",
-      "sellerPrice": 45.00,
+      "sellerPrice": 45.0,
       "quantity": 2
     }
   ],
@@ -78,6 +94,7 @@ When an order is completed, the seller's balance is credited.
 ```
 
 **Step 2: Idempotency Check**
+
 ```sql
 -- Check if order already processed for this seller
 SELECT 1 FROM order_payout_mapping
@@ -87,6 +104,7 @@ WHERE order_id = 'ORD-123' AND seller_id = 'S001';
 ```
 
 **Step 3: Calculate Seller Amount**
+
 ```
 For each product in order:
   seller_amount = sellerPrice × quantity
@@ -95,6 +113,7 @@ Total for S001 = 45.00 × 2 = 90.00
 ```
 
 **Step 4: Update Balance (Atomic Transaction)**
+
 ```sql
 BEGIN TRANSACTION;
 
@@ -115,14 +134,15 @@ COMMIT;
 ```
 
 **Step 5: Audit Log**
+
 ```json
 {
   "auditId": "AUD-20260106-001",
   "eventType": "BALANCE_CREDITED",
   "sellerId": "S001",
-  "previousState": {"pending_balance": 250.00},
-  "newState": {"pending_balance": 340.00},
-  "metadata": {"order_id": "ORD-123", "amount": 90.00}
+  "previousState": { "pending_balance": 250.0 },
+  "newState": { "pending_balance": 340.0 },
+  "metadata": { "order_id": "ORD-123", "amount": 90.0 }
 }
 ```
 
@@ -134,10 +154,39 @@ Orders go through a settlement window before becoming available for payout.
 
 ### Settlement Window Process
 
+```mermaid
+flowchart LR
+    subgraph Day0 [Day 0]
+        A[Order Completed] --> B[Add to Pending]
+    end
+
+    subgraph Days1to6 [Days 1-6: Settlement Window]
+        B --> C{Cancellation?}
+        C -->|Yes| D[Refund & Reverse]
+        C -->|No| E[Continue Waiting]
+    end
+
+    subgraph Day7 [Day 7+]
+        E --> F[Move to Available]
+        F --> G[Ready for Payout]
+    end
+
+    D --> H[End - Cancelled]
 ```
-Day 0: Order completed → pending_balance += amount
-Day 1-6: Settlement window (cancellation possible)
-Day 7: Settlement complete → available_balance += amount, pending_balance -= amount
+
+### Settlement Timeline
+
+```mermaid
+gantt
+    title Order Settlement Timeline
+    dateFormat  YYYY-MM-DD
+    section Balance States
+    Pending Balance    :active, p1, 2026-01-01, 7d
+    Available Balance  :a1, after p1, 7d
+    section Actions
+    Order Completed    :milestone, m1, 2026-01-01, 0d
+    Settlement Complete:milestone, m2, 2026-01-08, 0d
+    Payout Eligible    :milestone, m3, 2026-01-08, 0d
 ```
 
 ### Scheduled Job: Settlement Processor
@@ -177,31 +226,57 @@ The scheduler determines which sellers are eligible for payout.
 
 ### Eligibility Determination
 
+```mermaid
+flowchart TD
+    Start([Scheduler Triggered]) --> GetSchedule{Get Payout Schedule}
+
+    GetSchedule -->|DAILY| DailyCheck{Time == 22:00?}
+    GetSchedule -->|WEEKLY| WeeklyCheck{Day == Preferred?}
+    GetSchedule -->|THRESHOLD| ThresholdCheck{Balance >= Threshold?}
+    GetSchedule -->|ON_DEMAND| DemandCheck{Request Exists?}
+
+    DailyCheck -->|Yes| BalanceCheck1{Available > 0?}
+    DailyCheck -->|No| NotEligible1[Not Eligible]
+
+    WeeklyCheck -->|Yes| TimeCheck{Time == 22:00?}
+    WeeklyCheck -->|No| NotEligible2[Not Eligible]
+    TimeCheck -->|Yes| BalanceCheck2{Available > 0?}
+    TimeCheck -->|No| NotEligible3[Not Eligible]
+
+    ThresholdCheck -->|Yes| Eligible3[Eligible]
+    ThresholdCheck -->|No| NotEligible4[Not Eligible]
+
+    DemandCheck -->|Yes| BalanceCheck4{Available > 0?}
+    DemandCheck -->|No| NotEligible5[Not Eligible]
+
+    BalanceCheck1 -->|Yes| Eligible1[Eligible]
+    BalanceCheck1 -->|No| NotEligible6[Not Eligible]
+
+    BalanceCheck2 -->|Yes| Eligible2[Eligible]
+    BalanceCheck2 -->|No| NotEligible7[Not Eligible]
+
+    BalanceCheck4 -->|Yes| Eligible4[Eligible]
+    BalanceCheck4 -->|No| NotEligible8[Not Eligible]
+
+    Eligible1 --> CreatePayout[Create Payout Record]
+    Eligible2 --> CreatePayout
+    Eligible3 --> CreatePayout
+    Eligible4 --> CreatePayout
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    PAYOUT ELIGIBILITY CHECK                      │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  DAILY Schedule:                                                │
-│    eligible = (current_time == 22:00) AND (available > 0)       │
-│                                                                 │
-│  WEEKLY Schedule:                                               │
-│    eligible = (day_of_week == preferred_day)                    │
-│               AND (current_time == 22:00)                       │
-│               AND (available > 0)                               │
-│                                                                 │
-│  THRESHOLD Schedule:                                            │
-│    eligible = (available >= threshold_amount)                   │
-│                                                                 │
-│  ON_DEMAND Schedule:                                            │
-│    eligible = (payout_request_exists) AND (available > 0)       │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
+
+**Eligibility Rules Summary**:
+
+| Schedule  | Trigger Condition                      | Balance Requirement            |
+| --------- | -------------------------------------- | ------------------------------ |
+| DAILY     | Time == 22:00                          | available_balance > 0          |
+| WEEKLY    | Day == preferred_day AND Time == 22:00 | available_balance > 0          |
+| THRESHOLD | Every 15 minutes                       | available_balance >= threshold |
+| ON_DEMAND | Seller request received                | available_balance > 0          |
 
 ### Scheduler Query Examples
 
 **Daily Payout (runs at 22:00)**:
+
 ```sql
 SELECT sb.seller_id, sb.available_balance, spp.payment_method
 FROM seller_balance sb
@@ -216,6 +291,7 @@ WHERE spp.payout_schedule = 'DAILY'
 ```
 
 **Weekly Payout (runs at 22:00 on configured day)**:
+
 ```sql
 SELECT sb.seller_id, sb.available_balance, spp.payment_method
 FROM seller_balance sb
@@ -226,6 +302,7 @@ WHERE spp.payout_schedule = 'WEEKLY'
 ```
 
 **Threshold Payout (runs every 15 minutes)**:
+
 ```sql
 SELECT sb.seller_id, sb.available_balance, spp.payment_method, spp.threshold_amount
 FROM seller_balance sb
@@ -395,11 +472,11 @@ Handling order cancellations within the settlement window.
 
 ### Cancellation Scenarios
 
-| Scenario | Action |
-|----------|--------|
-| Order in PENDING state | Deduct from pending_balance |
-| Order already SETTLED | Deduct from available_balance |
-| Order already PAID | Clawback from next payout |
+| Scenario               | Action                        |
+| ---------------------- | ----------------------------- |
+| Order in PENDING state | Deduct from pending_balance   |
+| Order already SETTLED  | Deduct from available_balance |
+| Order already PAID     | Clawback from next payout     |
 
 ### Cancellation Flow
 
@@ -664,4 +741,3 @@ gateway_pool = ConnectionPool(
     retry_on_timeout=True
 )
 ```
-
