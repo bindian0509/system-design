@@ -1,0 +1,15 @@
+Problem,Difficulty,Status,Key Patterns,Time to Solve,Notes,Last Practiced
+LRU Cache,Medium,Not Started,HashMap + Doubly Linked List,30 min,,
+Rate Limiter,Medium,Not Started,Token Bucket or Sliding Window,30 min,,
+Parking Lot,Medium,Not Started,Strategy Factory,45 min,,
+URL Shortener,Easy,Not Started,Factory,30 min,Base62 encoding,
+Notification Service,Medium,Not Started,Observer Strategy Factory,45 min,,
+Payment Gateway,Medium,Not Started,Strategy State,45 min,Idempotency,
+File System,Medium,Not Started,Composite,30 min,,
+Hotel Booking,Medium,Not Started,Strategy State,45 min,,
+Elevator System,Hard,Not Started,State Strategy,60 min,,
+Splitwise,Medium,Not Started,Strategy,45 min,Debt simplification,
+Task Scheduler,Medium,Not Started,Priority Queue Observer,45 min,,
+Chess Game,Hard,Not Started,Strategy State,60 min,,
+Snake and Ladder,Medium,Not Started,State,30 min,,
+
