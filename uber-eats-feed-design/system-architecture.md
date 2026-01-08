@@ -186,16 +186,20 @@ feed_service:
 
 ### 3. Geo Search Layer
 
-Provides spatial indexing and geo-queries using ElasticSearch.
+Provides spatial indexing using **H3 (Uber's hexagonal grid)** combined with ElasticSearch.
 
-**ElasticSearch Index Mapping:**
+**ElasticSearch Index Mapping (with H3):**
 ```json
 {
   "mappings": {
     "properties": {
       "restaurant_id": { "type": "keyword" },
       "location": { "type": "geo_point" },
-      "geohash": { "type": "keyword" },
+      "h3_res6": { "type": "keyword" },
+      "h3_res7": { "type": "keyword" },
+      "h3_res8": { "type": "keyword" },
+      "h3_res9": { "type": "keyword" },
+      "h3_delivery_cells": { "type": "keyword" },
       "delivery_radius_km": { "type": "float" },
       "cuisine_types": { "type": "keyword" },
       "price_range": { "type": "integer" },
@@ -210,11 +214,11 @@ Provides spatial indexing and geo-queries using ElasticSearch.
 }
 ```
 
-**How ElasticSearch geo_point Works:**
-1. Coordinates stored as encoded geohash internally
-2. BKD-tree index for efficient range queries
-3. `geo_distance` query computes haversine distance
-4. Results filtered by radius, then scored
+**How H3 + ElasticSearch Works:**
+1. User location converted to H3 cell at appropriate resolution
+2. K-ring query gets all cells within delivery radius
+3. ElasticSearch filters by H3 cell terms (very fast)
+4. `geo_distance` refines for exact radius accuracy
 
 ### 4. Ranking Layer
 
@@ -320,7 +324,7 @@ sequenceDiagram
 | Layer | Technology | Justification |
 |-------|------------|---------------|
 | **API Gateway** | Kong | Plugin ecosystem, rate limiting, observability |
-| **Geo Search** | ElasticSearch | Native geo_point, BKD-tree index, horizontal scaling |
+| **Geo Search** | ElasticSearch + H3 | H3 hexagonal indexing, geo_point for precision, horizontal scaling |
 | **Cache** | Redis Cluster | Sub-ms latency, geo commands, pub/sub for invalidation |
 | **Primary DB** | PostgreSQL | ACID compliance, PostGIS for complex geo queries |
 | **ML Serving** | TensorFlow Serving | Low-latency inference, model versioning |

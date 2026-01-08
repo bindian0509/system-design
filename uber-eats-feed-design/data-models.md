@@ -12,7 +12,7 @@ erDiagram
     RESTAURANT ||--o{ RESTAURANT_TAG : has
     MENU_CATEGORY ||--o{ MENU_ITEM : contains
     RESTAURANT ||--|| RESTAURANT_STATE : has
-    RESTAURANT ||--|| GEO_INDEX_ENTRY : indexed_as
+    RESTAURANT ||--|| H3_INDEX_ENTRY : indexed_as
 
     RESTAURANT {
         string id PK
@@ -26,6 +26,18 @@ erDiagram
         boolean is_active
         timestamp created_at
         timestamp updated_at
+    }
+
+    H3_INDEX_ENTRY {
+        string restaurant_id PK
+        point location
+        string h3_res6
+        string h3_res7
+        string h3_res8
+        string h3_res9
+        array h3_delivery_cells
+        float delivery_radius_km
+        boolean is_active
     }
 
     DELIVERY_ZONE {
@@ -47,14 +59,6 @@ erDiagram
         timestamp last_updated
     }
 
-    GEO_INDEX_ENTRY {
-        string restaurant_id PK
-        point location
-        string geohash_6
-        string geohash_7
-        float delivery_radius_km
-        boolean is_active
-    }
 ```
 
 ---
@@ -278,24 +282,26 @@ HGETALL restaurant:state:rest_abc123
 # updated_at: "2026-01-08T14:30:00Z"
 ```
 
-### 2. Geo Cache
+### 2. Geo Cache (H3-based)
 
-Caches restaurant IDs by geohash cell.
+Caches restaurant IDs by H3 cell.
 
 ```
-Key Pattern: geo:cell:{geohash}:{radius_bucket}
+Key Pattern: h3:cell:{h3_index}
 Type: Set
 TTL: 60 seconds
 
-Value: Set of restaurant IDs that can deliver to this cell
+Value: Set of restaurant IDs in this H3 cell
 ```
 
 **Example:**
 ```redis
-SMEMBERS geo:cell:dr5ru7:5km
+SMEMBERS h3:cell:8928308280fffff
 # Returns: ["rest_abc123", "rest_def456", "rest_ghi789", ...]
 
-# Radius buckets: 1km, 3km, 5km, 10km, 15km
+# Also cache delivery coverage:
+SMEMBERS h3:coverage:rest_abc123:8
+# Returns: ["8928308280fffff", "8928308281fffff", ...] (cells restaurant delivers to)
 ```
 
 ### 3. Feed Result Cache
@@ -331,9 +337,9 @@ Fields:
 
 ## ElasticSearch Index Schema
 
-### Restaurant Geo Index
+### Restaurant Geo Index (H3-based)
 
-Primary index for geo-spatial queries.
+Primary index for geo-spatial queries using H3 hexagonal indexing.
 
 ```json
 {
@@ -374,13 +380,26 @@ Primary index for geo-spatial queries.
       "location": {
         "type": "geo_point"
       },
-      "geohash_5": {
+      "h3_res6": {
+        "type": "keyword",
+        "doc_values": true
+      },
+      "h3_res7": {
+        "type": "keyword",
+        "doc_values": true
+      },
+      "h3_res8": {
+        "type": "keyword",
+        "doc_values": true
+      },
+      "h3_res9": {
+        "type": "keyword",
+        "doc_values": true
+      },
+      "h3_delivery_cells_res7": {
         "type": "keyword"
       },
-      "geohash_6": {
-        "type": "keyword"
-      },
-      "geohash_7": {
+      "h3_delivery_cells_res8": {
         "type": "keyword"
       },
       "delivery_radius_km": {
@@ -430,7 +449,7 @@ Primary index for geo-spatial queries.
 }
 ```
 
-### Sample Geo Query
+### Sample Geo Query (H3 + geo_distance)
 
 ```json
 {
@@ -441,6 +460,15 @@ Primary index for geo-spatial queries.
         { "term": { "accepting_orders": true } }
       ],
       "filter": [
+        {
+          "terms": {
+            "h3_res8": [
+              "8928308280fffff",
+              "8928308281fffff",
+              "8928308282fffff"
+            ]
+          }
+        },
         {
           "geo_distance": {
             "distance": "5km",
@@ -468,6 +496,11 @@ Primary index for geo-spatial queries.
   "size": 100
 }
 ```
+
+**Query Strategy:**
+1. H3 `terms` filter quickly narrows to ~100-300 candidate restaurants
+2. `geo_distance` provides exact radius filtering for accuracy
+3. This hybrid approach is 5-10x faster than geo_distance alone
 
 ---
 

@@ -207,7 +207,7 @@ sequenceDiagram
 
 ## 3. Geo Search Architecture
 
-### Geohash-Based Search Flow
+### H3 Hexagonal Search Flow
 
 ```mermaid
 flowchart TB
@@ -216,83 +216,106 @@ flowchart TB
         Radius["Radius: 5km"]
     end
 
-    subgraph HashCompute [Geohash Computation]
-        Encode[Encode to Geohash]
-        Precision[Select Precision<br/>based on density]
-        Neighbors[Compute 8 Neighbors]
+    subgraph H3Compute [H3 Computation]
+        Resolution[Select Resolution<br/>based on density]
+        Cell[Compute H3 Cell<br/>8928308280fffff]
+        KRing[Compute K-Ring<br/>k=11 for 5km at res 8]
     end
 
-    subgraph Cells [Geohash Cells to Query]
-        Center["dr5ru7 (center)"]
-        N["dr5rum (N)"]
-        S["dr5ru5 (S)"]
-        E["dr5ruk (E)"]
-        W["dr5ruh (W)"]
-        NE["dr5run (NE)"]
-        NW["dr5rug (NW)"]
-        SE["dr5ruj (SE)"]
-        SW["dr5ru4 (SW)"]
+    subgraph Cells [H3 Cells to Query]
+        Center["Center Cell"]
+        Ring1["K=1 Ring<br/>6 cells"]
+        Ring2["K=2 Ring<br/>12 cells"]
+        RingN["K=N Rings<br/>~270 cells total"]
     end
 
     subgraph Cache [Cache Layer]
-        Redis[(Redis Geo Cache)]
+        Redis[(Redis H3 Cache)]
     end
 
     subgraph Search [Search Layer]
-        ES[(ElasticSearch)]
+        ES[(ElasticSearch<br/>H3 terms + geo_distance)]
     end
 
     subgraph Filter [Post-Processing]
-        Dedup[Deduplicate]
-        DistCalc[Calculate Exact Distance]
-        RadiusFilter[Filter by Radius]
+        Merge[Merge Results]
+        DistCalc[Exact Distance Filter]
+        Output[Final Results]
     end
 
-    Loc --> Encode
-    Radius --> Precision
-    Encode --> Precision --> Neighbors
+    Loc --> Resolution --> Cell --> KRing
+    Radius --> KRing
 
-    Neighbors --> Center & N & S & E & W & NE & NW & SE & SW
+    KRing --> Center & Ring1 & Ring2 & RingN
 
     Center --> Redis
-    N & S & E & W --> Redis
-    NE & NW & SE & SW --> Redis
+    Ring1 & Ring2 & RingN --> Redis
 
     Redis -->|Miss| ES
     ES --> Redis
-    Redis --> Dedup
+    Redis --> Merge
 
-    Dedup --> DistCalc --> RadiusFilter
+    Merge --> DistCalc --> Output
 ```
 
-### Geohash Grid Visualization
+### H3 Hexagonal Grid Visualization
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           GEOHASH GRID (Precision 6)                         │
+│                      H3 HEXAGONAL GRID (Resolution 8)                        │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
-│     ┌───────────────┬───────────────┬───────────────┐                       │
-│     │               │               │               │                       │
-│     │   dr5rug      │   dr5rum      │   dr5run      │                       │
-│     │   (NW)        │   (N)         │   (NE)        │                       │
-│     │               │               │               │                       │
-│     ├───────────────┼───────────────┼───────────────┤                       │
-│     │               │               │               │                       │
-│     │   dr5ruh      │   dr5ru7  ●   │   dr5ruk      │  ● = User location    │
-│     │   (W)         │   (CENTER)    │   (E)         │                       │
-│     │               │               │               │                       │
-│     ├───────────────┼───────────────┼───────────────┤                       │
-│     │               │               │               │                       │
-│     │   dr5ru4      │   dr5ru5      │   dr5ruj      │                       │
-│     │   (SW)        │   (S)         │   (SE)        │                       │
-│     │               │               │               │                       │
-│     └───────────────┴───────────────┴───────────────┘                       │
+│                          ╱╲     ╱╲     ╱╲                                   │
+│                        ╱    ╲ ╱    ╲ ╱    ╲                                 │
+│                       │  k=2 │  k=2 │  k=2 │                                │
+│                        ╲    ╱ ╲    ╱ ╲    ╱                                 │
+│                    ╱╲   ╲╱     ╲╱     ╲╱   ╱╲                               │
+│                  ╱    ╲ ╱╲     ╱╲     ╱╲ ╱    ╲                             │
+│                 │  k=2 │  k=1 │  k=1 │  k=1 │  k=2 │                        │
+│                  ╲    ╱ ╲    ╱ ╲    ╱ ╲    ╱ ╲    ╱                         │
+│                    ╲╱     ╲╱     ╲╱     ╲╱     ╲╱                           │
+│                  ╱    ╲ ╱    ╲ ╱    ╲ ╱    ╲ ╱    ╲                         │
+│                 │  k=2 │  k=1 │  ●   │  k=1 │  k=2 │  ● = User              │
+│                  ╲    ╱ ╲    ╱ ╲ k=0╱ ╲    ╱ ╲    ╱                         │
+│                    ╲╱     ╲╱     ╲╱     ╲╱     ╲╱                           │
+│                  ╱    ╲ ╱    ╲ ╱    ╲ ╱    ╲ ╱    ╲                         │
+│                 │  k=2 │  k=1 │  k=1 │  k=1 │  k=2 │                        │
+│                  ╲    ╱ ╲    ╱ ╲    ╱ ╲    ╱ ╲    ╱                         │
+│                    ╲╱     ╲╱     ╲╱     ╲╱     ╲╱                           │
+│                        ╲    ╱ ╲    ╱ ╲    ╱                                 │
+│                         │  k=2 │  k=2 │  k=2 │                              │
+│                          ╲    ╱ ╲    ╱ ╲    ╱                               │
+│                            ╲╱     ╲╱     ╲╱                                 │
 │                                                                              │
-│     Each cell: ~1.2km × 0.6km at this precision                             │
-│     Query radius: 5km → Must check all 9 cells                              │
+│     Key Advantage: All 6 neighbors are EQUIDISTANT from center!             │
+│     Each cell: ~461m edge at resolution 8                                   │
+│     K-ring(k=11) covers ~5km radius with ~270 cells                         │
 │                                                                              │
 └─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Why H3 Over Geohash
+
+```
+┌────────────────────────────────┬────────────────────────────────┐
+│       GEOHASH (Rectangles)     │         H3 (Hexagons)          │
+├────────────────────────────────┼────────────────────────────────┤
+│                                │                                │
+│   ┌───┬───┬───┐                │       ╱╲     ╱╲     ╱╲        │
+│   │   │   │   │     5km        │     ╱    ╲ ╱    ╲ ╱    ╲      │
+│   ├───┼───┼───┤    radius      │    │      │      │      │      │
+│   │   │ ● │   │      ↓         │     ╲    ╱ ╲  ● ╱ ╲    ╱      │
+│   ├───┼───┼───┤   ┌─────┐      │       ╲╱     ╲╱     ╲╱        │
+│   │   │   │   │   │ ○   │      │     ╱    ╲ ╱    ╲ ╱    ╲      │
+│   └───┴───┴───┘   └─────┘      │    │      │      │      │      │
+│                                │     ╲    ╱ ╲    ╱ ╲    ╱      │
+│   ✗ Corner distance ≠ edge    │       ╲╱     ╲╱     ╲╱        │
+│   ✗ Poor circular fit          │                                │
+│   ✗ 8 neighbors (uneven)       │   ✓ All 6 neighbors equal     │
+│                                │   ✓ Better circular fit        │
+│                                │   ✓ Native k-ring queries      │
+│                                │   ✓ Uber's battle-tested tech  │
+└────────────────────────────────┴────────────────────────────────┘
 ```
 
 ---

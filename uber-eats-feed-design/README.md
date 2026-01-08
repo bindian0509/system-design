@@ -104,24 +104,25 @@ sequenceDiagram
 
 ## Key Design Decisions
 
-### 1. Spatial Indexing: Geohashing with Adaptive Precision
+### 1. Spatial Indexing: H3 Hexagonal Grid (Uber's Technology)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  Geohash Precision Selection                                 │
+│  H3 Resolution Selection                                     │
 ├─────────────────────────────────────────────────────────────┤
-│  Precision 5: ~4.9km × 4.9km  → Rural areas                 │
-│  Precision 6: ~1.2km × 0.6km  → Suburban areas              │
-│  Precision 7: ~153m × 153m    → Urban areas (Manhattan)     │
-│  Precision 8: ~38m × 19m      → Hyper-dense zones           │
+│  Resolution 6:  ~3.2km edge  → Rural areas                  │
+│  Resolution 7:  ~1.2km edge  → Suburban areas               │
+│  Resolution 8:  ~461m edge   → Urban areas                  │
+│  Resolution 9:  ~174m edge   → Hyper-dense (Manhattan)      │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-**Why Geohashing over K-d Trees:**
-- O(1) lookup vs O(log n) for K-d trees
-- Natural sharding via geohash prefix
-- Easy neighbor computation (8 adjacent cells)
-- Pre-computable offline
+**Why H3 (developed by Uber):**
+- Hexagons better approximate circular delivery radii
+- All 6 neighbors equidistant (no corner artifacts like geohash)
+- Native k-ring queries for radius search
+- Battle-tested at Uber scale for ETAs and dispatch
+- Geohashing kept as fallback for ElasticSearch native queries
 
 ### 2. Hybrid Sharding Strategy
 
@@ -149,7 +150,7 @@ sequenceDiagram
 1. [System Architecture](./system-architecture.md) - Component design, data flow, technology choices
 2. [API Contracts](./api-contracts.md) - RESTful endpoints, pagination, error handling
 3. [Data Models](./data-models.md) - Restaurant, geolocation, delivery zone schemas
-4. [Spatial Indexing](./spatial-indexing.md) - Geohashing mechanics, K-d tree comparison
+4. [Spatial Indexing](./spatial-indexing.md) - H3 hexagonal indexing (primary), Geohashing (alternative)
 5. [Ranking System](./ranking-system.md) - Scoring factors, ML integration
 6. [Scaling & Sharding](./scaling-sharding.md) - Hotspot handling, capacity planning
 7. [Dynamic Filtering](./dynamic-filtering.md) - Real-time availability, geo-restrictions
@@ -170,7 +171,7 @@ sequenceDiagram
 ## Quick Links
 
 - [API Endpoint Reference](./api-contracts.md#api-endpoints)
-- [Geohash Deep Dive](./spatial-indexing.md#geohashing)
+- [H3 Indexing Deep Dive](./spatial-indexing.md#h3-primary-approach-recommended)
 - [Ranking Formula](./ranking-system.md#scoring-algorithm)
 - [Hotspot Mitigation](./scaling-sharding.md#hotspot-handling)
 
