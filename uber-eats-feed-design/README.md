@@ -148,13 +148,14 @@ sequenceDiagram
 ## Documentation Structure
 
 1. [System Architecture](./system-architecture.md) - Component design, data flow, technology choices
-2. [API Contracts](./api-contracts.md) - RESTful endpoints, pagination, error handling
-3. [Data Models](./data-models.md) - Restaurant, geolocation, delivery zone schemas
-4. [Spatial Indexing](./spatial-indexing.md) - H3 hexagonal indexing (primary), Geohashing (alternative)
-5. [Ranking System](./ranking-system.md) - Scoring factors, ML integration
-6. [Scaling & Sharding](./scaling-sharding.md) - Hotspot handling, capacity planning
-7. [Dynamic Filtering](./dynamic-filtering.md) - Real-time availability, geo-restrictions
-8. [Architecture Diagrams](./diagrams/architecture-diagrams.md) - Visual representations
+2. [Data Flow](./data-flow.md) - Complete data flow diagrams, events, scheduled jobs
+3. [API Contracts](./api-contracts.md) - RESTful endpoints, pagination, error handling
+4. [Data Models](./data-models.md) - Restaurant, geolocation, delivery zone schemas
+5. [Spatial Indexing](./spatial-indexing.md) - H3 hexagonal indexing (primary), Geohashing (alternative)
+6. [Ranking System](./ranking-system.md) - Scoring factors, ML integration
+7. [Scaling & Sharding](./scaling-sharding.md) - Hotspot handling, capacity planning
+8. [Dynamic Filtering](./dynamic-filtering.md) - Real-time availability, geo-restrictions
+9. [Architecture Diagrams](./diagrams/architecture-diagrams.md) - Visual representations
 
 ## Technology Stack
 
@@ -172,6 +173,9 @@ sequenceDiagram
 
 - [API Endpoint Reference](./api-contracts.md#api-endpoints)
 - [H3 Indexing Deep Dive](./spatial-indexing.md#h3-primary-approach-recommended)
+- [Data Flow Diagrams](./data-flow.md#1-system-overview-complete-data-flow)
+- [Kafka Event Schema](./data-flow.md#event-schema-examples)
+- [Scheduled Jobs](./data-flow.md#5-scheduled-jobs)
 - [Ranking Formula](./ranking-system.md#scoring-algorithm)
 - [Hotspot Mitigation](./scaling-sharding.md#hotspot-handling)
 
