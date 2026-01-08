@@ -8,12 +8,26 @@
 ## My Management Philosophy - Executive Summary
 
 ```
-[Write a 2-3 sentence summary of your philosophy]
+My management philosophy is shaped by my 15-year journey from writing code to architecting distributed systems, 
+and now leading large engineering organizations. 
+I define my leadership style as 'Servant Leadership anchored in Technical & Operational Excellence.
 
-Example:
-"I believe great engineering teams are built on trust, clarity, and ownership.
-My role as a manager is to remove obstacles, provide context, and create an
-environment where engineers can do their best work while growing in their careers."
+Practically, this manifests in three ways:
+
+1. I Bridge Strategy and Architecture: Having been an Architect, I know that bad system design kills team morale. 
+I stay close to the technical strategy—not to dictate code, but to ensure we are solving the right problems. 
+
+2. I cultivate an 'Owner Mindset' regarding Costs and Reliability: I teach my teams that we are business owners. 
+We don't just ship features; we own the P&L of our services. 
+I believe senior engineers must understand the cost of the queries they write.
+
+3. I Build Resilient Teams via Process: Finally, I believe burnout is a failure of management, 
+usually caused by lack of process. My focus on SRE and Observability ensures that the system is reliable. 
+When the system is stable, the team has the mental space to innovate and grow.
+
+In summary, I clear the roadblocks—whether they are technical debt or organizational ambiguity—so 
+my teams can deliver high-scale value."
+
 ```
 
 ---
@@ -31,7 +45,40 @@ environment where engineers can do their best work while growing in their career
 
 **Example from Razorpay**:
 ```
-[Fill in a specific example]
+1. The "Blameless" Incident Review (SRE Focus)
+
+When production breaks, you hunt for the system flaw, not the person to blame.
+
+In a high-stakes environment like Razorpay, if a deployment takes down a payment gateway, 
+my first reaction isn't 'Who pushed this?' but 'Why did our CI/CD pipeline allow this to pass?
+
+2. Safety to Challenge the "Architect" (Leadership Focus)
+
+Junior engineers must feel safe disagreeing with you, even though you have 15+ years of experience and were an Architect.
+
+Because I transitioned from a hands-on Architect to a Director, I know my technical opinion carries heavy weight. 
+I actively create safety by 'mining for conflict.
+
+3. Safety in "Bad News First" (Project Delivery)
+
+Reporting delays or risks early is rewarded, not punished
+
+When managing tight timelines like the PHP 8 migration, psychological safety means an engineer can come to me 
+three weeks before the deadline and say, 'We aren't going to make it
+
+4. Innovation through "Safe-to-Fail" Experiments (Cost & Tech Debt)
+
+You cannot optimize or modernize without occasionally breaking things.
+
+I built safety by setting up 'Error Budgets.' As long as we stayed within our 99.90% availability SLA, 
+the team was free to experiment with aggressive sampling or new tools. If an experiment failed, 
+we rolled back without penalty. This freedom is what allowed us to achieve those cost savings."
+
+Summary Statement for Interviews
+
+"For me, psychological safety is the mechanism that converts individual anxiety into collective resilience. 
+Whether it's a failed deployment or a missed deadline, my team knows we will fix the process, not punish the person."
+
 ```
 
 ---
