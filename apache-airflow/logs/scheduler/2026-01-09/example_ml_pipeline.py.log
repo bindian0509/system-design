@@ -1,0 +1,578 @@
+[2026-01-09T16:00:45.765+0000] {processor.py:161} INFO - Started process (PID=182) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:00:45.766+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:00:45.770+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:00:45.769+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:00:45.817+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:00:46.081+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:00:46.079+0000] {override.py:1769} INFO - Created Permission View: can delete on DAG:weekly_fraud_model_training
+[2026-01-09T16:00:46.094+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:00:46.091+0000] {override.py:1769} INFO - Created Permission View: can read on DAG:weekly_fraud_model_training
+[2026-01-09T16:00:46.103+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:00:46.101+0000] {override.py:1769} INFO - Created Permission View: can edit on DAG:weekly_fraud_model_training
+[2026-01-09T16:00:46.103+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:00:46.103+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:00:46.111+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:00:46.111+0000] {dag.py:3058} INFO - Creating ORM DAG for weekly_fraud_model_training
+[2026-01-09T16:00:46.120+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:00:46.120+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:00:46.140+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.381 seconds
+[2026-01-09T16:01:16.249+0000] {processor.py:161} INFO - Started process (PID=215) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:01:16.250+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:01:16.251+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:01:16.251+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:01:16.268+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:01:16.295+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:01:16.295+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:01:16.312+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:01:16.312+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:01:16.322+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.075 seconds
+[2026-01-09T16:01:46.841+0000] {processor.py:161} INFO - Started process (PID=248) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:01:46.842+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:01:46.843+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:01:46.842+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:01:46.866+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:01:46.886+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:01:46.885+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:01:46.908+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:01:46.908+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:01:46.920+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.083 seconds
+[2026-01-09T16:02:17.185+0000] {processor.py:161} INFO - Started process (PID=281) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:02:17.186+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:02:17.187+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:02:17.186+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:02:17.206+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:02:17.226+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:02:17.226+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:02:17.239+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:02:17.239+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:02:17.254+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.072 seconds
+[2026-01-09T16:02:47.585+0000] {processor.py:161} INFO - Started process (PID=314) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:02:47.588+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:02:47.589+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:02:47.589+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:02:47.615+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:02:47.644+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:02:47.644+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:02:47.658+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:02:47.657+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:02:47.671+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.089 seconds
+[2026-01-09T16:03:23.062+0000] {processor.py:161} INFO - Started process (PID=344) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:03:23.503+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:03:31.523+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:03:31.215+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:03:32.685+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:03:33.573+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:03:33.569+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:03:33.879+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:03:33.869+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:03:38.357+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 16.268 seconds
+[2026-01-09T16:04:08.948+0000] {processor.py:161} INFO - Started process (PID=380) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:04:08.949+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:04:08.950+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:04:08.949+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:04:08.968+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:04:08.982+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:04:08.982+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:04:08.992+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:04:08.991+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:04:08.999+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.053 seconds
+[2026-01-09T16:04:39.418+0000] {processor.py:161} INFO - Started process (PID=413) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:04:39.420+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:04:39.421+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:04:39.421+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:04:39.452+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:04:39.486+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:04:39.486+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:04:39.509+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:04:39.509+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:04:39.531+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.121 seconds
+[2026-01-09T16:06:15.092+0000] {processor.py:161} INFO - Started process (PID=181) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:06:15.094+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:06:15.098+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:06:15.095+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:06:15.146+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:06:15.178+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:06:15.178+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:06:15.193+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:06:15.193+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:06:15.214+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.130 seconds
+[2026-01-09T16:06:45.952+0000] {processor.py:161} INFO - Started process (PID=214) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:06:45.955+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:06:45.957+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:06:45.956+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:06:45.987+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:06:46.153+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:06:46.153+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:06:46.166+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:06:46.166+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:06:46.175+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.235 seconds
+[2026-01-09T16:07:16.694+0000] {processor.py:161} INFO - Started process (PID=247) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:07:16.695+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:07:16.696+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:07:16.696+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:07:16.721+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:07:16.751+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:07:16.751+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:07:16.792+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:07:16.792+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:07:16.821+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.132 seconds
+[2026-01-09T16:07:47.258+0000] {processor.py:161} INFO - Started process (PID=280) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:07:47.259+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:07:47.260+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:07:47.260+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:07:47.286+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:07:47.315+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:07:47.314+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:07:47.338+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:07:47.337+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:07:47.348+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.094 seconds
+[2026-01-09T16:08:17.726+0000] {processor.py:161} INFO - Started process (PID=313) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:08:17.729+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:08:17.730+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:08:17.730+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:08:17.766+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:08:17.785+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:08:17.785+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:08:17.799+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:08:17.798+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:08:17.808+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.087 seconds
+[2026-01-09T16:09:10.653+0000] {processor.py:161} INFO - Started process (PID=346) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:09:10.737+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:09:11.407+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:09:11.022+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:09:17.876+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:09:18.186+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:09:18.186+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:09:18.272+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:09:18.272+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:09:18.324+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 9.930 seconds
+[2026-01-09T16:09:48.915+0000] {processor.py:161} INFO - Started process (PID=379) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:09:48.916+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:09:48.917+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:09:48.917+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:09:48.945+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:09:48.969+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:09:48.969+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:09:48.987+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:09:48.987+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:09:48.999+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.093 seconds
+[2026-01-09T16:10:19.386+0000] {processor.py:161} INFO - Started process (PID=411) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:10:19.388+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:10:19.389+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:10:19.389+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:10:19.413+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:10:19.438+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:10:19.437+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:10:19.453+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:10:19.453+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:10:19.463+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.082 seconds
+[2026-01-09T16:10:49.859+0000] {processor.py:161} INFO - Started process (PID=443) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:10:49.860+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:10:49.861+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:10:49.860+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:10:49.883+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:10:49.913+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:10:49.913+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:10:49.930+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:10:49.930+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:10:49.948+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.093 seconds
+[2026-01-09T16:11:20.324+0000] {processor.py:161} INFO - Started process (PID=476) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:11:20.327+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:11:20.329+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:11:20.328+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:11:20.354+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:11:20.379+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:11:20.379+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:11:20.400+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:11:20.399+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:11:20.410+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.098 seconds
+[2026-01-09T16:11:51.181+0000] {processor.py:161} INFO - Started process (PID=509) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:11:51.182+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:11:51.184+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:11:51.183+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:11:51.208+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:11:51.227+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:11:51.227+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:11:51.242+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:11:51.242+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:11:51.252+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.077 seconds
+[2026-01-09T16:12:21.397+0000] {processor.py:161} INFO - Started process (PID=543) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:12:21.398+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:12:21.399+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:12:21.399+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:12:21.427+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:12:21.455+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:12:21.454+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:12:21.467+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:12:21.467+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:12:21.475+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.081 seconds
+[2026-01-09T16:12:52.054+0000] {processor.py:161} INFO - Started process (PID=577) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:12:52.056+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:12:52.057+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:12:52.057+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:12:52.078+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:12:52.100+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:12:52.099+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:12:52.113+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:12:52.113+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:12:52.122+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.072 seconds
+[2026-01-09T16:13:22.695+0000] {processor.py:161} INFO - Started process (PID=609) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:13:22.709+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:13:22.715+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:13:22.714+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:13:22.867+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:13:23.859+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:13:23.845+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:13:25.324+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:13:25.324+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:13:25.365+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 2.694 seconds
+[2026-01-09T16:13:55.515+0000] {processor.py:161} INFO - Started process (PID=640) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:13:55.515+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:13:55.516+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:13:55.516+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:13:55.529+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:13:55.546+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:13:55.546+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:13:55.557+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:13:55.557+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:13:55.568+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.055 seconds
+[2026-01-09T16:14:25.993+0000] {processor.py:161} INFO - Started process (PID=668) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:14:25.994+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:14:25.995+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:14:25.994+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:14:26.021+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:14:26.061+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:14:26.061+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:14:26.077+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:14:26.077+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:14:26.091+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.101 seconds
+[2026-01-09T16:14:56.229+0000] {processor.py:161} INFO - Started process (PID=701) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:14:56.229+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:14:56.232+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:14:56.231+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:14:56.253+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:14:56.279+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:14:56.279+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:14:56.292+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:14:56.292+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:14:56.301+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.080 seconds
+[2026-01-09T16:15:26.715+0000] {processor.py:161} INFO - Started process (PID=734) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:15:26.716+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:15:26.717+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:15:26.717+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:15:26.736+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:15:26.757+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:15:26.757+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:15:26.770+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:15:26.769+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:15:26.778+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.067 seconds
+[2026-01-09T16:15:57.200+0000] {processor.py:161} INFO - Started process (PID=783) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:15:57.201+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:15:57.203+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:15:57.202+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:15:57.282+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:15:57.370+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:15:57.370+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:15:57.420+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:15:57.419+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:15:57.450+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.269 seconds
+[2026-01-09T16:17:04.122+0000] {processor.py:161} INFO - Started process (PID=185) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:17:04.123+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:17:04.123+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:17:04.123+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:17:04.152+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:17:04.167+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:17:04.167+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:17:04.177+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:17:04.177+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:17:04.185+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.068 seconds
+[2026-01-09T16:17:34.498+0000] {processor.py:161} INFO - Started process (PID=223) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:17:34.499+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:17:34.500+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:17:34.500+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:17:34.524+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:17:34.663+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:17:34.663+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:17:34.677+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:17:34.676+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:17:34.689+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.197 seconds
+[2026-01-09T16:18:05.026+0000] {processor.py:161} INFO - Started process (PID=261) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:18:05.027+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:18:05.029+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:18:05.028+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:18:05.050+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:18:05.077+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:18:05.077+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:18:05.089+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:18:05.089+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:18:05.097+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.074 seconds
+[2026-01-09T16:18:35.544+0000] {processor.py:161} INFO - Started process (PID=299) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:18:35.545+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:18:35.546+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:18:35.545+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:18:35.559+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:18:35.571+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:18:35.571+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:18:35.582+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:18:35.582+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:18:35.590+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.047 seconds
+[2026-01-09T16:19:06.063+0000] {processor.py:161} INFO - Started process (PID=337) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:19:06.065+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:19:06.066+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:19:06.066+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:19:06.088+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:19:06.109+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:19:06.109+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:19:06.122+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:19:06.121+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:19:06.129+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.075 seconds
+[2026-01-09T16:19:36.568+0000] {processor.py:161} INFO - Started process (PID=374) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:19:36.569+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:19:36.569+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:19:36.569+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:19:36.579+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:19:36.593+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:19:36.592+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:19:36.601+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:19:36.601+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:19:36.608+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.042 seconds
+[2026-01-09T16:20:06.805+0000] {processor.py:161} INFO - Started process (PID=412) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:20:06.806+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:20:06.807+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:20:06.807+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:20:06.827+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:20:06.847+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:20:06.847+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:20:06.860+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:20:06.860+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:20:06.869+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.067 seconds
+[2026-01-09T16:20:37.358+0000] {processor.py:161} INFO - Started process (PID=450) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:20:37.360+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:20:37.362+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:20:37.361+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:20:37.379+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:20:37.395+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:20:37.395+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:20:37.407+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:20:37.407+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:20:37.416+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.062 seconds
+[2026-01-09T16:21:12.716+0000] {processor.py:161} INFO - Started process (PID=490) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:21:12.717+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:21:12.718+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:21:12.718+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:21:12.745+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:21:12.797+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:21:12.797+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:21:12.821+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:21:12.820+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:21:12.849+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.139 seconds
+[2026-01-09T16:21:43.333+0000] {processor.py:161} INFO - Started process (PID=515) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:21:43.335+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:21:43.336+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:21:43.336+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:21:43.357+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:21:43.959+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:21:43.957+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:21:49.398+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:21:49.383+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:21:49.505+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 6.175 seconds
+[2026-01-09T16:22:20.502+0000] {processor.py:161} INFO - Started process (PID=565) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:22:20.503+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:22:20.506+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:22:20.503+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:22:20.537+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:22:22.333+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:22:22.332+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:22:22.345+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:22:22.345+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:22:22.638+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 2.140 seconds
+[2026-01-09T16:22:53.965+0000] {processor.py:161} INFO - Started process (PID=602) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:22:53.966+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:22:53.967+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:22:53.967+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:22:53.982+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:22:53.998+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:22:53.998+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:22:54.016+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:22:54.016+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:22:54.023+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.063 seconds
+[2026-01-09T16:23:24.536+0000] {processor.py:161} INFO - Started process (PID=633) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:23:24.537+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:23:24.539+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:23:24.538+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:23:24.554+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:23:24.575+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:23:24.575+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:23:24.592+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:23:24.592+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:23:24.609+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.079 seconds
+[2026-01-09T16:24:08.794+0000] {processor.py:161} INFO - Started process (PID=161) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:24:08.794+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:24:08.795+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:24:08.795+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:24:08.832+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:24:08.864+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:24:08.863+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:24:08.883+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:24:08.883+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:24:08.900+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.110 seconds
+[2026-01-09T16:24:42.824+0000] {processor.py:161} INFO - Started process (PID=161) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:24:42.825+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:24:42.826+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:24:42.825+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:24:42.847+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:24:42.884+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:24:42.884+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:24:42.925+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:24:42.925+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:24:42.966+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.150 seconds
+[2026-01-09T16:25:13.124+0000] {processor.py:161} INFO - Started process (PID=194) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:25:13.125+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:25:13.126+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:25:13.125+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:25:13.137+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:25:13.187+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:25:13.187+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:25:13.197+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:25:13.197+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:25:13.210+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.087 seconds
+[2026-01-09T16:25:43.875+0000] {processor.py:161} INFO - Started process (PID=229) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:25:43.876+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:25:43.876+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:25:43.876+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:25:43.889+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:25:43.900+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:25:43.900+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:25:43.908+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:25:43.908+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:25:43.917+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.044 seconds
+[2026-01-09T16:26:14.515+0000] {processor.py:161} INFO - Started process (PID=266) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:26:14.517+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:26:14.518+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:26:14.518+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:26:14.534+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:26:14.562+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:26:14.562+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:26:14.582+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:26:14.582+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:26:14.591+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.080 seconds
+[2026-01-09T16:26:45.218+0000] {processor.py:161} INFO - Started process (PID=297) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:26:45.219+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:26:45.220+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:26:45.220+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:26:45.237+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:26:45.254+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:26:45.253+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:26:45.265+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:26:45.265+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:26:45.272+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.058 seconds
+[2026-01-09T16:27:15.806+0000] {processor.py:161} INFO - Started process (PID=328) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:27:15.807+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:27:15.808+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:27:15.807+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:27:15.821+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:27:15.841+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:27:15.841+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:27:15.855+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:27:15.855+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:27:15.864+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.061 seconds
+[2026-01-09T16:27:46.429+0000] {processor.py:161} INFO - Started process (PID=359) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:27:46.429+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:27:46.430+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:27:46.430+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:27:46.449+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:27:46.476+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:27:46.476+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:27:46.492+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:27:46.492+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:27:46.503+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.077 seconds
+[2026-01-09T16:28:17.001+0000] {processor.py:161} INFO - Started process (PID=390) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:28:17.002+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:28:17.003+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:28:17.002+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:28:17.019+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:28:17.038+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:28:17.038+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:28:17.054+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:28:17.054+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:28:17.063+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.066 seconds
+[2026-01-09T16:28:47.808+0000] {processor.py:161} INFO - Started process (PID=423) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:28:47.808+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:28:47.809+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:28:47.808+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:28:47.824+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:28:47.837+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:28:47.836+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:28:47.849+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:28:47.849+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:28:47.857+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.051 seconds
+[2026-01-09T16:29:18.376+0000] {processor.py:161} INFO - Started process (PID=454) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:29:18.376+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:29:18.377+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:29:18.377+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:29:18.397+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:29:18.424+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:29:18.424+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:29:18.437+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:29:18.437+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:29:18.566+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.193 seconds
+[2026-01-09T16:29:49.334+0000] {processor.py:161} INFO - Started process (PID=485) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:29:49.335+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:29:49.335+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:29:49.335+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:29:49.347+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:29:49.361+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:29:49.361+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:29:49.371+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:29:49.371+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:29:49.377+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.046 seconds
+[2026-01-09T16:30:20.037+0000] {processor.py:161} INFO - Started process (PID=516) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:30:20.038+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:30:20.039+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:30:20.039+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:30:20.056+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:30:20.069+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:30:20.069+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:30:20.206+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:30:20.206+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:30:20.212+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.178 seconds
+[2026-01-09T16:30:50.723+0000] {processor.py:161} INFO - Started process (PID=547) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:30:50.724+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:30:50.725+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:30:50.725+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:30:50.741+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:30:50.758+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:30:50.758+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:30:50.768+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:30:50.768+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:30:50.774+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.054 seconds
+[2026-01-09T16:31:21.248+0000] {processor.py:161} INFO - Started process (PID=578) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:31:21.249+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:31:21.250+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:31:21.249+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:31:21.265+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:31:21.285+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:31:21.285+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:31:21.296+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:31:21.296+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:31:21.305+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.060 seconds
+[2026-01-09T16:31:51.773+0000] {processor.py:161} INFO - Started process (PID=609) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:31:51.773+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:31:51.774+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:31:51.774+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:31:51.784+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:31:51.806+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:31:51.806+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:31:51.818+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:31:51.817+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:31:51.824+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.054 seconds
+[2026-01-09T16:32:22.315+0000] {processor.py:161} INFO - Started process (PID=640) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:32:22.316+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:32:22.317+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:32:22.316+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:32:22.330+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:32:22.347+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:32:22.346+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:32:22.358+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:32:22.358+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:32:22.371+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.058 seconds
+[2026-01-09T16:32:52.874+0000] {processor.py:161} INFO - Started process (PID=671) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:32:52.875+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:32:52.876+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:32:52.875+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:32:52.889+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:32:52.905+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:32:52.905+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:32:52.916+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:32:52.916+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:32:52.924+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.053 seconds
+[2026-01-09T16:33:23.374+0000] {processor.py:161} INFO - Started process (PID=702) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:33:23.375+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:33:23.376+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:33:23.376+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:33:23.395+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:33:23.416+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:33:23.416+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:33:23.429+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:33:23.429+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:33:23.437+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.067 seconds
+[2026-01-09T16:33:53.953+0000] {processor.py:161} INFO - Started process (PID=733) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:33:53.954+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:33:53.955+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:33:53.954+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:33:53.969+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:33:53.987+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:33:53.987+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:33:54.000+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:33:54.000+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:33:54.008+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.058 seconds
+[2026-01-09T16:34:24.458+0000] {processor.py:161} INFO - Started process (PID=764) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:34:24.459+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:34:24.460+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:34:24.460+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:34:24.474+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:34:24.490+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:34:24.490+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:34:24.502+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:34:24.502+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:34:24.511+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.054 seconds
+[2026-01-09T16:34:55.020+0000] {processor.py:161} INFO - Started process (PID=795) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:34:55.020+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:34:55.021+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:34:55.021+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:34:55.034+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:34:55.047+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:34:55.047+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:34:55.059+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:34:55.059+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:34:55.067+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.049 seconds
+[2026-01-09T16:35:25.583+0000] {processor.py:161} INFO - Started process (PID=826) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:35:25.584+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:35:25.585+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:35:25.585+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:35:25.605+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:35:25.627+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:35:25.627+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:35:25.644+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:35:25.644+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:35:25.653+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.076 seconds
+[2026-01-09T16:35:56.222+0000] {processor.py:161} INFO - Started process (PID=857) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:35:56.223+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:35:56.224+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:35:56.223+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:35:56.247+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:35:56.264+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:35:56.264+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:35:56.276+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:35:56.276+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:35:56.288+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.068 seconds
+[2026-01-09T16:36:26.810+0000] {processor.py:161} INFO - Started process (PID=888) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:36:26.811+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:36:26.812+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:36:26.811+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:36:26.835+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:36:26.861+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:36:26.861+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:36:26.879+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:36:26.879+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:36:26.887+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.081 seconds
+[2026-01-09T16:36:57.424+0000] {processor.py:161} INFO - Started process (PID=919) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:36:57.425+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:36:57.425+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:36:57.425+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:36:57.441+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:36:57.460+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:36:57.460+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:36:57.476+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:36:57.475+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:36:57.484+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.063 seconds
+[2026-01-09T16:37:27.989+0000] {processor.py:161} INFO - Started process (PID=950) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:37:27.989+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:37:27.990+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:37:27.990+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:37:28.005+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:37:28.027+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:37:28.027+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:37:28.041+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:37:28.041+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:37:28.051+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.065 seconds
+[2026-01-09T16:37:58.634+0000] {processor.py:161} INFO - Started process (PID=981) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:37:58.634+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:37:58.635+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:37:58.635+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:37:58.648+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:37:58.665+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:37:58.665+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:37:58.677+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:37:58.676+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:37:58.684+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.052 seconds
+[2026-01-09T16:38:29.211+0000] {processor.py:161} INFO - Started process (PID=1012) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:38:29.212+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:38:29.212+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:38:29.212+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:38:29.223+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:38:29.239+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:38:29.239+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:38:29.251+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:38:29.251+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:38:29.259+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.049 seconds
+[2026-01-09T16:38:59.859+0000] {processor.py:161} INFO - Started process (PID=1043) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:38:59.860+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:38:59.860+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:38:59.860+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:38:59.874+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:38:59.888+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:38:59.888+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:38:59.899+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:38:59.898+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:38:59.906+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.048 seconds
+[2026-01-09T16:39:30.478+0000] {processor.py:161} INFO - Started process (PID=1074) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:39:30.479+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:39:30.480+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:39:30.480+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:39:30.496+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:39:30.514+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:39:30.514+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:39:30.524+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:39:30.524+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:39:30.531+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.055 seconds
+[2026-01-09T16:40:01.139+0000] {processor.py:161} INFO - Started process (PID=1105) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:40:01.140+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:40:01.141+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:40:01.141+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:40:01.153+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:40:01.169+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:40:01.168+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:40:01.180+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:40:01.180+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:40:01.188+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.051 seconds
+[2026-01-09T16:40:31.732+0000] {processor.py:161} INFO - Started process (PID=1136) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:40:31.732+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:40:31.733+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:40:31.733+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:40:31.754+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:40:31.771+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:40:31.771+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:40:31.783+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:40:31.783+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:40:31.793+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.063 seconds
+[2026-01-09T16:41:02.293+0000] {processor.py:161} INFO - Started process (PID=1167) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:41:02.294+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:41:02.294+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:41:02.294+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:41:02.305+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:41:02.323+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:41:02.323+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:41:02.335+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:41:02.335+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:41:02.344+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.053 seconds
+[2026-01-09T16:41:32.870+0000] {processor.py:161} INFO - Started process (PID=1198) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:41:32.870+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:41:32.871+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:41:32.871+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:41:32.886+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:41:32.900+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:41:32.900+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:41:32.910+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:41:32.910+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:41:32.918+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.051 seconds
+[2026-01-09T16:42:03.531+0000] {processor.py:161} INFO - Started process (PID=1229) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:42:03.532+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:42:03.532+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:42:03.532+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:42:03.544+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:42:03.558+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:42:03.557+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:42:03.567+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:42:03.567+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:42:03.574+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.046 seconds
+[2026-01-09T16:42:34.072+0000] {processor.py:161} INFO - Started process (PID=1260) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:42:34.073+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:42:34.073+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:42:34.073+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:42:34.085+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:42:34.102+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:42:34.102+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:42:34.114+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:42:34.113+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:42:34.122+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.052 seconds
+[2026-01-09T16:43:04.626+0000] {processor.py:161} INFO - Started process (PID=1291) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:43:04.627+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:43:04.628+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:43:04.628+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:43:04.647+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:43:04.673+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:43:04.673+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:43:04.685+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:43:04.685+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:43:04.693+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.070 seconds
+[2026-01-09T16:43:35.313+0000] {processor.py:161} INFO - Started process (PID=1322) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:43:35.314+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:43:35.315+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:43:35.314+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:43:35.329+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:43:35.350+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:43:35.349+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:43:35.363+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:43:35.363+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:43:35.372+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.062 seconds
+[2026-01-09T16:44:06.053+0000] {processor.py:161} INFO - Started process (PID=1353) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:44:06.054+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:44:06.055+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:44:06.054+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:44:06.071+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:44:06.086+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:44:06.086+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:44:06.096+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:44:06.096+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:44:06.104+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.054 seconds
+[2026-01-09T16:44:36.593+0000] {processor.py:161} INFO - Started process (PID=1384) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:44:36.594+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:44:36.596+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:44:36.595+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:44:36.633+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:44:36.675+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:44:36.674+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:44:36.704+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:44:36.704+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:44:36.724+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.140 seconds
+[2026-01-09T16:45:07.145+0000] {processor.py:161} INFO - Started process (PID=1415) to work on /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:45:07.146+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/example_ml_pipeline.py for tasks to queue
+[2026-01-09T16:45:07.148+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:45:07.147+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:45:07.166+0000] {processor.py:840} INFO - DAG(s) 'weekly_fraud_model_training' retrieved from /opt/airflow/dags/example_ml_pipeline.py
+[2026-01-09T16:45:07.183+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:45:07.183+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-01-09T16:45:07.195+0000] {logging_mixin.py:188} INFO - [2026-01-09T16:45:07.195+0000] {dag.py:3823} INFO - Setting next_dagrun for weekly_fraud_model_training to 2025-12-28 02:00:00+00:00, run_after=2026-01-04 02:00:00+00:00
+[2026-01-09T16:45:07.203+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/example_ml_pipeline.py took 0.061 seconds

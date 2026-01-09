@@ -1,0 +1,1124 @@
+[2026-01-09T16:00:45.632+0000] {manager.py:469} INFO - Processing files using up to 2 processes at a time 
+[2026-01-09T16:00:45.633+0000] {manager.py:470} INFO - Process each file at most once every 30 seconds
+[2026-01-09T16:00:45.634+0000] {manager.py:471} INFO - Checking for new files in /opt/airflow/dags every 300 seconds
+[2026-01-09T16:00:45.634+0000] {manager.py:738} INFO - Searching for files in /opt/airflow/dags
+[2026-01-09T16:00:45.661+0000] {manager.py:741} INFO - There are 5 files in /opt/airflow/dags
+[2026-01-09T16:00:45.887+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  ----------
+/opt/airflow/dags/example_ml_pipeline.py          182  0.14s             0           0
+/opt/airflow/dags/example_etl_pipeline.py         185  0.05s             0           0
+/opt/airflow/dags/example_report_generation.py                           0           0
+/opt/airflow/dags/example_data_quality.py                                0           0
+/opt/airflow/dags/example_api_ingestion.py                               0           0
+================================================================================
+[2026-01-09T16:01:16.235+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py          215  0.01s             1           0  0.41s           2026-01-09T16:00:46
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  3.15s           2026-01-09T16:00:48
+/opt/airflow/dags/example_report_generation.py                           1           0  0.81s           2026-01-09T16:00:47
+/opt/airflow/dags/example_data_quality.py                                1           0  0.98s           2026-01-09T16:00:48
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.22s           2026-01-09T16:00:49
+================================================================================
+[2026-01-09T16:01:46.288+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.10s           2026-01-09T16:01:16
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.70s           2026-01-09T16:01:20
+/opt/airflow/dags/example_report_generation.py                           1           0  0.10s           2026-01-09T16:01:18
+/opt/airflow/dags/example_data_quality.py                                1           0  0.12s           2026-01-09T16:01:19
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.08s           2026-01-09T16:01:19
+================================================================================
+[2026-01-09T16:02:16.559+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.11s           2026-01-09T16:01:46
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.43s           2026-01-09T16:01:51
+/opt/airflow/dags/example_report_generation.py                           1           0  0.07s           2026-01-09T16:01:48
+/opt/airflow/dags/example_data_quality.py                                1           0  0.08s           2026-01-09T16:01:49
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.07s           2026-01-09T16:01:49
+================================================================================
+[2026-01-09T16:02:47.114+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.09s           2026-01-09T16:02:17
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.60s           2026-01-09T16:02:22
+/opt/airflow/dags/example_report_generation.py                           1           0  0.07s           2026-01-09T16:02:19
+/opt/airflow/dags/example_data_quality.py                                1           0  0.08s           2026-01-09T16:02:20
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.08s           2026-01-09T16:02:20
+================================================================================
+[2026-01-09T16:03:17.573+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.12s           2026-01-09T16:02:47
+/opt/airflow/dags/example_etl_pipeline.py         334  23.70s            1           0  0.60s           2026-01-09T16:02:22
+/opt/airflow/dags/example_report_generation.py                           1           0  0.08s           2026-01-09T16:02:49
+/opt/airflow/dags/example_data_quality.py                                1           0  0.13s           2026-01-09T16:02:50
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.12s           2026-01-09T16:02:50
+================================================================================
+[2026-01-09T16:03:47.740+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_etl_pipeline.py                                0           1  39.81s          2026-01-09T16:03:33
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  18.30s          2026-01-09T16:03:38
+/opt/airflow/dags/example_report_generation.py                           1           0  4.86s           2026-01-09T16:03:38
+/opt/airflow/dags/example_data_quality.py                                1           0  0.22s           2026-01-09T16:03:38
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.14s           2026-01-09T16:03:38
+================================================================================
+[2026-01-09T16:04:18.139+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.07s           2026-01-09T16:04:09
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.43s           2026-01-09T16:04:04
+/opt/airflow/dags/example_report_generation.py                           1           0  0.07s           2026-01-09T16:04:09
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:04:09
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.06s           2026-01-09T16:04:09
+================================================================================
+[2026-01-09T16:04:48.703+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.15s           2026-01-09T16:04:39
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.42s           2026-01-09T16:04:35
+/opt/airflow/dags/example_report_generation.py                           1           0  0.12s           2026-01-09T16:04:39
+/opt/airflow/dags/example_data_quality.py                                1           0  0.07s           2026-01-09T16:04:39
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.30s           2026-01-09T16:04:39
+================================================================================
+[2026-01-09T16:04:57.150+0000] {manager.py:451} INFO - Exiting gracefully upon receiving signal 15
+[2026-01-09T16:06:15.002+0000] {manager.py:469} INFO - Processing files using up to 2 processes at a time 
+[2026-01-09T16:06:15.003+0000] {manager.py:470} INFO - Process each file at most once every 30 seconds
+[2026-01-09T16:06:15.005+0000] {manager.py:471} INFO - Checking for new files in /opt/airflow/dags every 300 seconds
+[2026-01-09T16:06:15.006+0000] {manager.py:738} INFO - Searching for files in /opt/airflow/dags
+[2026-01-09T16:06:15.029+0000] {manager.py:741} INFO - There are 5 files in /opt/airflow/dags
+[2026-01-09T16:06:15.147+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  ----------
+/opt/airflow/dags/example_ml_pipeline.py          181  0.08s             0           0
+/opt/airflow/dags/example_etl_pipeline.py         184  0.03s             0           0
+/opt/airflow/dags/example_report_generation.py                           0           0
+/opt/airflow/dags/example_data_quality.py                                0           0
+/opt/airflow/dags/example_api_ingestion.py                               0           0
+================================================================================
+[2026-01-09T16:06:45.954+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py          214  0.03s             1           0  0.15s           2026-01-09T16:06:15
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  1.17s           2026-01-09T16:06:16
+/opt/airflow/dags/example_report_generation.py    217  0.01s             1           0  0.10s           2026-01-09T16:06:15
+/opt/airflow/dags/example_data_quality.py                                1           0  0.13s           2026-01-09T16:06:15
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.12s           2026-01-09T16:06:16
+================================================================================
+[2026-01-09T16:07:16.698+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py          247  0.02s             1           0  0.28s           2026-01-09T16:06:46
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.49s           2026-01-09T16:06:46
+/opt/airflow/dags/example_report_generation.py    250  0.01s             1           0  0.24s           2026-01-09T16:06:46
+/opt/airflow/dags/example_data_quality.py                                1           0  0.10s           2026-01-09T16:06:46
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.12s           2026-01-09T16:06:46
+================================================================================
+[2026-01-09T16:07:47.261+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py          280  0.03s             1           0  0.16s           2026-01-09T16:07:16
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.39s           2026-01-09T16:07:17
+/opt/airflow/dags/example_report_generation.py    283  0.01s             1           0  0.13s           2026-01-09T16:07:16
+/opt/airflow/dags/example_data_quality.py                                1           0  0.07s           2026-01-09T16:07:16
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.08s           2026-01-09T16:07:16
+================================================================================
+[2026-01-09T16:08:17.733+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py          313  0.03s             1           0  0.13s           2026-01-09T16:07:47
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.49s           2026-01-09T16:07:47
+/opt/airflow/dags/example_report_generation.py    316  0.01s             1           0  0.10s           2026-01-09T16:07:47
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:07:47
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.06s           2026-01-09T16:07:47
+================================================================================
+[2026-01-09T16:09:10.597+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py          346  3.79s             1           0  0.12s           2026-01-09T16:08:17
+/opt/airflow/dags/example_etl_pipeline.py         349  1.02s             1           0  0.46s           2026-01-09T16:08:19
+/opt/airflow/dags/example_report_generation.py                           1           0  0.12s           2026-01-09T16:08:17
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:08:17
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.07s           2026-01-09T16:08:17
+================================================================================
+[2026-01-09T16:09:40.830+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  21.07s          2026-01-09T16:09:18
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  19.62s          2026-01-09T16:09:19
+/opt/airflow/dags/example_report_generation.py                           1           0  0.38s           2026-01-09T16:09:18
+/opt/airflow/dags/example_data_quality.py                                1           0  0.18s           2026-01-09T16:09:18
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.12s           2026-01-09T16:09:19
+================================================================================
+[2026-01-09T16:10:11.258+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.11s           2026-01-09T16:09:49
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.48s           2026-01-09T16:09:50
+/opt/airflow/dags/example_report_generation.py                           1           0  0.11s           2026-01-09T16:09:49
+/opt/airflow/dags/example_data_quality.py                                1           0  0.07s           2026-01-09T16:09:49
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.08s           2026-01-09T16:09:50
+================================================================================
+[2026-01-09T16:10:41.765+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.11s           2026-01-09T16:10:19
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.48s           2026-01-09T16:10:21
+/opt/airflow/dags/example_report_generation.py                           1           0  0.09s           2026-01-09T16:10:19
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:10:19
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.08s           2026-01-09T16:10:20
+================================================================================
+[2026-01-09T16:11:12.177+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.12s           2026-01-09T16:10:49
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.36s           2026-01-09T16:10:51
+/opt/airflow/dags/example_report_generation.py                           1           0  0.11s           2026-01-09T16:10:49
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:10:50
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.07s           2026-01-09T16:10:51
+================================================================================
+[2026-01-09T16:11:15.198+0000] {manager.py:738} INFO - Searching for files in /opt/airflow/dags
+[2026-01-09T16:11:15.222+0000] {manager.py:741} INFO - There are 5 files in /opt/airflow/dags
+[2026-01-09T16:11:43.071+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.13s           2026-01-09T16:11:20
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.48s           2026-01-09T16:11:21
+/opt/airflow/dags/example_report_generation.py                           1           0  0.12s           2026-01-09T16:11:20
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:11:20
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.08s           2026-01-09T16:11:21
+================================================================================
+[2026-01-09T16:12:16.252+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.10s           2026-01-09T16:11:51
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.51s           2026-01-09T16:11:52
+/opt/airflow/dags/example_report_generation.py                           1           0  0.09s           2026-01-09T16:11:51
+/opt/airflow/dags/example_data_quality.py                                1           0  0.05s           2026-01-09T16:11:51
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.26s           2026-01-09T16:11:52
+================================================================================
+[2026-01-09T16:12:46.377+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.11s           2026-01-09T16:12:21
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.52s           2026-01-09T16:12:24
+/opt/airflow/dags/example_report_generation.py                           1           0  0.09s           2026-01-09T16:12:21
+/opt/airflow/dags/example_data_quality.py                                1           0  0.20s           2026-01-09T16:12:21
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.07s           2026-01-09T16:12:22
+================================================================================
+[2026-01-09T16:13:16.601+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.09s           2026-01-09T16:12:52
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.25s           2026-01-09T16:12:54
+/opt/airflow/dags/example_report_generation.py                           1           0  0.27s           2026-01-09T16:12:52
+/opt/airflow/dags/example_data_quality.py                                1           0  0.21s           2026-01-09T16:12:52
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.05s           2026-01-09T16:12:53
+================================================================================
+[2026-01-09T16:13:47.272+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  2.77s           2026-01-09T16:13:25
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  7.93s           2026-01-09T16:13:33
+/opt/airflow/dags/example_report_generation.py                           1           0  2.68s           2026-01-09T16:13:25
+/opt/airflow/dags/example_data_quality.py                                1           0  5.32s           2026-01-09T16:13:30
+/opt/airflow/dags/example_api_ingestion.py                               1           0  2.35s           2026-01-09T16:13:33
+================================================================================
+[2026-01-09T16:14:17.883+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.07s           2026-01-09T16:13:55
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.30s           2026-01-09T16:14:03
+/opt/airflow/dags/example_report_generation.py                           1           0  0.12s           2026-01-09T16:13:55
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:14:01
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.07s           2026-01-09T16:14:03
+================================================================================
+[2026-01-09T16:14:48.103+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.13s           2026-01-09T16:14:26
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  11.78s          2026-01-09T16:14:46
+/opt/airflow/dags/example_report_generation.py                           1           0  0.11s           2026-01-09T16:14:26
+/opt/airflow/dags/example_data_quality.py                                1           0  0.15s           2026-01-09T16:14:32
+/opt/airflow/dags/example_api_ingestion.py                               1           0  2.71s           2026-01-09T16:14:37
+================================================================================
+[2026-01-09T16:15:18.605+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.11s           2026-01-09T16:14:56
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.30s           2026-01-09T16:15:16
+/opt/airflow/dags/example_report_generation.py                           1           0  0.09s           2026-01-09T16:14:56
+/opt/airflow/dags/example_data_quality.py                                1           0  0.08s           2026-01-09T16:15:02
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.08s           2026-01-09T16:15:07
+================================================================================
+[2026-01-09T16:15:49.066+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.09s           2026-01-09T16:15:26
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.22s           2026-01-09T16:15:47
+/opt/airflow/dags/example_report_generation.py                           1           0  0.08s           2026-01-09T16:15:26
+/opt/airflow/dags/example_data_quality.py                                1           0  0.09s           2026-01-09T16:15:32
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.07s           2026-01-09T16:15:37
+================================================================================
+[2026-01-09T16:15:57.866+0000] {manager.py:451} INFO - Exiting gracefully upon receiving signal 15
+[2026-01-09T16:17:04.018+0000] {manager.py:469} INFO - Processing files using up to 2 processes at a time 
+[2026-01-09T16:17:04.018+0000] {manager.py:470} INFO - Process each file at most once every 30 seconds
+[2026-01-09T16:17:04.019+0000] {manager.py:471} INFO - Checking for new files in /opt/airflow/dags every 300 seconds
+[2026-01-09T16:17:04.020+0000] {manager.py:738} INFO - Searching for files in /opt/airflow/dags
+[2026-01-09T16:17:04.042+0000] {manager.py:741} INFO - There are 6 files in /opt/airflow/dags
+[2026-01-09T16:17:04.146+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  ----------
+/opt/airflow/dags/example_ml_pipeline.py          185  0.04s             0           0
+/opt/airflow/dags/demo_hello_world.py             182  0.08s             0           0
+/opt/airflow/dags/example_etl_pipeline.py                                0           0
+/opt/airflow/dags/example_report_generation.py                           0           0
+/opt/airflow/dags/example_data_quality.py                                0           0
+/opt/airflow/dags/example_api_ingestion.py                               0           0
+================================================================================
+[2026-01-09T16:17:34.484+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py          223  0.00s             1           0  0.11s           2026-01-09T16:17:04
+/opt/airflow/dags/demo_hello_world.py             220  0.02s             1           0  0.09s           2026-01-09T16:17:04
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.65s           2026-01-09T16:17:04
+/opt/airflow/dags/example_report_generation.py                           1           0  0.10s           2026-01-09T16:17:05
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:17:05
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.06s           2026-01-09T16:17:05
+================================================================================
+[2026-01-09T16:18:05.015+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py          261  0.01s             1           0  0.21s           2026-01-09T16:17:34
+/opt/airflow/dags/demo_hello_world.py             258  0.03s             1           0  0.22s           2026-01-09T16:17:34
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  20.34s          2026-01-09T16:17:56
+/opt/airflow/dags/example_report_generation.py                           1           0  0.12s           2026-01-09T16:17:35
+/opt/airflow/dags/example_data_quality.py                                1           0  0.28s           2026-01-09T16:17:36
+/opt/airflow/dags/example_api_ingestion.py                               1           0  19.68s          2026-01-09T16:17:55
+================================================================================
+[2026-01-09T16:18:35.537+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py          299  0.00s             1           0  0.10s           2026-01-09T16:18:05
+/opt/airflow/dags/demo_hello_world.py             296  0.02s             1           0  0.11s           2026-01-09T16:18:05
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.39s           2026-01-09T16:18:26
+/opt/airflow/dags/example_report_generation.py                           1           0  0.06s           2026-01-09T16:18:06
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:18:06
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.07s           2026-01-09T16:18:26
+================================================================================
+[2026-01-09T16:19:06.049+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py          337  0.00s             1           0  0.06s           2026-01-09T16:18:35
+/opt/airflow/dags/demo_hello_world.py             334  0.02s             1           0  0.06s           2026-01-09T16:18:35
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.34s           2026-01-09T16:18:57
+/opt/airflow/dags/example_report_generation.py                           1           0  0.07s           2026-01-09T16:18:36
+/opt/airflow/dags/example_data_quality.py                                1           0  0.08s           2026-01-09T16:18:36
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.08s           2026-01-09T16:18:56
+================================================================================
+[2026-01-09T16:19:36.562+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py          374  0.00s             1           0  0.09s           2026-01-09T16:19:06
+/opt/airflow/dags/demo_hello_world.py             371  0.02s             1           0  0.11s           2026-01-09T16:19:06
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.31s           2026-01-09T16:19:27
+/opt/airflow/dags/example_report_generation.py                           1           0  0.07s           2026-01-09T16:19:07
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:19:07
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.07s           2026-01-09T16:19:27
+================================================================================
+[2026-01-09T16:20:06.795+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py          412  0.01s             1           0  0.05s           2026-01-09T16:19:36
+/opt/airflow/dags/demo_hello_world.py             409  0.03s             1           0  0.05s           2026-01-09T16:19:36
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.84s           2026-01-09T16:19:58
+/opt/airflow/dags/example_report_generation.py                           1           0  0.07s           2026-01-09T16:19:37
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:19:37
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.24s           2026-01-09T16:19:58
+================================================================================
+[2026-01-09T16:20:37.350+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py          450  0.00s             1           0  0.09s           2026-01-09T16:20:06
+/opt/airflow/dags/demo_hello_world.py             447  0.02s             1           0  0.13s           2026-01-09T16:20:06
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  4.08s           2026-01-09T16:20:33
+/opt/airflow/dags/example_report_generation.py                           1           0  0.13s           2026-01-09T16:20:08
+/opt/airflow/dags/example_data_quality.py                                1           0  0.10s           2026-01-09T16:20:07
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.11s           2026-01-09T16:20:28
+================================================================================
+[2026-01-09T16:21:11.002+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.08s           2026-01-09T16:20:37
+/opt/airflow/dags/demo_hello_world.py             476  0.03s             1           0  0.09s           2026-01-09T16:20:37
+/opt/airflow/dags/example_etl_pipeline.py         472  7.53s             1           0  4.08s           2026-01-09T16:20:33
+/opt/airflow/dags/example_report_generation.py                           1           0  0.14s           2026-01-09T16:20:38
+/opt/airflow/dags/example_data_quality.py                                1           0  0.12s           2026-01-09T16:20:38
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.71s           2026-01-09T16:20:59
+================================================================================
+[2026-01-09T16:21:41.248+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.17s           2026-01-09T16:21:12
+/opt/airflow/dags/demo_hello_world.py                                    1           0  1.19s           2026-01-09T16:21:12
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  9.24s           2026-01-09T16:21:12
+/opt/airflow/dags/example_report_generation.py                           1           0  0.17s           2026-01-09T16:21:12
+/opt/airflow/dags/example_data_quality.py                                1           0  0.13s           2026-01-09T16:21:13
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.12s           2026-01-09T16:21:30
+================================================================================
+[2026-01-09T16:22:04.245+0000] {manager.py:738} INFO - Searching for files in /opt/airflow/dags
+[2026-01-09T16:22:04.269+0000] {manager.py:741} INFO - There are 6 files in /opt/airflow/dags
+[2026-01-09T16:22:11.362+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  6.23s           2026-01-09T16:21:49
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.17s           2026-01-09T16:21:42
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  13.74s          2026-01-09T16:21:57
+/opt/airflow/dags/example_report_generation.py                           1           0  0.25s           2026-01-09T16:21:49
+/opt/airflow/dags/example_data_quality.py                                1           0  0.21s           2026-01-09T16:21:50
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.08s           2026-01-09T16:22:00
+================================================================================
+[2026-01-09T16:22:44.076+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  2.17s           2026-01-09T16:22:22
+/opt/airflow/dags/demo_hello_world.py             595  0.04s             1           0  0.07s           2026-01-09T16:22:13
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.42s           2026-01-09T16:22:28
+/opt/airflow/dags/example_report_generation.py                           1           0  1.86s           2026-01-09T16:22:22
+/opt/airflow/dags/example_data_quality.py                                1           0  0.16s           2026-01-09T16:22:22
+/opt/airflow/dags/example_api_ingestion.py        592  10.94s            1           0  0.08s           2026-01-09T16:22:00
+================================================================================
+[2026-01-09T16:23:14.419+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.08s           2026-01-09T16:22:54
+/opt/airflow/dags/demo_hello_world.py                                    1           0  9.94s           2026-01-09T16:22:53
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.33s           2026-01-09T16:22:58
+/opt/airflow/dags/example_report_generation.py                           1           0  0.08s           2026-01-09T16:22:54
+/opt/airflow/dags/example_data_quality.py                                1           0  0.19s           2026-01-09T16:22:54
+/opt/airflow/dags/example_api_ingestion.py                               1           0  20.83s          2026-01-09T16:22:53
+================================================================================
+[2026-01-09T16:23:26.363+0000] {manager.py:451} INFO - Exiting gracefully upon receiving signal 15
+[2026-01-09T16:24:08.690+0000] {manager.py:469} INFO - Processing files using up to 2 processes at a time 
+[2026-01-09T16:24:08.691+0000] {manager.py:470} INFO - Process each file at most once every 30 seconds
+[2026-01-09T16:24:08.692+0000] {manager.py:471} INFO - Checking for new files in /opt/airflow/dags every 60 seconds
+[2026-01-09T16:24:08.692+0000] {manager.py:738} INFO - Searching for files in /opt/airflow/dags
+[2026-01-09T16:24:08.720+0000] {manager.py:741} INFO - There are 6 files in /opt/airflow/dags
+[2026-01-09T16:24:08.822+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  ----------
+/opt/airflow/dags/example_ml_pipeline.py          161  0.04s             0           0
+/opt/airflow/dags/demo_hello_world.py             158  0.06s             0           0
+/opt/airflow/dags/example_etl_pipeline.py                                0           0
+/opt/airflow/dags/example_report_generation.py                           0           0
+/opt/airflow/dags/example_data_quality.py                                0           0
+/opt/airflow/dags/example_api_ingestion.py                               0           0
+================================================================================
+[2026-01-09T16:24:17.105+0000] {manager.py:451} INFO - Exiting gracefully upon receiving signal 15
+[2026-01-09T16:24:42.717+0000] {manager.py:469} INFO - Processing files using up to 2 processes at a time 
+[2026-01-09T16:24:42.720+0000] {manager.py:470} INFO - Process each file at most once every 30 seconds
+[2026-01-09T16:24:42.720+0000] {manager.py:471} INFO - Checking for new files in /opt/airflow/dags every 60 seconds
+[2026-01-09T16:24:42.721+0000] {manager.py:738} INFO - Searching for files in /opt/airflow/dags
+[2026-01-09T16:24:42.747+0000] {manager.py:741} INFO - There are 6 files in /opt/airflow/dags
+[2026-01-09T16:24:42.855+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  ----------
+/opt/airflow/dags/example_ml_pipeline.py          161  0.04s             0           0
+/opt/airflow/dags/demo_hello_world.py             158  0.07s             0           0
+/opt/airflow/dags/example_etl_pipeline.py                                0           0
+/opt/airflow/dags/example_report_generation.py                           0           0
+/opt/airflow/dags/example_data_quality.py                                0           0
+/opt/airflow/dags/example_api_ingestion.py                               0           0
+================================================================================
+[2026-01-09T16:25:12.923+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.18s           2026-01-09T16:24:42
+/opt/airflow/dags/demo_hello_world.py             189  0.02s             1           0  0.10s           2026-01-09T16:24:42
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.78s           2026-01-09T16:24:43
+/opt/airflow/dags/example_report_generation.py                           1           0  0.14s           2026-01-09T16:24:43
+/opt/airflow/dags/example_data_quality.py                                1           0  0.15s           2026-01-09T16:24:43
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.05s           2026-01-09T16:24:43
+================================================================================
+[2026-01-09T16:25:42.784+0000] {manager.py:738} INFO - Searching for files in /opt/airflow/dags
+[2026-01-09T16:25:42.814+0000] {manager.py:741} INFO - There are 6 files in /opt/airflow/dags
+[2026-01-09T16:25:43.866+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py          229  0.00s             1           0  0.10s           2026-01-09T16:25:13
+/opt/airflow/dags/demo_hello_world.py             226  0.02s             1           0  0.21s           2026-01-09T16:25:13
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.50s           2026-01-09T16:25:14
+/opt/airflow/dags/example_report_generation.py                           1           0  0.12s           2026-01-09T16:25:14
+/opt/airflow/dags/example_data_quality.py                                1           0  0.13s           2026-01-09T16:25:14
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.12s           2026-01-09T16:25:14
+================================================================================
+[2026-01-09T16:26:14.506+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py          266  0.01s             1           0  0.06s           2026-01-09T16:25:43
+/opt/airflow/dags/demo_hello_world.py             263  0.03s             1           0  0.08s           2026-01-09T16:25:43
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.42s           2026-01-09T16:25:45
+/opt/airflow/dags/example_report_generation.py                           1           0  0.06s           2026-01-09T16:25:45
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:25:45
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.09s           2026-01-09T16:25:45
+================================================================================
+[2026-01-09T16:26:43.092+0000] {manager.py:738} INFO - Searching for files in /opt/airflow/dags
+[2026-01-09T16:26:43.137+0000] {manager.py:741} INFO - There are 6 files in /opt/airflow/dags
+[2026-01-09T16:26:45.210+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py          297  0.01s             1           0  0.10s           2026-01-09T16:26:14
+/opt/airflow/dags/demo_hello_world.py             294  0.03s             1           0  0.12s           2026-01-09T16:26:14
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.44s           2026-01-09T16:26:16
+/opt/airflow/dags/example_report_generation.py                           1           0  0.09s           2026-01-09T16:26:15
+/opt/airflow/dags/example_data_quality.py                                1           0  0.08s           2026-01-09T16:26:15
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.07s           2026-01-09T16:26:15
+================================================================================
+[2026-01-09T16:27:15.796+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py          328  0.00s             1           0  0.08s           2026-01-09T16:26:45
+/opt/airflow/dags/demo_hello_world.py             325  0.02s             1           0  0.10s           2026-01-09T16:26:45
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.33s           2026-01-09T16:26:46
+/opt/airflow/dags/example_report_generation.py                           1           0  0.06s           2026-01-09T16:26:46
+/opt/airflow/dags/example_data_quality.py                                1           0  0.07s           2026-01-09T16:26:46
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.07s           2026-01-09T16:26:46
+================================================================================
+[2026-01-09T16:27:43.321+0000] {manager.py:738} INFO - Searching for files in /opt/airflow/dags
+[2026-01-09T16:27:43.351+0000] {manager.py:741} INFO - There are 6 files in /opt/airflow/dags
+[2026-01-09T16:27:46.422+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py          359  0.00s             1           0  0.08s           2026-01-09T16:27:15
+/opt/airflow/dags/demo_hello_world.py             356  0.03s             1           0  0.10s           2026-01-09T16:27:15
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.41s           2026-01-09T16:27:17
+/opt/airflow/dags/example_report_generation.py                           1           0  0.07s           2026-01-09T16:27:16
+/opt/airflow/dags/example_data_quality.py                                1           0  0.07s           2026-01-09T16:27:17
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.07s           2026-01-09T16:27:17
+================================================================================
+[2026-01-09T16:28:16.993+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py          390  0.00s             1           0  0.09s           2026-01-09T16:27:46
+/opt/airflow/dags/demo_hello_world.py             387  0.02s             1           0  0.11s           2026-01-09T16:27:46
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.38s           2026-01-09T16:27:47
+/opt/airflow/dags/example_report_generation.py                           1           0  0.06s           2026-01-09T16:27:47
+/opt/airflow/dags/example_data_quality.py                                1           0  0.05s           2026-01-09T16:27:47
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.07s           2026-01-09T16:27:47
+================================================================================
+[2026-01-09T16:28:43.702+0000] {manager.py:738} INFO - Searching for files in /opt/airflow/dags
+[2026-01-09T16:28:43.747+0000] {manager.py:741} INFO - There are 6 files in /opt/airflow/dags
+[2026-01-09T16:28:47.798+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py          423  0.00s             1           0  0.08s           2026-01-09T16:28:17
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.09s           2026-01-09T16:28:31
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.40s           2026-01-09T16:28:18
+/opt/airflow/dags/example_report_generation.py                           1           0  0.08s           2026-01-09T16:28:18
+/opt/airflow/dags/example_data_quality.py                                1           0  0.08s           2026-01-09T16:28:18
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.07s           2026-01-09T16:28:18
+================================================================================
+[2026-01-09T16:29:18.364+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                         PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py          454  0.01s             1           0  0.07s           2026-01-09T16:28:47
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.10s           2026-01-09T16:29:02
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.40s           2026-01-09T16:28:49
+/opt/airflow/dags/example_report_generation.py                           1           0  0.07s           2026-01-09T16:28:48
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:28:48
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.06s           2026-01-09T16:28:49
+================================================================================
+[2026-01-09T16:29:44.223+0000] {manager.py:738} INFO - Searching for files in /opt/airflow/dags
+[2026-01-09T16:29:44.263+0000] {manager.py:741} INFO - There are 6 files in /opt/airflow/dags
+[2026-01-09T16:29:48.432+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.22s           2026-01-09T16:29:18
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.22s           2026-01-09T16:29:33
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.65s           2026-01-09T16:29:20
+/opt/airflow/dags/example_report_generation.py                           1           0  0.07s           2026-01-09T16:29:19
+/opt/airflow/dags/example_data_quality.py                                1           0  0.08s           2026-01-09T16:29:19
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.41s           2026-01-09T16:29:20
+================================================================================
+[2026-01-09T16:30:18.979+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.06s           2026-01-09T16:29:49
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.08s           2026-01-09T16:30:03
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.39s           2026-01-09T16:29:50
+/opt/airflow/dags/example_report_generation.py                           1           0  0.18s           2026-01-09T16:29:50
+/opt/airflow/dags/example_data_quality.py                                1           0  0.16s           2026-01-09T16:29:50
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.07s           2026-01-09T16:29:50
+================================================================================
+[2026-01-09T16:30:44.597+0000] {manager.py:738} INFO - Searching for files in /opt/airflow/dags
+[2026-01-09T16:30:44.633+0000] {manager.py:741} INFO - There are 6 files in /opt/airflow/dags
+[2026-01-09T16:30:49.677+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.20s           2026-01-09T16:30:20
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.07s           2026-01-09T16:30:34
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.34s           2026-01-09T16:30:21
+/opt/airflow/dags/example_report_generation.py                           1           0  0.07s           2026-01-09T16:30:21
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:30:21
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.06s           2026-01-09T16:30:21
+================================================================================
+[2026-01-09T16:31:20.200+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.07s           2026-01-09T16:30:50
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.06s           2026-01-09T16:31:05
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.24s           2026-01-09T16:30:51
+/opt/airflow/dags/example_report_generation.py                           1           0  0.08s           2026-01-09T16:30:51
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:30:51
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.07s           2026-01-09T16:30:51
+================================================================================
+[2026-01-09T16:31:44.635+0000] {manager.py:738} INFO - Searching for files in /opt/airflow/dags
+[2026-01-09T16:31:44.678+0000] {manager.py:741} INFO - There are 6 files in /opt/airflow/dags
+[2026-01-09T16:31:50.743+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.08s           2026-01-09T16:31:21
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.06s           2026-01-09T16:31:35
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.20s           2026-01-09T16:31:22
+/opt/airflow/dags/example_report_generation.py                           1           0  0.06s           2026-01-09T16:31:22
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:31:22
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.07s           2026-01-09T16:31:22
+================================================================================
+[2026-01-09T16:32:21.289+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.07s           2026-01-09T16:31:51
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.06s           2026-01-09T16:32:06
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.27s           2026-01-09T16:31:53
+/opt/airflow/dags/example_report_generation.py                           1           0  0.07s           2026-01-09T16:31:52
+/opt/airflow/dags/example_data_quality.py                                1           0  0.07s           2026-01-09T16:31:52
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.07s           2026-01-09T16:31:53
+================================================================================
+[2026-01-09T16:32:44.743+0000] {manager.py:738} INFO - Searching for files in /opt/airflow/dags
+[2026-01-09T16:32:44.777+0000] {manager.py:741} INFO - There are 6 files in /opt/airflow/dags
+[2026-01-09T16:32:51.834+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.07s           2026-01-09T16:32:22
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.06s           2026-01-09T16:32:36
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.27s           2026-01-09T16:32:23
+/opt/airflow/dags/example_report_generation.py                           1           0  0.07s           2026-01-09T16:32:23
+/opt/airflow/dags/example_data_quality.py                                1           0  0.07s           2026-01-09T16:32:23
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.07s           2026-01-09T16:32:23
+================================================================================
+[2026-01-09T16:33:22.320+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.07s           2026-01-09T16:32:52
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.07s           2026-01-09T16:33:07
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.24s           2026-01-09T16:32:54
+/opt/airflow/dags/example_report_generation.py                           1           0  0.07s           2026-01-09T16:32:53
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:32:54
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.08s           2026-01-09T16:32:54
+================================================================================
+[2026-01-09T16:33:44.780+0000] {manager.py:738} INFO - Searching for files in /opt/airflow/dags
+[2026-01-09T16:33:44.815+0000] {manager.py:741} INFO - There are 6 files in /opt/airflow/dags
+[2026-01-09T16:33:52.878+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.09s           2026-01-09T16:33:23
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.06s           2026-01-09T16:33:37
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.21s           2026-01-09T16:33:24
+/opt/airflow/dags/example_report_generation.py                           1           0  0.07s           2026-01-09T16:33:24
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:33:24
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.07s           2026-01-09T16:33:24
+================================================================================
+[2026-01-09T16:34:23.420+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.08s           2026-01-09T16:33:54
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.06s           2026-01-09T16:34:08
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.26s           2026-01-09T16:33:55
+/opt/airflow/dags/example_report_generation.py                           1           0  0.08s           2026-01-09T16:33:55
+/opt/airflow/dags/example_data_quality.py                                1           0  0.05s           2026-01-09T16:33:55
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.07s           2026-01-09T16:33:55
+================================================================================
+[2026-01-09T16:34:44.852+0000] {manager.py:738} INFO - Searching for files in /opt/airflow/dags
+[2026-01-09T16:34:44.894+0000] {manager.py:741} INFO - There are 6 files in /opt/airflow/dags
+[2026-01-09T16:34:53.976+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.07s           2026-01-09T16:34:24
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.08s           2026-01-09T16:34:38
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.25s           2026-01-09T16:34:25
+/opt/airflow/dags/example_report_generation.py                           1           0  0.08s           2026-01-09T16:34:25
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:34:25
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.09s           2026-01-09T16:34:25
+================================================================================
+[2026-01-09T16:35:24.498+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.07s           2026-01-09T16:34:55
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.07s           2026-01-09T16:35:09
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.22s           2026-01-09T16:34:56
+/opt/airflow/dags/example_report_generation.py                           1           0  0.06s           2026-01-09T16:34:56
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:34:56
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.06s           2026-01-09T16:34:56
+================================================================================
+[2026-01-09T16:35:45.012+0000] {manager.py:738} INFO - Searching for files in /opt/airflow/dags
+[2026-01-09T16:35:45.052+0000] {manager.py:741} INFO - There are 6 files in /opt/airflow/dags
+[2026-01-09T16:35:55.177+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.11s           2026-01-09T16:35:25
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.07s           2026-01-09T16:35:40
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.26s           2026-01-09T16:35:26
+/opt/airflow/dags/example_report_generation.py                           1           0  0.07s           2026-01-09T16:35:26
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:35:26
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.06s           2026-01-09T16:35:26
+================================================================================
+[2026-01-09T16:36:25.754+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.09s           2026-01-09T16:35:56
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.06s           2026-01-09T16:36:10
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.26s           2026-01-09T16:35:57
+/opt/airflow/dags/example_report_generation.py                           1           0  0.07s           2026-01-09T16:35:57
+/opt/airflow/dags/example_data_quality.py                                1           0  0.05s           2026-01-09T16:35:57
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.06s           2026-01-09T16:35:57
+================================================================================
+[2026-01-09T16:36:45.254+0000] {manager.py:738} INFO - Searching for files in /opt/airflow/dags
+[2026-01-09T16:36:45.279+0000] {manager.py:741} INFO - There are 6 files in /opt/airflow/dags
+[2026-01-09T16:36:56.388+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.11s           2026-01-09T16:36:26
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.07s           2026-01-09T16:36:41
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.26s           2026-01-09T16:36:28
+/opt/airflow/dags/example_report_generation.py                           1           0  0.07s           2026-01-09T16:36:27
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:36:27
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.06s           2026-01-09T16:36:28
+================================================================================
+[2026-01-09T16:37:26.942+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.08s           2026-01-09T16:36:57
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.06s           2026-01-09T16:37:11
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.24s           2026-01-09T16:36:58
+/opt/airflow/dags/example_report_generation.py                           1           0  0.07s           2026-01-09T16:36:58
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:36:58
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.07s           2026-01-09T16:36:58
+================================================================================
+[2026-01-09T16:37:45.454+0000] {manager.py:738} INFO - Searching for files in /opt/airflow/dags
+[2026-01-09T16:37:45.497+0000] {manager.py:741} INFO - There are 6 files in /opt/airflow/dags
+[2026-01-09T16:37:57.611+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.09s           2026-01-09T16:37:28
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.07s           2026-01-09T16:37:42
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.25s           2026-01-09T16:37:29
+/opt/airflow/dags/example_report_generation.py                           1           0  0.08s           2026-01-09T16:37:29
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:37:29
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.06s           2026-01-09T16:37:29
+================================================================================
+[2026-01-09T16:38:28.171+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.06s           2026-01-09T16:37:58
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.07s           2026-01-09T16:38:13
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.24s           2026-01-09T16:37:59
+/opt/airflow/dags/example_report_generation.py                           1           0  0.07s           2026-01-09T16:37:59
+/opt/airflow/dags/example_data_quality.py                                1           0  0.07s           2026-01-09T16:37:59
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.06s           2026-01-09T16:37:59
+================================================================================
+[2026-01-09T16:38:45.675+0000] {manager.py:738} INFO - Searching for files in /opt/airflow/dags
+[2026-01-09T16:38:45.717+0000] {manager.py:741} INFO - There are 6 files in /opt/airflow/dags
+[2026-01-09T16:38:58.826+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.06s           2026-01-09T16:38:29
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.10s           2026-01-09T16:38:43
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.25s           2026-01-09T16:38:30
+/opt/airflow/dags/example_report_generation.py                           1           0  0.07s           2026-01-09T16:38:30
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:38:30
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.07s           2026-01-09T16:38:30
+================================================================================
+[2026-01-09T16:39:29.445+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.06s           2026-01-09T16:38:59
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.09s           2026-01-09T16:39:14
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.38s           2026-01-09T16:39:01
+/opt/airflow/dags/example_report_generation.py                           1           0  0.06s           2026-01-09T16:39:00
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:39:01
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.06s           2026-01-09T16:39:01
+================================================================================
+[2026-01-09T16:39:45.944+0000] {manager.py:738} INFO - Searching for files in /opt/airflow/dags
+[2026-01-09T16:39:45.972+0000] {manager.py:741} INFO - There are 6 files in /opt/airflow/dags
+[2026-01-09T16:40:00.103+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.07s           2026-01-09T16:39:30
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.07s           2026-01-09T16:39:44
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.43s           2026-01-09T16:39:31
+/opt/airflow/dags/example_report_generation.py                           1           0  0.09s           2026-01-09T16:39:31
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:39:31
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.07s           2026-01-09T16:39:31
+================================================================================
+[2026-01-09T16:40:30.694+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.07s           2026-01-09T16:40:01
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.08s           2026-01-09T16:40:15
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.39s           2026-01-09T16:40:02
+/opt/airflow/dags/example_report_generation.py                           1           0  0.07s           2026-01-09T16:40:02
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:40:02
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.06s           2026-01-09T16:40:02
+================================================================================
+[2026-01-09T16:40:46.087+0000] {manager.py:738} INFO - Searching for files in /opt/airflow/dags
+[2026-01-09T16:40:46.125+0000] {manager.py:741} INFO - There are 6 files in /opt/airflow/dags
+[2026-01-09T16:41:01.258+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.08s           2026-01-09T16:40:31
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.06s           2026-01-09T16:40:46
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.40s           2026-01-09T16:40:33
+/opt/airflow/dags/example_report_generation.py                           1           0  0.07s           2026-01-09T16:40:32
+/opt/airflow/dags/example_data_quality.py                                1           0  0.05s           2026-01-09T16:40:32
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.07s           2026-01-09T16:40:32
+================================================================================
+[2026-01-09T16:41:31.830+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.07s           2026-01-09T16:41:02
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.06s           2026-01-09T16:41:16
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.35s           2026-01-09T16:41:03
+/opt/airflow/dags/example_report_generation.py                           1           0  0.08s           2026-01-09T16:41:03
+/opt/airflow/dags/example_data_quality.py                                1           0  0.07s           2026-01-09T16:41:03
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.08s           2026-01-09T16:41:03
+================================================================================
+[2026-01-09T16:41:46.233+0000] {manager.py:738} INFO - Searching for files in /opt/airflow/dags
+[2026-01-09T16:41:46.268+0000] {manager.py:741} INFO - There are 6 files in /opt/airflow/dags
+[2026-01-09T16:42:02.489+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.07s           2026-01-09T16:41:32
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.06s           2026-01-09T16:41:47
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.34s           2026-01-09T16:41:34
+/opt/airflow/dags/example_report_generation.py                           1           0  0.07s           2026-01-09T16:41:33
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:41:34
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.07s           2026-01-09T16:41:34
+================================================================================
+[2026-01-09T16:42:33.034+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.07s           2026-01-09T16:42:03
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.06s           2026-01-09T16:42:17
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.33s           2026-01-09T16:42:04
+/opt/airflow/dags/example_report_generation.py                           1           0  0.06s           2026-01-09T16:42:04
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:42:04
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.07s           2026-01-09T16:42:04
+================================================================================
+[2026-01-09T16:42:46.395+0000] {manager.py:738} INFO - Searching for files in /opt/airflow/dags
+[2026-01-09T16:42:46.423+0000] {manager.py:741} INFO - There are 6 files in /opt/airflow/dags
+[2026-01-09T16:43:03.591+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.07s           2026-01-09T16:42:34
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.09s           2026-01-09T16:42:48
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.38s           2026-01-09T16:42:35
+/opt/airflow/dags/example_report_generation.py                           1           0  0.07s           2026-01-09T16:42:35
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:42:35
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.07s           2026-01-09T16:42:35
+================================================================================
+[2026-01-09T16:43:34.266+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.09s           2026-01-09T16:43:04
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.07s           2026-01-09T16:43:19
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.33s           2026-01-09T16:43:05
+/opt/airflow/dags/example_report_generation.py                           1           0  0.08s           2026-01-09T16:43:05
+/opt/airflow/dags/example_data_quality.py                                1           0  0.07s           2026-01-09T16:43:05
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.06s           2026-01-09T16:43:05
+================================================================================
+[2026-01-09T16:43:46.767+0000] {manager.py:738} INFO - Searching for files in /opt/airflow/dags
+[2026-01-09T16:43:46.797+0000] {manager.py:741} INFO - There are 6 files in /opt/airflow/dags
+[2026-01-09T16:44:05.008+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.08s           2026-01-09T16:43:35
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.07s           2026-01-09T16:43:49
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.45s           2026-01-09T16:43:36
+/opt/airflow/dags/example_report_generation.py                           1           0  0.07s           2026-01-09T16:43:36
+/opt/airflow/dags/example_data_quality.py                                1           0  0.08s           2026-01-09T16:43:36
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.14s           2026-01-09T16:43:36
+================================================================================
+[2026-01-09T16:44:35.504+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.07s           2026-01-09T16:44:06
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.06s           2026-01-09T16:44:20
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.31s           2026-01-09T16:44:07
+/opt/airflow/dags/example_report_generation.py                           1           0  0.07s           2026-01-09T16:44:07
+/opt/airflow/dags/example_data_quality.py                                1           0  0.07s           2026-01-09T16:44:07
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.06s           2026-01-09T16:44:07
+================================================================================
+[2026-01-09T16:44:46.890+0000] {manager.py:738} INFO - Searching for files in /opt/airflow/dags
+[2026-01-09T16:44:46.930+0000] {manager.py:741} INFO - There are 6 files in /opt/airflow/dags
+[2026-01-09T16:45:06.115+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                                       PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/example_ml_pipeline.py                                 1           0  0.17s           2026-01-09T16:44:36
+/opt/airflow/dags/demo_hello_world.py                                    1           0  0.07s           2026-01-09T16:44:51
+/opt/airflow/dags/example_etl_pipeline.py                                1           0  0.40s           2026-01-09T16:44:37
+/opt/airflow/dags/example_report_generation.py                           1           0  0.07s           2026-01-09T16:44:37
+/opt/airflow/dags/example_data_quality.py                                1           0  0.06s           2026-01-09T16:44:37
+/opt/airflow/dags/example_api_ingestion.py                               1           0  0.07s           2026-01-09T16:44:37
+================================================================================
