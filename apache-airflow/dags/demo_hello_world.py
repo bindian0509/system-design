@@ -144,18 +144,31 @@ with DAG(
     # Task 8: End marker
     end = EmptyOperator(task_id='end')
 
+    def xython(**context):
+        text = "Python"
+        text.lower().replace("p", "X")
+
+        print(text)
+        logging.info(text)
+        return text
+
+    # Task 9: Finally Final
+    final = PythonOperator(
+        task_id='finally',
+        python_callable=xython)
+
     # Define the DAG structure
     #
     #                    ┌─── high_number_task ───┐
     #                    │                        │
-    # start → hello_bash ─┬─ generate_number → branch ─┼─→ join → summary → end
+    # start → hello_bash ─┬─ generate_number → branch ─┼─→ join → summary → end -> final
     #                                             │                        │
     #                                             └─── low_number_task ────┘
 
     start >> hello_bash >> generate_number >> branch
     branch >> high_number_task >> join
     branch >> low_number_task >> join
-    join >> summary >> end
+    join >> summary >> end >> final
 
 
 """

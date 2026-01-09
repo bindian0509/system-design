@@ -465,3 +465,4 @@ public void testNetworkRecoveryBurst() throws Exception {
 
 The key principle: **Never drop data**. Late events are valuable for crash detection and should always be processed, even if with different handling paths.
 
+
