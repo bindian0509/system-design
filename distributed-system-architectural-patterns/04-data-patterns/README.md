@@ -29,17 +29,18 @@ flowchart TB
 | Event Sourcing | [event-sourcing.md](./event-sourcing.md) | Complete audit trails, temporal queries |
 | Saga | [saga-pattern.md](./saga-pattern.md) | Distributed transactions with eventual consistency |
 | Two-Phase Commit | [two-phase-commit.md](./two-phase-commit.md) | Strong consistency across services |
+| Outbox | [outbox-pattern.md](./outbox-pattern.md) | Reliable event publishing, dual-write problem |
 
 ## Comparison Matrix
 
-| Aspect | CQRS | Event Sourcing | Saga | 2PC |
-|--------|------|----------------|------|-----|
-| **Consistency** | Eventually | Eventually | Eventually | Strong |
-| **Complexity** | Medium | High | High | Medium |
-| **Performance** | High (reads) | Replay overhead | Good | Poor (blocking) |
-| **Audit Trail** | Optional | Complete | Partial | None |
-| **Scalability** | Excellent | Good | Good | Poor |
-| **Use Case** | Read-heavy apps | Financial, legal | Long-running txns | ACID required |
+| Aspect | CQRS | Event Sourcing | Saga | 2PC | Outbox |
+|--------|------|----------------|------|-----|--------|
+| **Consistency** | Eventually | Eventually | Eventually | Strong | Eventually |
+| **Complexity** | Medium | High | High | Medium | Low |
+| **Performance** | High (reads) | Replay overhead | Good | Poor (blocking) | Good |
+| **Audit Trail** | Optional | Complete | Partial | None | Partial |
+| **Scalability** | Excellent | Good | Good | Poor | Excellent |
+| **Use Case** | Read-heavy apps | Financial, legal | Long-running txns | ACID required | Reliable events |
 
 ## Decision Framework
 
@@ -70,6 +71,7 @@ quadrantChart
 | Financial audit | Event Sourcing |
 | Inventory management | CQRS + Event Sourcing |
 | Travel booking | Saga (flight → hotel → car) |
+| Microservice events | Outbox (reliable publishing) |
 
 ## Pattern Combinations
 
@@ -89,6 +91,8 @@ flowchart LR
 - **CQRS + Event Sourcing**: Events as the source of truth, optimized read models
 - **Saga + Event Sourcing**: Event-driven saga orchestration
 - **CQRS + Saga**: Complex workflows with optimized queries
+- **Saga + Outbox**: Reliable saga step execution with guaranteed delivery
+- **CQRS + Outbox**: Reliable sync of read models from write model
 
 ## The CAP Theorem Context
 

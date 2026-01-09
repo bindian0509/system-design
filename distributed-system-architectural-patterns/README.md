@@ -9,7 +9,7 @@ A comprehensive reference guide for distributed system API architectural pattern
 | [API Communication Styles](./01-api-communication-styles/) | REST, GraphQL, gRPC, WebSockets | How services communicate |
 | [API Gateway Patterns](./02-api-gateway-patterns/) | API Gateway, BFF, Aggregator | Entry points and routing |
 | [Resilience Patterns](./03-resilience-patterns/) | Circuit Breaker, Retry, Bulkhead, Rate Limiting, Timeout | Fault tolerance |
-| [Data Patterns](./04-data-patterns/) | CQRS, Event Sourcing, Saga, 2PC | Data management and consistency |
+| [Data Patterns](./04-data-patterns/) | CQRS, Event Sourcing, Saga, 2PC, Outbox | Data management and consistency |
 | [Messaging Patterns](./05-messaging-patterns/) | Pub/Sub, Message Queue, Event-Driven | Asynchronous communication |
 | [Service Discovery & Mesh](./06-service-discovery-mesh/) | Service Registry, Sidecar, Service Mesh | Service orchestration |
 
@@ -98,6 +98,7 @@ Handle data consistency and state management in distributed systems.
 | **CQRS** | Separate read/write scaling | Performance optimization vs complexity |
 | **Event Sourcing** | Audit trails, temporal queries, replay | Complete history vs storage/complexity |
 | **Saga** | Long-running distributed transactions | Eventual consistency vs coordination overhead |
+| **Outbox** | Reliable event publishing | Guaranteed delivery vs at-least-once semantics |
 | **Two-Phase Commit** | Strong consistency requirements | ACID guarantees vs availability |
 
 ### 5. Messaging Patterns
