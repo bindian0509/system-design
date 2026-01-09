@@ -12,6 +12,7 @@ A comprehensive reference guide for distributed system API architectural pattern
 | [Data Patterns](./04-data-patterns/) | CQRS, Event Sourcing, Saga, 2PC, Outbox | Data management and consistency |
 | [Messaging Patterns](./05-messaging-patterns/) | Pub/Sub, Message Queue, Event-Driven | Asynchronous communication |
 | [Service Discovery & Mesh](./06-service-discovery-mesh/) | Service Registry, Sidecar, Service Mesh | Service orchestration |
+| [Deployment & Infrastructure](./07-deployment-infrastructure-patterns/) | Blue-Green, Canary, Feature Flags, Strangler Fig | Deployment strategies |
 
 ---
 
@@ -121,6 +122,19 @@ Manage service-to-service communication at scale.
 | **Sidecar** | Cross-cutting concerns (logging, auth) | Separation of concerns vs resource overhead |
 | **Service Mesh** | Complex microservices observability | Full observability vs operational complexity |
 
+### 7. Deployment & Infrastructure
+
+Deploy, migrate, and manage distributed systems in production.
+
+| Pattern | Best For | Key Trade-off |
+|---------|----------|---------------|
+| **Blue-Green Deployment** | Zero-downtime releases, instant rollback | Safety vs 2x infrastructure cost |
+| **Canary Deployment** | Gradual rollouts, risk mitigation | Lower risk vs complexity |
+| **Rolling Deployment** | Resource-efficient updates | Simple vs slower rollback |
+| **Feature Flags** | Runtime feature control, A/B testing | Flexibility vs tech debt |
+| **Strangler Fig** | Legacy system migration | Incremental vs longer timeline |
+| **Database Per Service** | Microservices data isolation | Autonomy vs distributed complexity |
+
 ---
 
 ## How to Use This Guide
@@ -199,6 +213,9 @@ graph LR
 | Financial audit requirements | Event Sourcing + CQRS |
 | Microservices resilience | Circuit Breaker + Retry + Bulkhead |
 | Multi-tenant SaaS | Rate Limiting + Bulkhead |
+| Zero-downtime deployments | Blue-Green + Canary |
+| Legacy modernization | Strangler Fig + Feature Flags |
+| Microservices data | Database Per Service + Outbox |
 
 ---
 
