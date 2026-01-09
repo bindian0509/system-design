@@ -42,3 +42,4 @@ target/
 .idea/
 .vscode/
 
+apache-airflow/logs/
