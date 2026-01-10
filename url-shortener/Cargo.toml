@@ -1,0 +1,89 @@
+[package]
+name = "url-shortener"
+version = "0.1.0"
+edition = "2021"
+authors = ["URL Shortener Team"]
+description = "A production-grade URL shortener service"
+license = "MIT"
+
+[dependencies]
+# Web framework
+axum = { version = "0.7", features = ["macros", "tracing"] }
+tokio = { version = "1.35", features = ["full"] }
+tower = { version = "0.4", features = ["util", "timeout", "limit"] }
+tower-http = { version = "0.5", features = ["cors", "trace", "compression-gzip", "request-id"] }
+hyper = { version = "1.0", features = ["full"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# AWS SDK
+aws-config = "1.1"
+aws-sdk-dynamodb = "1.9"
+aws-sdk-s3 = "1.9"
+aws-sdk-kinesis = "1.8"
+aws-sdk-secretsmanager = "1.8"
+
+# Redis
+redis = { version = "0.24", features = ["tokio-comp", "connection-manager"] }
+deadpool-redis = "0.14"
+
+# Database (for local/tier 1-2)
+sqlx = { version = "0.7", features = ["runtime-tokio", "sqlite", "postgres", "uuid", "chrono"] }
+
+# Telemetry
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+tracing-opentelemetry = "0.22"
+opentelemetry = { version = "0.21", features = ["rt-tokio"] }
+opentelemetry-otlp = { version = "0.14", features = ["tonic"] }
+opentelemetry_sdk = { version = "0.21", features = ["rt-tokio"] }
+
+# Validation and security
+validator = { version = "0.16", features = ["derive"] }
+argon2 = "0.5"
+jsonwebtoken = "9.2"
+rand = "0.8"
+base62 = "2.0"
+
+# Utilities
+uuid = { version = "1.6", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+thiserror = "1.0"
+anyhow = "1.0"
+async-trait = "0.1"
+once_cell = "1.19"
+url = "2.5"
+sha2 = "0.10"
+hex = "0.4"
+futures = "0.3"
+bytes = "1.5"
+
+# Configuration
+config = "0.14"
+dotenvy = "0.15"
+
+# Rate limiting
+governor = "0.6"
+
+[dev-dependencies]
+tokio-test = "0.4"
+wiremock = "0.5"
+fake = { version = "2.9", features = ["derive"] }
+proptest = "1.4"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[profile.dev]
+opt-level = 0
+debug = true
+
+[[bin]]
+name = "url-shortener"
+path = "src/main.rs"

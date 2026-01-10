@@ -1,0 +1,31 @@
+# Development Dockerfile for URL Shortener
+FROM rust:1.75-slim-bookworm
+
+WORKDIR /app
+
+# Install development dependencies
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install cargo-watch for hot reloading
+RUN cargo install cargo-watch
+
+# Create data directory for SQLite
+RUN mkdir -p /app/data
+
+# Copy the source code
+COPY . .
+
+# Expose the port
+EXPOSE 8080
+
+# Set environment variables
+ENV RUST_LOG=debug
+ENV DATABASE_TYPE=sqlite
+ENV DATABASE_URL=sqlite:/app/data/urls.db?mode=rwc
+ENV CACHE_TYPE=memory
+
+# Run with cargo-watch for development
+CMD ["cargo", "watch", "-x", "run"]

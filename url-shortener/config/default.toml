@@ -1,0 +1,38 @@
+# Default configuration for URL Shortener
+# Override with environment-specific files or environment variables
+
+[server]
+port = 8080
+host = "0.0.0.0"
+timeout_seconds = 30
+
+[database]
+db_type = "sqlite"  # Options: sqlite, postgres, dynamodb
+table_prefix = "url-shortener"
+max_connections = 10
+
+[cache]
+cache_type = "memory"  # Options: memory, redis
+ttl_seconds = 86400  # 24 hours
+pool_size = 10
+
+[aws]
+region = "us-east-1"
+local_mode = false
+
+[telemetry]
+service_name = "url-shortener"
+sample_rate = 1.0
+log_level = "info"
+
+[url]
+base_url = "http://localhost:8080"
+code_length = 7
+max_url_length = 4096
+default_ttl_seconds = 0  # 0 = no expiration
+
+[rate_limit]
+anonymous_rps = 10
+free_rps = 100
+premium_rps = 1000
+enterprise_rps = 10000
