@@ -15,9 +15,8 @@ use tower::ServiceBuilder;
 use tower_http::{
     compression::CompressionLayer,
     cors::CorsLayer,
-    request_id::MakeRequestUuid,
+    request_id::{SetRequestIdLayer, PropagateRequestIdLayer, MakeRequestUuid},
     trace::TraceLayer,
-    ServiceBuilderExt,
 };
 use tracing::info;
 
@@ -64,8 +63,8 @@ async fn main() -> anyhow::Result<()> {
 
     info!(address = %addr, "Server listening");
 
-    // Run with graceful shutdown
-    axum::serve(listener, app)
+    // Run with graceful shutdown, including connect info for client IP
+    axum::serve(listener, app.into_make_service_with_connect_info::<std::net::SocketAddr>())
         .with_graceful_shutdown(shutdown_signal())
         .await?;
 
@@ -123,8 +122,8 @@ fn build_router(state: Arc<AppState>) -> Router {
         .layer(
             ServiceBuilder::new()
                 // Add request ID to all requests
-                .set_x_request_id(MakeRequestUuid)
-                .propagate_x_request_id()
+                .layer(SetRequestIdLayer::x_request_id(MakeRequestUuid))
+                .layer(PropagateRequestIdLayer::x_request_id())
                 // Add tracing
                 .layer(TraceLayer::new_for_http())
                 // Add CORS

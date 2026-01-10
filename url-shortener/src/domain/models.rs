@@ -151,7 +151,7 @@ impl UserTier {
 }
 
 /// Request to create a new URL
-#[derive(Debug, Clone, Deserialize, Validate)]
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
 pub struct CreateUrlRequest {
     /// The destination URL
     #[validate(url, length(max = 4096))]

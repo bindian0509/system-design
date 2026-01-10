@@ -6,9 +6,17 @@ pub mod cache;
 pub mod analytics_repository;
 
 pub use state::AppState;
-pub use url_repository::{UrlRepository, DynamoDbUrlRepository, SqliteUrlRepository};
-pub use cache::{CacheService, RedisCacheService, MemoryCacheService};
+pub use url_repository::{UrlRepository, SqliteUrlRepository};
+pub use cache::{CacheService, MemoryCacheService};
 pub use analytics_repository::AnalyticsRepository;
+
+// AWS/DynamoDB support (optional)
+#[cfg(feature = "aws")]
+pub use url_repository::DynamoDbUrlRepository;
+
+// Redis support (optional)
+#[cfg(feature = "redis")]
+pub use cache::RedisCacheService;
 
 // Mock implementations for testing
 #[cfg(test)]

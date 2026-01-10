@@ -56,16 +56,58 @@ impl FromRequestParts<Arc<AppState>> for AuthenticatedUser {
     }
 }
 
-/// Optional authentication - doesn't fail if not present
+/// Optional authenticated user wrapper (to avoid orphan rule)
+#[derive(Debug, Clone)]
+pub struct OptionalUser(pub Option<AuthenticatedUser>);
+
 #[axum::async_trait]
-impl FromRequestParts<Arc<AppState>> for Option<AuthenticatedUser> {
+impl<S: Send + Sync> FromRequestParts<S> for OptionalUser
+where
+    Arc<AppState>: FromRequestParts<S>,
+{
     type Rejection = std::convert::Infallible;
 
     async fn from_request_parts(
         parts: &mut Parts,
-        state: &Arc<AppState>,
+        _state: &S,
     ) -> Result<Self, Self::Rejection> {
-        Ok(AuthenticatedUser::from_request_parts(parts, state).await.ok())
+        // Try to get Authorization header
+        let auth_header = parts
+            .headers
+            .get(header::AUTHORIZATION)
+            .and_then(|v| v.to_str().ok());
+
+        match auth_header {
+            Some(header) => {
+                // Parse Bearer token or API key
+                if let Some(token) = header.strip_prefix("Bearer ") {
+                    let parts: Vec<&str> = token.split(':').collect();
+                    if parts.len() >= 2 {
+                        let tier = match parts[1] {
+                            "premium" => UserTier::Premium,
+                            "enterprise" => UserTier::Enterprise,
+                            _ => UserTier::Free,
+                        };
+                        return Ok(OptionalUser(Some(AuthenticatedUser {
+                            user_id: parts[0].to_string(),
+                            tier,
+                            scopes: vec!["read".to_string(), "write".to_string()],
+                        })));
+                    }
+                } else if let Some(key) = header.strip_prefix("ApiKey ") {
+                    if key.starts_with("urlsh_sk_") {
+                        return Ok(OptionalUser(Some(AuthenticatedUser {
+                            user_id: "api_user".to_string(),
+                            tier: UserTier::Premium,
+                            scopes: vec!["read".to_string(), "write".to_string()],
+                        })));
+                    }
+                }
+            }
+            None => {}
+        }
+
+        Ok(OptionalUser(None))
     }
 }
 

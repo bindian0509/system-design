@@ -61,10 +61,11 @@ pub async fn create_api_key(
     let id = Uuid::new_v4();
     let now = Utc::now();
 
-    // Generate the actual key
-    let random_bytes: [u8; 24] = rand::random();
-    let encoded = base62::encode(&random_bytes);
-    let full_key = format!("urlsh_sk_{}", encoded);
+    // Generate the actual key using random u128 values
+    let random1: u128 = rand::random();
+    let random2: u64 = rand::random();
+    let encoded = format!("{}{}", base62::encode(random1), base62::encode(random2 as u128));
+    let full_key = format!("urlsh_sk_{}", &encoded[..32]);
     let prefix = full_key[..16].to_string();
 
     // Calculate expiration

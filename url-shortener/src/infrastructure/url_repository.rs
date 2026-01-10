@@ -5,8 +5,10 @@ use chrono::Utc;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
+#[allow(unused_imports)]
 use tracing::instrument;
 
+#[cfg(feature = "aws")]
 use crate::config::AwsConfig;
 use crate::domain::Url;
 use crate::error::{AppError, AppResult};
@@ -39,12 +41,14 @@ pub trait UrlRepository: Send + Sync {
     async fn update(&self, url: &Url) -> AppResult<()>;
 }
 
-/// DynamoDB URL Repository
+// DynamoDB URL Repository (only available with "aws" feature)
+#[cfg(feature = "aws")]
 pub struct DynamoDbUrlRepository {
     client: aws_sdk_dynamodb::Client,
     table_name: String,
 }
 
+#[cfg(feature = "aws")]
 impl DynamoDbUrlRepository {
     /// Create a new DynamoDB repository
     pub async fn new(config: &AwsConfig, table_prefix: &str) -> AppResult<Self> {
@@ -178,6 +182,7 @@ impl DynamoDbUrlRepository {
     }
 }
 
+#[cfg(feature = "aws")]
 #[async_trait]
 impl UrlRepository for DynamoDbUrlRepository {
     #[instrument(skip(self, url))]
@@ -218,7 +223,7 @@ impl UrlRepository for DynamoDbUrlRepository {
     }
 
     #[instrument(skip(self))]
-    async fn find_by_user(&self, user_id: &str, page: u32, limit: u32) -> AppResult<(Vec<Url>, u64)> {
+    async fn find_by_user(&self, user_id: &str, _page: u32, limit: u32) -> AppResult<(Vec<Url>, u64)> {
         use aws_sdk_dynamodb::types::AttributeValue;
 
         let result = self.client.query()

@@ -16,21 +16,38 @@ pub fn init_telemetry(config: &TelemetryConfig) -> AppResult<()> {
     let env_filter = EnvFilter::try_from_default_env()
         .unwrap_or_else(|_| EnvFilter::new(&config.log_level));
 
-    // Create the subscriber
-    let subscriber = tracing_subscriber::registry()
-        .with(env_filter)
-        .with(
-            fmt::layer()
-                .json()
-                .with_target(true)
-                .with_thread_ids(true)
-                .with_file(true)
-                .with_line_number(true)
-        );
+    // Check if we should use JSON format (production) or pretty format (development)
+    let is_production = std::env::var("ENVIRONMENT")
+        .map(|e| e == "production")
+        .unwrap_or(false);
 
-    // Initialize the subscriber
-    subscriber.try_init()
-        .map_err(|e| crate::error::AppError::Config(e.to_string()))?;
+    if is_production {
+        // JSON format for production
+        let subscriber = tracing_subscriber::registry()
+            .with(env_filter)
+            .with(
+                fmt::layer()
+                    .json()
+                    .with_target(true)
+                    .with_file(true)
+                    .with_line_number(true)
+            );
+
+        subscriber.try_init()
+            .map_err(|e| crate::error::AppError::Config(e.to_string()))?;
+    } else {
+        // Pretty format for development
+        let subscriber = tracing_subscriber::registry()
+            .with(env_filter)
+            .with(
+                fmt::layer()
+                    .pretty()
+                    .with_target(true)
+            );
+
+        subscriber.try_init()
+            .map_err(|e| crate::error::AppError::Config(e.to_string()))?;
+    }
 
     tracing::info!(
         service_name = %config.service_name,

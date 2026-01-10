@@ -152,12 +152,14 @@ impl From<sqlx::Error> for AppError {
     }
 }
 
+#[cfg(feature = "redis")]
 impl From<redis::RedisError> for AppError {
     fn from(err: redis::RedisError) -> Self {
         AppError::Cache(err.to_string())
     }
 }
 
+#[cfg(feature = "aws")]
 impl From<aws_sdk_dynamodb::Error> for AppError {
     fn from(err: aws_sdk_dynamodb::Error) -> Self {
         AppError::Database(err.to_string())

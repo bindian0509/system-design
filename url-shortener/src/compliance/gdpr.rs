@@ -110,7 +110,8 @@ impl GdprService {
             }
             ExportFormat::Csv => {
                 let mut wtr = csv::Writer::from_writer(vec![]);
-                wtr.write_record(&["short_code", "original_url", "created_at", "click_count", "is_active"])?;
+                wtr.write_record(&["short_code", "original_url", "created_at", "click_count", "is_active"])
+                    .map_err(|e| crate::error::AppError::Internal(e.to_string()))?;
 
                 for url in &data.urls {
                     wtr.write_record(&[
@@ -119,10 +120,10 @@ impl GdprService {
                         &url.created_at.to_rfc3339(),
                         &url.click_count.to_string(),
                         &url.is_active.to_string(),
-                    ])?;
+                    ]).map_err(|e| crate::error::AppError::Internal(e.to_string()))?;
                 }
 
-                Ok(wtr.into_inner().map_err(|e| crate::error::AppError::Internal(e.to_string()))?)
+                wtr.into_inner().map_err(|e| crate::error::AppError::Internal(e.to_string()))
             }
         }
     }

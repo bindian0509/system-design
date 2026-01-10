@@ -1,14 +1,17 @@
 //! Cache service implementations
 
 use async_trait::async_trait;
-use deadpool_redis::{Config, Pool, Runtime};
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::RwLock;
+#[allow(unused_imports)]
 use tracing::instrument;
 
 use crate::error::{AppError, AppResult};
+
+#[cfg(feature = "redis")]
+use deadpool_redis::{Config, Pool, Runtime};
 
 /// Cache service trait
 #[async_trait]
@@ -32,12 +35,14 @@ pub trait CacheService: Send + Sync {
     async fn get_counter(&self, key: &str) -> AppResult<u64>;
 }
 
-/// Redis cache service
+// Redis cache service (only available with "redis" feature)
+#[cfg(feature = "redis")]
 pub struct RedisCacheService {
     pool: Pool,
     prefix: String,
 }
 
+#[cfg(feature = "redis")]
 impl RedisCacheService {
     /// Create a new Redis cache service
     pub async fn new(redis_url: &str, pool_size: usize) -> AppResult<Self> {
@@ -68,6 +73,7 @@ impl RedisCacheService {
     }
 }
 
+#[cfg(feature = "redis")]
 #[async_trait]
 impl CacheService for RedisCacheService {
     #[instrument(skip(self))]
