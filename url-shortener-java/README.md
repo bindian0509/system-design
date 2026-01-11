@@ -879,6 +879,7 @@ Detailed documentation is available in the `docs/` directory:
 | [CUSTOM_ALIAS_HANDLING.md](docs/CUSTOM_ALIAS_HANDLING.md) | Custom alias validation and collision prevention |
 | [SCALING_GLOBAL_VALIDATION.md](docs/SCALING_GLOBAL_VALIDATION.md) | Scaling strategies for global uniqueness checks |
 | [TTL_EXPIRY_AND_SLUG_REUSE.md](docs/TTL_EXPIRY_AND_SLUG_REUSE.md) | Handling expired URLs and slug reuse across regions |
+| [SPOF_ANALYSIS_AND_MITIGATION.md](docs/SPOF_ANALYSIS_AND_MITIGATION.md) | Single Point of Failure analysis and resilience patterns |
 
 ### Architecture Decisions
 
