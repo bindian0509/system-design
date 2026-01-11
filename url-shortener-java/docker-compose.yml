@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  # URL Shortener Application (Java Spring Boot)
+  url-shortener:
+    container_name: url-shortener-java
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=local
+      - ENVIRONMENT=development
+      - DATABASE_URL=jdbc:sqlite:/app/data/urls.db
+      - CACHE_TYPE=memory
+      - BASE_URL=http://localhost:8080
+      - LOG_LEVEL=DEBUG
+    volumes:
+      - ./src:/app/src
+      - ./pom.xml:/app/pom.xml
+      - url-data:/app/data
+      - maven-cache:/root/.m2
+    networks:
+      - url-shortener-network
+
+  # Redis for caching (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: url-shortener-redis
+    profiles:
+      - redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - url-shortener-network
+
+  # LocalStack for AWS services
+  localstack:
+    image: localstack/localstack:3.0
+    container_name: url-shortener-localstack
+    profiles:
+      - aws
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=dynamodb,s3,kinesis
+      - DEBUG=0
+      - PERSISTENCE=1
+    volumes:
+      - localstack-data:/var/lib/localstack
+    networks:
+      - url-shortener-network
+
+  # Prometheus for metrics
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: url-shortener-prometheus
+    profiles:
+      - monitoring
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    networks:
+      - url-shortener-network
+
+  # Grafana for dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: url-shortener-grafana
+    profiles:
+      - monitoring
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - url-shortener-network
+
+volumes:
+  url-data:
+  redis-data:
+  localstack-data:
+  prometheus-data:
+  grafana-data:
+  maven-cache:
+
+networks:
+  url-shortener-network:
+    driver: bridge

@@ -1,0 +1,29 @@
+# Development Dockerfile with hot reload support
+FROM eclipse-temurin:21-jdk
+
+WORKDIR /app
+
+# Install Maven
+RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
+
+# Create data directory
+RUN mkdir -p /app/data
+
+# Copy pom.xml for dependency resolution
+COPY pom.xml ./
+
+# Download dependencies
+RUN mvn dependency:go-offline -B
+
+# Copy source code
+COPY src ./src
+
+# Expose port
+EXPOSE 8080
+
+# Enable Spring DevTools for hot reload
+ENV SPRING_DEVTOOLS_RESTART_ENABLED=true
+ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+
+# Run with spring-boot:run for dev mode
+CMD ["mvn", "spring-boot:run", "-Dspring-boot.run.jvmArguments=-XX:+UseContainerSupport"]

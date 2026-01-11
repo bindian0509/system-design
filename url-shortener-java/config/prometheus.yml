@@ -1,0 +1,18 @@
+# Prometheus configuration for URL Shortener (Java)
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Scrape the URL Shortener Spring Boot Actuator
+  - job_name: 'url-shortener'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['url-shortener-java:8080']
+    scrape_interval: 10s
+
+  # Scrape Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

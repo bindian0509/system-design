@@ -1,0 +1,150 @@
+server:
+  port: 8080
+  shutdown: graceful
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/plain
+
+spring:
+  application:
+    name: url-shortener
+  profiles:
+    active: ${ENVIRONMENT:local}
+
+  # JPA / Database
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.community.dialect.SQLiteDialect
+
+  datasource:
+    url: ${DATABASE_URL:jdbc:sqlite:./data/urls.db}
+    driver-class-name: org.sqlite.JDBC
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+
+  # Redis Cache
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 10
+          max-idle: 5
+          min-idle: 2
+
+  # Security
+  security:
+    filter:
+      order: 10
+
+# Custom Application Config
+url-shortener:
+  base-url: ${BASE_URL:http://localhost:8080}
+  code-length: 7
+
+  # ID Generation
+  id-generator:
+    range-size: 1000000
+    prefetch-threshold: 0.9
+
+  # Cache
+  cache:
+    type: ${CACHE_TYPE:memory}
+    ttl-seconds: 86400
+
+  # Rate Limiting
+  rate-limit:
+    enabled: true
+    requests-per-minute: 60
+    burst-size: 100
+
+  # URL Defaults
+  url:
+    default-ttl-days: 365
+    max-url-length: 4096
+
+  # AWS (optional)
+  aws:
+    enabled: ${AWS_ENABLED:false}
+    region: ${AWS_REGION:us-east-1}
+    endpoint-url: ${AWS_ENDPOINT_URL:}
+    table-prefix: ${AWS_TABLE_PREFIX:url-shortener}
+
+# Actuator / Metrics
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when_authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.urlshortener: ${LOG_LEVEL:DEBUG}
+    org.springframework.security: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+---
+# Local Profile
+spring:
+  config:
+    activate:
+      on-profile: local
+
+url-shortener:
+  cache:
+    type: memory
+  aws:
+    enabled: false
+
+---
+# Development Profile
+spring:
+  config:
+    activate:
+      on-profile: development
+
+url-shortener:
+  cache:
+    type: redis
+  aws:
+    enabled: true
+    endpoint-url: http://localstack:4566
+
+---
+# Production Profile
+spring:
+  config:
+    activate:
+      on-profile: production
+
+logging:
+  level:
+    root: WARN
+    com.urlshortener: INFO
+
+url-shortener:
+  cache:
+    type: redis
+  aws:
+    enabled: true
