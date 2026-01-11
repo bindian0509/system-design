@@ -1,0 +1,114 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: distributed-rate-limiter
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 50ms
+      lettuce:
+        pool:
+          max-active: 100
+          max-idle: 50
+          min-idle: 10
+          max-wait: 100ms
+        cluster:
+          refresh:
+            adaptive: true
+            period: 30s
+
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=100000,expireAfterWrite=60s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+# Rate Limiter Configuration
+rate-limiter:
+  enabled: true
+  algorithm: SLIDING_WINDOW_COUNTER
+  failure-mode: FAIL_OPEN  # FAIL_OPEN or FAIL_CLOSED
+
+  local-cache:
+    enabled: true
+    sync-interval-ms: 100
+    max-entries: 100000
+    ttl-seconds: 60
+
+  redis:
+    key-prefix: "rl:"
+    timeout-ms: 50
+
+  default-rules:
+    - id: global-limit
+      name: Global Rate Limit
+      scope: GLOBAL
+      max-requests: 10000000
+      window-size-seconds: 60
+      priority: 0
+      enabled: true
+
+    - id: per-user-limit
+      name: Per User Rate Limit
+      scope: USER
+      max-requests: 1000
+      window-size-seconds: 60
+      priority: 10
+      enabled: true
+
+    - id: per-endpoint-limit
+      name: Per Endpoint Rate Limit
+      scope: ENDPOINT
+      endpoint-pattern: "/api/.*"
+      max-requests: 100000
+      window-size-seconds: 60
+      priority: 20
+      enabled: true
+
+    - id: per-user-endpoint-limit
+      name: Per User Per Endpoint Rate Limit
+      scope: USER_ENDPOINT
+      endpoint-pattern: "/api/.*"
+      max-requests: 100
+      window-size-seconds: 60
+      priority: 30
+      enabled: true
+
+# Resilience4j Circuit Breaker Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      redis:
+        register-health-indicator: true
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 100
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 10
+        automatic-transition-from-open-to-half-open-enabled: true
+        record-exceptions:
+          - org.springframework.data.redis.RedisConnectionFailureException
+          - io.lettuce.core.RedisConnectionException
+          - java.util.concurrent.TimeoutException
+
+logging:
+  level:
+    com.ratelimiter: DEBUG
+    org.springframework.data.redis: INFO

@@ -1,0 +1,17 @@
+#!/bin/sh
+# Maven Wrapper script
+# Downloads Maven if necessary and runs it
+
+set -e
+
+MAVEN_HOME="${HOME}/.m2/wrapper/dists/apache-maven-3.9.5"
+MAVEN_CMD="${MAVEN_HOME}/bin/mvn"
+
+# Check if Maven is already installed
+if [ ! -f "$MAVEN_CMD" ]; then
+    echo "Downloading Maven..."
+    mkdir -p "${MAVEN_HOME}"
+    curl -L "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.5/apache-maven-3.9.5-bin.tar.gz" | tar -xz -C "${HOME}/.m2/wrapper/dists/"
+fi
+
+exec "$MAVEN_CMD" "$@"
