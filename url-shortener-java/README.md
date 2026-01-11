@@ -18,6 +18,7 @@ A production-grade URL shortener service built with **Java 21** and **Spring Boo
 - [API Reference](#-api-reference)
 - [Configuration](#-configuration)
 - [ID Generation & Range Allocation](#-id-generation--range-allocation)
+- [Custom Aliases](#-custom-aliases)
 - [Caching Strategy](#-caching-strategy)
 - [Security](#-security)
 - [Rate Limiting](#-rate-limiting)
@@ -27,6 +28,7 @@ A production-grade URL shortener service built with **Java 21** and **Spring Boo
 - [Docker Deployment](#-docker-deployment)
 - [Testing](#-testing)
 - [GDPR Compliance](#-gdpr-compliance)
+- [Documentation](#-documentation)
 - [Contributing](#-contributing)
 
 ---
@@ -55,52 +57,123 @@ A production-grade URL shortener service built with **Java 21** and **Spring Boo
 
 ### High-Level Overview
 
+```mermaid
+flowchart TB
+    subgraph Clients["Client Layer"]
+        Browser["🌐 Browser"]
+        Mobile["📱 Mobile App"]
+        CLI["💻 CLI"]
+        API["🔌 API Clients"]
+    end
+
+    subgraph LB["Load Balancer / CDN"]
+        CloudFront["CloudFront / nginx"]
+    end
+
+    subgraph App["Spring Boot Application"]
+        subgraph Filters["Filter Chain"]
+            Security["Security Filter"]
+            RateLimit["Rate Limiter"]
+            Request["Request Filter"]
+        end
+
+        subgraph Controllers["Controller Layer"]
+            UrlCtrl["UrlController"]
+            RedirectCtrl["RedirectController"]
+            AnalyticsCtrl["AnalyticsController"]
+        end
+
+        subgraph Services["Service Layer"]
+            UrlSvc["UrlService"]
+            IdGen["IdGenerator"]
+            CacheSvc["CacheService"]
+            AnalyticsSvc["AnalyticsService"]
+        end
+
+        subgraph Repos["Repository Layer"]
+            UrlRepo["ShortUrlRepository"]
+        end
+    end
+
+    subgraph Storage["Data Stores"]
+        DB[("SQLite / DynamoDB")]
+        Cache[("Redis Cache")]
+        Metrics[("Prometheus")]
+    end
+
+    Clients --> LB
+    LB --> Filters
+    Filters --> Controllers
+    Controllers --> Services
+    Services --> Repos
+    Repos --> DB
+    Services --> Cache
+    App --> Metrics
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                         CLIENT LAYER                                 │
-│   Browser │ Mobile App │ CLI │ API Clients │ Partner Integrations   │
-└─────────────────────────────────┬───────────────────────────────────┘
-                                  │
-                                  ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                      LOAD BALANCER / CDN                             │
-│              CloudFront (Production) / nginx (Development)          │
-└─────────────────────────────────┬───────────────────────────────────┘
-                                  │
-                                  ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                    SPRING BOOT APPLICATION                           │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                  │
-│  │  Security   │  │    Rate     │  │   Request   │                  │
-│  │   Filter    │──│   Limiter   │──│    Filter   │                  │
-│  └─────────────┘  └─────────────┘  └─────────────┘                  │
-│         │                                                            │
-│         ▼                                                            │
-│  ┌─────────────────────────────────────────────────────────────┐    │
-│  │                      CONTROLLER LAYER                        │    │
-│  │  UrlController │ RedirectController │ AnalyticsController    │    │
-│  └─────────────────────────────────────────────────────────────┘    │
-│         │                                                            │
-│         ▼                                                            │
-│  ┌─────────────────────────────────────────────────────────────┐    │
-│  │                       SERVICE LAYER                          │    │
-│  │  UrlService │ IdGenerator │ CacheService │ AnalyticsService  │    │
-│  └─────────────────────────────────────────────────────────────┘    │
-│         │                                                            │
-│         ▼                                                            │
-│  ┌─────────────────────────────────────────────────────────────┐    │
-│  │                     REPOSITORY LAYER                         │    │
-│  │              ShortUrlRepository (JPA/DynamoDB)               │    │
-│  └─────────────────────────────────────────────────────────────┘    │
-└─────────────────────────────────┬───────────────────────────────────┘
-                                  │
-              ┌───────────────────┼───────────────────┐
-              │                   │                   │
-              ▼                   ▼                   ▼
-       ┌───────────┐       ┌───────────┐       ┌───────────┐
-       │  SQLite/  │       │   Redis   │       │ Prometheus│
-       │ DynamoDB  │       │   Cache   │       │  Metrics  │
-       └───────────┘       └───────────┘       └───────────┘
+
+### Request Flow - URL Shortening
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant LB as Load Balancer
+    participant S as Security Filter
+    participant R as Rate Limiter
+    participant UC as UrlController
+    participant US as UrlService
+    participant IG as IdGenerator
+    participant DB as Database
+    participant Cache as Redis Cache
+
+    C->>LB: POST /api/v1/urls
+    LB->>S: Forward request
+    S->>S: Validate API Key
+    S->>R: Authenticated request
+    R->>R: Check rate limit
+    R->>UC: Allowed request
+    UC->>US: createShortUrl(request)
+    US->>IG: generate()
+    IG-->>US: "abc123"
+    US->>DB: save(shortUrl)
+    DB-->>US: saved
+    US->>Cache: set(code, url)
+    Cache-->>US: ok
+    US-->>UC: CreateUrlResponse
+    UC-->>C: 201 Created
+```
+
+### Request Flow - URL Redirect
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant CDN as CloudFront/CDN
+    participant RC as RedirectController
+    participant US as UrlService
+    participant Cache as Redis Cache
+    participant DB as Database
+    participant AS as AnalyticsService
+
+    C->>CDN: GET /abc123
+    CDN->>CDN: Check cache
+    alt Cache Hit
+        CDN-->>C: 308 Redirect (cached)
+    else Cache Miss
+        CDN->>RC: Forward request
+        RC->>US: getRedirectUrl("abc123")
+        US->>Cache: get("abc123")
+        alt Cache Hit
+            Cache-->>US: originalUrl
+        else Cache Miss
+            US->>DB: findByCode("abc123")
+            DB-->>US: ShortUrl
+            US->>Cache: set("abc123", url)
+        end
+        US->>AS: recordClick(event)
+        US-->>RC: originalUrl
+        RC-->>CDN: 308 Redirect
+        CDN-->>C: 308 Redirect
+    end
 ```
 
 ### Project Structure
@@ -111,60 +184,22 @@ url-shortener-java/
 │   ├── main/
 │   │   ├── java/com/urlshortener/
 │   │   │   ├── UrlShortenerApplication.java    # Application entry point
-│   │   │   │
 │   │   │   ├── controller/                     # REST API Layer
-│   │   │   │   ├── UrlController.java          # URL CRUD operations
-│   │   │   │   ├── RedirectController.java     # Redirect handling
-│   │   │   │   ├── AnalyticsController.java    # Analytics endpoints
-│   │   │   │   └── HealthController.java       # Health probes
-│   │   │   │
-│   │   │   ├── domain/                         # Domain Models
-│   │   │   │   ├── ShortUrl.java               # Core URL entity
-│   │   │   │   ├── ClickEvent.java             # Analytics event
-│   │   │   │   ├── UserTier.java               # User tier enum
-│   │   │   │   └── dto/                        # Data Transfer Objects
-│   │   │   │       ├── CreateUrlRequest.java
-│   │   │   │       ├── CreateUrlResponse.java
-│   │   │   │       ├── UrlResponse.java
-│   │   │   │       └── AnalyticsSummary.java
-│   │   │   │
+│   │   │   ├── domain/                         # Domain Models & DTOs
 │   │   │   ├── service/                        # Business Logic
-│   │   │   │   ├── UrlService.java             # URL operations
-│   │   │   │   ├── IdGenerator.java            # Base62 ID generation
-│   │   │   │   ├── CacheService.java           # Caching abstraction
-│   │   │   │   └── AnalyticsService.java       # Click analytics
-│   │   │   │
 │   │   │   ├── repository/                     # Data Access
-│   │   │   │   └── ShortUrlRepository.java     # JPA repository
-│   │   │   │
 │   │   │   ├── security/                       # Security Layer
-│   │   │   │   ├── SecurityConfig.java         # Spring Security config
-│   │   │   │   ├── ApiKeyAuthFilter.java       # Authentication filter
-│   │   │   │   ├── RateLimitFilter.java        # Rate limiting
-│   │   │   │   └── AuthenticatedUser.java      # User principal
-│   │   │   │
+│   │   │   ├── config/                         # Configuration
 │   │   │   └── exception/                      # Error Handling
-│   │   │       ├── GlobalExceptionHandler.java # Exception handler
-│   │   │       ├── UrlShortenerException.java  # Base exception
-│   │   │       ├── UrlNotFoundException.java
-│   │   │       ├── UrlExpiredException.java
-│   │   │       ├── UrlDisabledException.java
-│   │   │       ├── InvalidUrlException.java
-│   │   │       ├── AliasAlreadyExistsException.java
-│   │   │       └── RateLimitExceededException.java
-│   │   │
 │   │   └── resources/
 │   │       └── application.yml                 # Configuration
-│   │
 │   └── test/java/com/urlshortener/            # Test classes
-│
 ├── docker/
 │   ├── Dockerfile                              # Production build
 │   └── Dockerfile.dev                          # Development build
-│
 ├── config/
 │   └── prometheus.yml                          # Prometheus config
-│
+├── docs/                                       # Documentation
 ├── docker-compose.yml                          # Docker orchestration
 ├── pom.xml                                     # Maven dependencies
 └── README.md                                   # This file
@@ -281,11 +316,11 @@ POST /api/v1/urls
 ```json
 {
   "url": "https://example.com/very/long/url",
-  "customAlias": "my-link",        // Optional: 4-50 chars
-  "ttlSeconds": 86400,             // Optional: 60 - 31,536,000
-  "title": "My Link",              // Optional: max 500 chars
-  "description": "Description",    // Optional: max 2000 chars
-  "tags": ["marketing", "2024"]    // Optional: max 10 tags
+  "customAlias": "my-link",
+  "ttlSeconds": 86400,
+  "title": "My Link",
+  "description": "Description",
+  "tags": ["marketing", "2024"]
 }
 ```
 
@@ -307,51 +342,6 @@ POST /api/v1/urls
 GET /api/v1/urls/{code}
 ```
 
-**Response (200 OK):**
-```json
-{
-  "id": "550e8400-e29b-41d4-a716-446655440000",
-  "shortCode": "my-link",
-  "shortUrl": "http://localhost:8080/my-link",
-  "originalUrl": "https://example.com/very/long/url",
-  "createdAt": "2024-01-15T10:30:00Z",
-  "updatedAt": "2024-01-15T10:30:00Z",
-  "expiresAt": "2024-01-16T10:30:00Z",
-  "clickCount": 42,
-  "isActive": true,
-  "title": "My Link",
-  "description": "Description",
-  "tags": ["marketing", "2024"]
-}
-```
-
-#### List User's URLs
-
-```http
-GET /api/v1/urls?page=0&size=20
-```
-
-**Response (200 OK):**
-```json
-{
-  "content": [...],
-  "page": 0,
-  "size": 20,
-  "totalElements": 150,
-  "totalPages": 8,
-  "hasNext": true,
-  "hasPrevious": false
-}
-```
-
-#### Delete URL
-
-```http
-DELETE /api/v1/urls/{code}
-```
-
-**Response: 204 No Content**
-
 #### Redirect
 
 ```http
@@ -359,41 +349,11 @@ GET /{code}
 ```
 
 **Response: 308 Permanent Redirect**
-```
-Location: https://example.com/very/long/url
-Cache-Control: public, max-age=86400
-```
 
 #### Get Analytics
 
 ```http
 GET /api/v1/analytics/{code}
-```
-
-**Response (200 OK):**
-```json
-{
-  "shortCode": "my-link",
-  "totalClicks": 1250,
-  "uniqueVisitors": 890,
-  "clicksToday": 45,
-  "clicksThisWeek": 312,
-  "clicksThisMonth": 1100,
-  "topCountries": [
-    {"countryCode": "US", "countryName": "United States", "clicks": 450, "percentage": 36.0},
-    {"countryCode": "GB", "countryName": "United Kingdom", "clicks": 200, "percentage": 16.0}
-  ],
-  "topReferrers": [
-    {"referrer": "twitter.com", "clicks": 380, "percentage": 30.4},
-    {"referrer": "direct", "clicks": 290, "percentage": 23.2}
-  ],
-  "deviceBreakdown": {
-    "desktop": 625,
-    "mobile": 500,
-    "tablet": 100,
-    "other": 25
-  }
-}
 ```
 
 #### Health Endpoints
@@ -406,14 +366,6 @@ GET /actuator/prometheus # Prometheus metrics
 
 ### Error Responses
 
-```json
-{
-  "code": "URL_NOT_FOUND",
-  "message": "URL not found: abc123",
-  "timestamp": "2024-01-15T10:30:00Z"
-}
-```
-
 | Code | HTTP Status | Description |
 |------|-------------|-------------|
 | `URL_NOT_FOUND` | 404 | Short URL doesn't exist |
@@ -422,8 +374,6 @@ GET /actuator/prometheus # Prometheus metrics
 | `INVALID_URL` | 400 | Invalid URL format |
 | `ALIAS_TAKEN` | 409 | Custom alias already exists |
 | `RATE_LIMITED` | 429 | Rate limit exceeded |
-| `VALIDATION_ERROR` | 400 | Request validation failed |
-| `INTERNAL_ERROR` | 500 | Unexpected server error |
 
 ---
 
@@ -433,201 +383,180 @@ GET /actuator/prometheus # Prometheus metrics
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `SPRING_PROFILES_ACTIVE` | `local` | Active profile: `local`, `development`, `production` |
-| `DATABASE_URL` | `jdbc:sqlite:./data/urls.db` | Database connection string |
+| `SPRING_PROFILES_ACTIVE` | `local` | Active profile |
+| `DATABASE_URL` | `jdbc:sqlite:./data/urls.db` | Database connection |
 | `CACHE_TYPE` | `memory` | Cache type: `memory` or `redis` |
 | `REDIS_HOST` | `localhost` | Redis server host |
-| `REDIS_PORT` | `6379` | Redis server port |
-| `BASE_URL` | `http://localhost:8080` | Public URL for generated short links |
-| `LOG_LEVEL` | `DEBUG` | Logging level for application |
-| `AWS_ENABLED` | `false` | Enable AWS services (DynamoDB, etc.) |
+| `BASE_URL` | `http://localhost:8080` | Public URL |
 | `AWS_REGION` | `us-east-1` | AWS region |
-
-### Application Profiles
-
-#### Local Profile (Default)
-```yaml
-# SQLite database, in-memory cache
-spring.profiles.active: local
-```
-
-#### Development Profile
-```yaml
-# SQLite database, Redis cache, LocalStack AWS
-spring.profiles.active: development
-```
-
-#### Production Profile
-```yaml
-# DynamoDB, Redis cluster, full AWS
-spring.profiles.active: production
-```
-
-### Configuration File
-
-```yaml
-# application.yml
-url-shortener:
-  base-url: ${BASE_URL:http://localhost:8080}
-  code-length: 7
-
-  id-generator:
-    range-size: 1000000        # IDs per batch
-    prefetch-threshold: 0.9    # Prefetch at 90%
-
-  cache:
-    type: ${CACHE_TYPE:memory}
-    ttl-seconds: 86400         # 24 hours
-
-  rate-limit:
-    enabled: true
-    requests-per-minute: 60
-
-  url:
-    default-ttl-days: 365
-    max-url-length: 4096
-```
 
 ---
 
 ## 🔢 ID Generation & Range Allocation
 
-### Overview
+### Global ID Space Division
 
-The ID generator uses **Base62 encoding** with **distributed range allocation** to ensure:
-- **Zero coordination** for most writes
-- **Guaranteed uniqueness** across all instances
-- **High throughput** (millions of IDs/second)
-- **Predictable, sequential** codes (cache-friendly)
-
-### How It Works
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    DISTRIBUTED COUNTER ALLOCATION                    │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  DynamoDB Counter Table (Single Source of Truth):                   │
-│  ┌────────────────────────────────────────────────────────────┐     │
-│  │  PK: COUNTER                                                │     │
-│  │  current_value: 5,000,000,000                              │     │
-│  │  last_allocated: 2024-01-15T10:30:00Z                      │     │
-│  └────────────────────────────────────────────────────────────┘     │
-│                                                                      │
-│  Instance 1             Instance 2             Instance 3           │
-│  ┌──────────────┐      ┌──────────────┐      ┌──────────────┐      │
-│  │ Range:       │      │ Range:       │      │ Range:       │      │
-│  │ 1B - 1.001B  │      │ 1.001B-1.002B│      │ 1.002B-1.003B│      │
-│  │ Counter:     │      │ Counter:     │      │ Counter:     │      │
-│  │ 1,000,234,567│      │ 1,001,500,000│      │ 1,002,100,000│      │
-│  └──────────────┘      └──────────────┘      └──────────────┘      │
-│       │                      │                      │               │
-│       ▼                      ▼                      ▼               │
-│   Atomic                 Atomic                 Atomic              │
-│   Increment              Increment              Increment           │
-│       │                      │                      │               │
-│       ▼                      ▼                      ▼               │
-│   Base62                 Base62                 Base62              │
-│   Encode                 Encode                 Encode              │
-│       │                      │                      │               │
-│       ▼                      ▼                      ▼               │
-│   "0LY7VK3"              "0LY9AB2"              "0LYCD45"           │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
+```mermaid
+pie showData
+    title Global ID Space (3.52 Trillion)
+    "US-EAST-1 (Americas)" : 1173871535403
+    "EU-WEST-1 (Europe)" : 1173871535403
+    "AP-SOUTH-1 (India/Asia)" : 1173871535402
 ```
 
-### Capacity Calculation
+### Distributed Counter Architecture
 
+```mermaid
+flowchart TB
+    subgraph Global["Global ID Space: 62^7 = 3.52 Trillion"]
+        subgraph US["🇺🇸 US-EAST-1"]
+            US_Range["Range: 0 - 1.17T<br/>Codes: 0000000 - 0LY7VK2"]
+        end
+        subgraph EU["🇪🇺 EU-WEST-1"]
+            EU_Range["Range: 1.17T - 2.34T<br/>Codes: 0LY7VK3 - 0zXdWV5"]
+        end
+        subgraph IN["🇮🇳 AP-SOUTH-1"]
+            IN_Range["Range: 2.34T - 3.52T<br/>Codes: 0zXdWV6 - ZZZZZZZ"]
+        end
+    end
+
+    subgraph DDB["DynamoDB Counter Table"]
+        Counter["Atomic Counter<br/>per Region"]
+    end
+
+    subgraph Pods["Application Pods"]
+        Pod1["Pod 1<br/>Local Range: 0-1M"]
+        Pod2["Pod 2<br/>Local Range: 1M-2M"]
+        Pod3["Pod 3<br/>Local Range: 2M-3M"]
+    end
+
+    US_Range --> Counter
+    EU_Range --> Counter
+    IN_Range --> Counter
+    Counter --> Pod1
+    Counter --> Pod2
+    Counter --> Pod3
 ```
-Base62 Character Set: 0-9, a-z, A-Z (62 characters)
 
-Code Length: 7 characters
-Capacity: 62^7 = 3,521,614,606,208 unique codes
+### ID Generation Flow
 
-At 500M URLs/month:
-  Years of capacity = 3.5 trillion / (500M × 12) ≈ 584 years
+```mermaid
+sequenceDiagram
+    participant App as Application Pod
+    participant Counter as AtomicLong (Local)
+    participant DDB as DynamoDB Counter
+    participant Encoder as Base62 Encoder
 
-At 500M URLs/day:
-  Years of capacity = 3.5 trillion / (500M × 365) ≈ 19 years
+    Note over App: Startup
+    App->>DDB: allocateRange(batchSize=1M)
+    DDB->>DDB: Atomic increment
+    DDB-->>App: Range [0, 999999]
+    App->>Counter: initialize(0)
+
+    Note over App: Generate ID
+    loop For each URL
+        App->>Counter: getAndIncrement()
+        Counter-->>App: 456789
+        App->>Encoder: encode(456789)
+        Encoder-->>App: "00007Dj"
+    end
+
+    Note over App: 90% Depleted
+    App->>DDB: prefetchRange(1M)
+    DDB-->>App: Range [1000000, 1999999]
 ```
 
-### Code Example
+### Capacity Planning
 
-```java
-@Component
-public class IdGenerator {
+| Region | Range Size | At 167M/month | Years |
+|--------|------------|---------------|-------|
+| US-EAST-1 | 1.17 trillion | 584+ years | ∞ |
+| EU-WEST-1 | 1.17 trillion | 584+ years | ∞ |
+| AP-SOUTH-1 | 1.17 trillion | 584+ years | ∞ |
 
-    private static final String CHARSET =
-        "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+---
 
-    private final AtomicLong counter = new AtomicLong(0);
-    private volatile long rangeStart = 0;
-    private volatile long rangeEnd = Long.MAX_VALUE;
+## 🏷️ Custom Aliases
 
-    public String generate() {
-        long value = counter.getAndIncrement();
+Custom aliases (user-defined slugs) exist in a **separate logical namespace** from auto-generated codes.
 
-        if (value >= rangeEnd) {
-            refreshRange();  // Get new range from DynamoDB
-        }
+### How Custom Aliases Work
 
-        return encode(value);
-    }
+```mermaid
+flowchart TB
+    subgraph Input["User Request"]
+        Req["POST /api/v1/urls<br/>{customAlias: 'my-brand'}"]
+    end
 
-    public String encode(long num) {
-        StringBuilder sb = new StringBuilder();
-        while (num > 0) {
-            sb.insert(0, CHARSET.charAt((int)(num % 62)));
-            num /= 62;
-        }
-        return pad(sb.toString(), 7);
-    }
-}
+    subgraph Validation["Validation Pipeline"]
+        V1["Format Check<br/>4-50 chars, alphanumeric + hyphens"]
+        V2["Reserved Pattern Check<br/>Not 7-char Base62"]
+        V3["Global Uniqueness<br/>DynamoDB Global Tables"]
+    end
+
+    subgraph Storage["Storage"]
+        DB[("DynamoDB<br/>is_custom_alias: true")]
+    end
+
+    Req --> V1 --> V2 --> V3 --> DB
 ```
+
+### Custom vs Auto-Generated
+
+| Aspect | Auto-Generated | Custom Alias |
+|--------|----------------|--------------|
+| **Format** | 7 chars, Base62 | 4-50 chars, alphanumeric + hyphens |
+| **Source** | Regional counter | User input |
+| **Uniqueness** | Range-based | Global DB check |
+| **Flag** | `is_custom_alias: false` | `is_custom_alias: true` |
+
+### Cross-Region Custom Alias
+
+```mermaid
+sequenceDiagram
+    participant User as 👤 Mumbai User
+    participant IN as 🇮🇳 AP-SOUTH-1
+    participant DDB as DynamoDB Global
+    participant US as 🇺🇸 US Replica
+    participant EU as 🇪🇺 EU Replica
+
+    User->>IN: Create "my-brand"
+    IN->>DDB: Check global uniqueness
+    par Replicas checked
+        DDB->>US: Exists?
+        DDB->>EU: Exists?
+    end
+    US-->>DDB: No
+    EU-->>DDB: No
+    DDB-->>IN: Unique ✓
+    IN->>DDB: Save (is_custom_alias: true)
+    Note over DDB: Replicated globally
+    IN-->>User: Created ✓
+```
+
+> 📖 **Full Documentation**: [docs/CUSTOM_ALIAS_HANDLING.md](docs/CUSTOM_ALIAS_HANDLING.md)
 
 ---
 
 ## 💾 Caching Strategy
 
-### Write-Through Cache
+### Write-Through Cache Pattern
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                      WRITE-THROUGH CACHING                           │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  CREATE URL Request                                                  │
-│         │                                                            │
-│         ▼                                                            │
-│  ┌─────────────┐                                                    │
-│  │ URL Service │                                                    │
-│  └──────┬──────┘                                                    │
-│         │                                                            │
-│         ├──────────────────┬──────────────────┐                     │
-│         │                  │                  │                      │
-│         ▼                  ▼                  ▼                      │
-│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐             │
-│  │  Database   │    │    Cache    │    │  Response   │             │
-│  │   (Write)   │    │   (Write)   │    │  (Return)   │             │
-│  └─────────────┘    └─────────────┘    └─────────────┘             │
-│                                                                      │
-│  REDIRECT Request                                                    │
-│         │                                                            │
-│         ▼                                                            │
-│  ┌─────────────┐                                                    │
-│  │    Cache    │──── Hit ────▶ Return URL                           │
-│  │   (Read)    │                                                    │
-│  └──────┬──────┘                                                    │
-│         │                                                            │
-│       Miss                                                           │
-│         │                                                            │
-│         ▼                                                            │
-│  ┌─────────────┐                                                    │
-│  │  Database   │──── Found ───▶ Cache + Return                      │
-│  │   (Read)    │                                                    │
-│  └─────────────┘                                                    │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    subgraph Write["Write Path"]
+        W1[Create URL] --> W2[Save to DB]
+        W2 --> W3[Write to Cache]
+        W3 --> W4[Return Response]
+    end
+
+    subgraph Read["Read Path"]
+        R1[Get URL] --> R2{Cache Hit?}
+        R2 -->|Yes| R3[Return from Cache]
+        R2 -->|No| R4[Read from DB]
+        R4 --> R5[Populate Cache]
+        R5 --> R3
+    end
 ```
 
 ### Cache Configuration
@@ -644,31 +573,21 @@ public class IdGenerator {
 
 ### Authentication Flow
 
-```
-Request
-   │
-   ▼
-┌─────────────────────────────────────────┐
-│          ApiKeyAuthFilter               │
-├─────────────────────────────────────────┤
-│ 1. Extract Authorization header         │
-│ 2. Detect auth type (Bearer/ApiKey)     │
-│ 3. Validate credentials                 │
-│ 4. Set SecurityContext                  │
-└─────────────────────────────────────────┘
-   │
-   ▼
-┌─────────────────────────────────────────┐
-│          RateLimitFilter                │
-├─────────────────────────────────────────┤
-│ 1. Get identifier (user/IP)             │
-│ 2. Check rate limit                     │
-│ 3. Add rate limit headers               │
-│ 4. Reject if exceeded                   │
-└─────────────────────────────────────────┘
-   │
-   ▼
-Controller
+```mermaid
+flowchart TD
+    A[Incoming Request] --> B{Has Auth Header?}
+    B -->|No| C[401 Unauthorized]
+    B -->|Yes| D{Auth Type?}
+    D -->|Bearer| E[Parse userId:tier]
+    D -->|ApiKey| F[Validate API Key]
+    E --> G{Valid?}
+    F --> G
+    G -->|No| C
+    G -->|Yes| H[Set SecurityContext]
+    H --> I[Rate Limit Check]
+    I --> J{Within Limit?}
+    J -->|No| K[429 Too Many Requests]
+    J -->|Yes| L[Process Request]
 ```
 
 ### API Key Format
@@ -676,18 +595,6 @@ Controller
 ```
 Format: urlsh_sk_{random_base62_32_chars}
 Example: urlsh_sk_7Kj9mN2pQ4rS6tU8vW0xY1zA3bC5dE
-
-Prefix: urlsh_sk_  (identifies as URL Shortener secret key)
-Random: 32 Base62 characters (192 bits of entropy)
-```
-
-### Security Headers
-
-```http
-X-Content-Type-Options: nosniff
-X-Frame-Options: DENY
-X-XSS-Protection: 1; mode=block
-Strict-Transport-Security: max-age=31536000; includeSubDomains
 ```
 
 ---
@@ -696,53 +603,48 @@ Strict-Transport-Security: max-age=31536000; includeSubDomains
 
 ### Tier-Based Limits
 
-| Tier | Requests/Minute | Burst Size | Custom Alias Length |
-|------|-----------------|------------|---------------------|
-| **Free** | 60 | 100 | 10 characters |
-| **Premium** | 300 | 500 | 20 characters |
-| **Enterprise** | 1000 | 2000 | 50 characters |
-
-### Response Headers
-
-```http
-X-RateLimit-Limit: 60
-X-RateLimit-Remaining: 45
-X-RateLimit-Reset: 1705312260
+```mermaid
+graph LR
+    subgraph Free["Free Tier"]
+        F1["60 req/min"]
+        F2["10 char alias"]
+    end
+    subgraph Premium["Premium Tier"]
+        P1["300 req/min"]
+        P2["20 char alias"]
+    end
+    subgraph Enterprise["Enterprise Tier"]
+        E1["1000 req/min"]
+        E2["50 char alias"]
+    end
 ```
 
-### Rate Limit Exceeded Response
-
-```json
-{
-  "error": "Rate limit exceeded",
-  "code": "RATE_LIMITED",
-  "retryAfter": 60
-}
-```
+| Tier | Requests/Minute | Custom Alias Length |
+|------|-----------------|---------------------|
+| **Free** | 60 | 10 characters |
+| **Premium** | 300 | 20 characters |
+| **Enterprise** | 1000 | 50 characters |
 
 ---
 
 ## 📊 Monitoring & Observability
 
-### Metrics Endpoints
+### Metrics Flow
 
-| Endpoint | Description |
-|----------|-------------|
-| `/actuator/prometheus` | Prometheus metrics |
-| `/actuator/health` | Health information |
-| `/actuator/info` | Application info |
-| `/actuator/metrics` | All metrics |
+```mermaid
+flowchart LR
+    App[Spring Boot App] -->|/actuator/prometheus| Prom[Prometheus]
+    Prom --> Grafana[Grafana]
+    Grafana --> Dashboard[Dashboards]
+    Grafana --> Alerts[Alerts]
+```
 
 ### Key Metrics
 
 ```prometheus
 # HTTP Request metrics
-http_server_requests_seconds_count{method="POST",uri="/api/v1/urls",status="201"}
-http_server_requests_seconds_sum{method="POST",uri="/api/v1/urls",status="201"}
-
-# JVM metrics
-jvm_memory_used_bytes{area="heap"}
-jvm_threads_live_threads
+http_server_requests_seconds_count{method="POST",uri="/api/v1/urls"}
+http_server_requests_seconds_sum{method="POST",uri="/api/v1/urls"}
 
 # Custom business metrics
 url_shortener_urls_created_total
@@ -750,55 +652,55 @@ url_shortener_redirects_total
 url_shortener_cache_hit_ratio
 ```
 
-### Grafana Dashboard Setup
+### Grafana Setup
 
-1. Start monitoring stack:
-   ```bash
-   docker-compose --profile monitoring up -d
-   ```
+```bash
+# Start monitoring stack
+docker-compose --profile monitoring up -d
 
-2. Access Grafana: http://localhost:3000
-   - Username: `admin`
-   - Password: `admin`
-
-3. Add Prometheus data source:
-   - URL: `http://url-shortener-prometheus:9090`
-
-4. Create dashboard with panels:
-   - Request rate
-   - Response times (p50, p95, p99)
-   - Error rate
-   - Cache hit ratio
-   - JVM memory
+# Access Grafana
+open http://localhost:3000
+# Username: admin, Password: admin
+```
 
 ---
 
 ## 🗄️ Database Design
 
-### ShortUrl Entity
+### Entity Relationship
 
-```sql
-CREATE TABLE urls (
-    id              UUID PRIMARY KEY,
-    short_code      VARCHAR(50) NOT NULL UNIQUE,
-    original_url    VARCHAR(4096) NOT NULL,
-    user_id         VARCHAR(255),
-    created_at      TIMESTAMP NOT NULL,
-    updated_at      TIMESTAMP NOT NULL,
-    expires_at      TIMESTAMP,
-    last_accessed_at TIMESTAMP,
-    click_count     BIGINT DEFAULT 0,
-    is_active       BOOLEAN DEFAULT TRUE,
-    is_custom_alias BOOLEAN DEFAULT FALSE,
-    tier            VARCHAR(20) NOT NULL,
-    title           VARCHAR(500),
-    description     VARCHAR(2000),
-    metadata        TEXT
-);
+```mermaid
+erDiagram
+    SHORT_URL {
+        uuid id PK
+        string short_code UK
+        string original_url
+        string user_id FK
+        timestamp created_at
+        timestamp expires_at
+        bigint click_count
+        boolean is_active
+        string tier
+    }
 
-CREATE INDEX idx_short_code ON urls(short_code);
-CREATE INDEX idx_user_id ON urls(user_id);
-CREATE INDEX idx_created_at ON urls(created_at);
+    CLICK_EVENT {
+        uuid event_id PK
+        string short_code FK
+        timestamp timestamp
+        string ip_hash
+        string country_code
+        string device_type
+        string browser
+    }
+
+    USER {
+        string user_id PK
+        string tier
+        timestamp created_at
+    }
+
+    SHORT_URL ||--o{ CLICK_EVENT : "has"
+    USER ||--o{ SHORT_URL : "owns"
 ```
 
 ### Cleanup Policies
@@ -807,51 +709,80 @@ CREATE INDEX idx_created_at ON urls(created_at);
 |-----------|-------------|-------------|---------|
 | Active URLs | - | - | - |
 | Expired URLs | 30 days | 90 days | - |
-| Deleted URLs | Immediate | 30 days | - |
 | Analytics | - | 2 years | S3 Glacier |
 
 ---
 
 ## 📈 Scaling Tiers
 
-### Tier Overview
+### Evolution Path
 
-| Tier | URLs/Month | Architecture | Database | Cache |
-|------|------------|--------------|----------|-------|
-| **Local** | 1K | Single instance | SQLite | Memory |
-| **Tier 1** | 100K | Single instance | PostgreSQL | Memory |
-| **Tier 2** | 10M | Multi-instance | PostgreSQL | Redis |
-| **Tier 3** | 100M | Kubernetes | DynamoDB | Redis Cluster |
-| **Tier 4** | 500M | Multi-region | DynamoDB Global | ElastiCache Global |
+```mermaid
+flowchart LR
+    subgraph T0["Local"]
+        L1["1K URLs/month"]
+        L2["SQLite + Memory"]
+    end
+    subgraph T1["Tier 1"]
+        T1_1["100K URLs/month"]
+        T1_2["PostgreSQL + Memory"]
+    end
+    subgraph T2["Tier 2"]
+        T2_1["10M URLs/month"]
+        T2_2["PostgreSQL + Redis"]
+    end
+    subgraph T3["Tier 3"]
+        T3_1["100M URLs/month"]
+        T3_2["DynamoDB + Redis Cluster"]
+    end
+    subgraph T4["Tier 4"]
+        T4_1["500M URLs/month"]
+        T4_2["DynamoDB Global + ElastiCache"]
+    end
+
+    T0 --> T1 --> T2 --> T3 --> T4
+```
 
 ### Tier 4: Global Architecture
 
-```
-                    ┌─────────────────┐
-                    │   Route 53      │
-                    │ (Latency-based) │
-                    └────────┬────────┘
-                             │
-        ┌────────────────────┼────────────────────┐
-        │                    │                    │
-        ▼                    ▼                    ▼
-┌───────────────┐   ┌───────────────┐   ┌───────────────┐
-│  US-EAST-1    │   │  EU-WEST-1    │   │  AP-SOUTH-1   │
-│  CloudFront   │   │  CloudFront   │   │  CloudFront   │
-│       +       │   │       +       │   │       +       │
-│  Lambda@Edge  │   │  Lambda@Edge  │   │  Lambda@Edge  │
-│       +       │   │       +       │   │       +       │
-│     EKS       │   │     EKS       │   │     EKS       │
-│       +       │   │       +       │   │       +       │
-│ ElastiCache   │   │ ElastiCache   │   │ ElastiCache   │
-└───────┬───────┘   └───────┬───────┘   └───────┬───────┘
-        │                   │                   │
-        └───────────────────┼───────────────────┘
-                            │
-                ┌───────────┴───────────┐
-                │  DynamoDB Global      │
-                │  Tables (Active-Active)│
-                └───────────────────────┘
+```mermaid
+flowchart TB
+    Users["👥 Global Users"]
+
+    subgraph DNS["DNS Layer"]
+        R53["Route 53<br/>(Latency-based)"]
+    end
+
+    subgraph US["🇺🇸 US-EAST-1"]
+        US_CF["CloudFront"]
+        US_EKS["EKS Cluster"]
+        US_Cache["ElastiCache"]
+    end
+
+    subgraph EU["🇪🇺 EU-WEST-1"]
+        EU_CF["CloudFront"]
+        EU_EKS["EKS Cluster"]
+        EU_Cache["ElastiCache"]
+    end
+
+    subgraph IN["🇮🇳 AP-SOUTH-1"]
+        IN_CF["CloudFront"]
+        IN_EKS["EKS Cluster"]
+        IN_Cache["ElastiCache"]
+    end
+
+    subgraph DDB["DynamoDB Global Tables"]
+        DDB_US[("US Replica")]
+        DDB_EU[("EU Replica")]
+        DDB_IN[("IN Replica")]
+    end
+
+    Users --> R53
+    R53 --> US_CF & EU_CF & IN_CF
+    US_CF --> US_EKS --> US_Cache --> DDB_US
+    EU_CF --> EU_EKS --> EU_Cache --> DDB_EU
+    IN_CF --> IN_EKS --> IN_Cache --> DDB_IN
+    DDB_US <--> DDB_EU <--> DDB_IN
 ```
 
 ---
@@ -870,14 +801,8 @@ docker-compose --profile redis up -d
 # Start with monitoring
 docker-compose --profile monitoring up -d
 
-# Start everything
-docker-compose --profile redis --profile monitoring up -d
-
 # View logs
 docker-compose logs -f url-shortener
-
-# Stop all
-docker-compose down
 ```
 
 ### Production Build
@@ -891,63 +816,12 @@ docker run -d \
   --name url-shortener \
   -p 8080:8080 \
   -e SPRING_PROFILES_ACTIVE=production \
-  -e DATABASE_URL=jdbc:postgresql://db:5432/urls \
-  -e REDIS_HOST=redis \
-  -e BASE_URL=https://short.example.com \
   url-shortener:latest
-```
-
-### Kubernetes Deployment
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: url-shortener
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: url-shortener
-  template:
-    metadata:
-      labels:
-        app: url-shortener
-    spec:
-      containers:
-      - name: url-shortener
-        image: url-shortener:latest
-        ports:
-        - containerPort: 8080
-        env:
-        - name: SPRING_PROFILES_ACTIVE
-          value: "production"
-        resources:
-          requests:
-            memory: "512Mi"
-            cpu: "500m"
-          limits:
-            memory: "1Gi"
-            cpu: "1000m"
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /ready
-            port: 8080
-          initialDelaySeconds: 5
-          periodSeconds: 5
 ```
 
 ---
 
 ## 🧪 Testing
-
-### Run Tests
 
 ```bash
 # All tests
@@ -955,22 +829,10 @@ spec:
 
 # With coverage report
 ./mvnw test jacoco:report
-# Report: target/site/jacoco/index.html
 
 # Integration tests
 ./mvnw verify -P integration-test
-
-# Specific test class
-./mvnw test -Dtest=IdGeneratorTest
 ```
-
-### Test Categories
-
-| Type | Location | Description |
-|------|----------|-------------|
-| Unit | `src/test/java` | Service and utility tests |
-| Integration | `src/test/java` | Repository and API tests |
-| E2E | `src/test/java` | Full flow tests |
 
 ---
 
@@ -978,18 +840,71 @@ spec:
 
 ### Data Subject Rights
 
+```mermaid
+flowchart LR
+    User["Data Subject"]
+
+    subgraph Rights["GDPR Rights"]
+        Access["Right to Access"]
+        Erasure["Right to Erasure"]
+        Port["Data Portability"]
+    end
+
+    subgraph API["Compliance API"]
+        Export["GET /gdpr/export"]
+        Delete["DELETE /gdpr/erasure"]
+    end
+
+    User --> Rights
+    Access --> Export
+    Erasure --> Delete
+    Port --> Export
+```
+
 | Right | Endpoint | Description |
 |-------|----------|-------------|
 | Access | `GET /api/v1/compliance/gdpr/export` | Export all user data |
 | Erasure | `DELETE /api/v1/compliance/gdpr/erasure` | Delete all user data |
 | Portability | `GET /api/v1/compliance/gdpr/export?format=csv` | Export in portable format |
 
-### Data Retention
+---
 
-- Active URLs: Until deleted or expired
-- Deleted URLs: Hard deleted after 30 days
-- Analytics: Anonymized after 2 years
-- Audit Logs: Retained for 7 years
+## 📖 Documentation
+
+Detailed documentation is available in the `docs/` directory:
+
+| Document | Description |
+|----------|-------------|
+| [GLOBAL_RANGE_ALLOCATION.md](docs/GLOBAL_RANGE_ALLOCATION.md) | How distributed ID generation works across regions |
+| [CUSTOM_ALIAS_HANDLING.md](docs/CUSTOM_ALIAS_HANDLING.md) | Custom alias validation and collision prevention |
+
+### Architecture Decisions
+
+```mermaid
+mindmap
+  root((URL Shortener<br/>Architecture))
+    ID Generation
+      Base62 Encoding
+      Regional Ranges
+      Atomic Counters
+      Prefetch Strategy
+    Custom Aliases
+      Format Validation
+      Global Uniqueness
+      Collision Prevention
+    Storage
+      DynamoDB Global Tables
+      Write-through Cache
+      TTL-based Cleanup
+    Security
+      API Key Auth
+      Rate Limiting
+      GDPR Compliance
+    Observability
+      Prometheus Metrics
+      Distributed Tracing
+      Alerting
+```
 
 ---
 
