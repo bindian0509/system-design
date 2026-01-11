@@ -10,7 +10,7 @@ flowchart TD
         T1["T=0: User creates 'promo2024'"]
         T2["T=30 days: URL expires (TTL)"]
         T3["T=31 days: New user wants 'promo2024'"]
-        
+
         Issue["Caches still think 'promo2024' exists!<br/>New creation blocked incorrectly"]
     end
 
@@ -73,10 +73,10 @@ flowchart LR
 ```java
 @Component
 public class CountingBloomFilterService {
-    
+
     // Counting Bloom Filter using Redis
     private static final String CBF_PREFIX = "cbf:alias:";
-    
+
     public void add(String alias) {
         byte[] hash = hashAlias(alias);
         for (int i = 0; i < NUM_HASH_FUNCTIONS; i++) {
@@ -84,7 +84,7 @@ public class CountingBloomFilterService {
             redisTemplate.opsForValue().increment(CBF_PREFIX + position);
         }
     }
-    
+
     public void remove(String alias) {
         byte[] hash = hashAlias(alias);
         for (int i = 0; i < NUM_HASH_FUNCTIONS; i++) {
@@ -92,7 +92,7 @@ public class CountingBloomFilterService {
             redisTemplate.opsForValue().decrement(CBF_PREFIX + position);
         }
     }
-    
+
     public boolean mightExist(String alias) {
         byte[] hash = hashAlias(alias);
         for (int i = 0; i < NUM_HASH_FUNCTIONS; i++) {
@@ -139,30 +139,30 @@ flowchart TB
 ```java
 @Component
 public class RotatingBloomFilter {
-    
+
     private final Duration rotationPeriod = Duration.ofDays(14);
     private RBloomFilter<String> currentFilter;
     private RBloomFilter<String> previousFilter;
-    
+
     @Scheduled(fixedRate = 14, timeUnit = TimeUnit.DAYS)
     public void rotate() {
         // Discard old previous, current becomes previous
         redisson.getBloomFilter("bloom:archive").delete();
         previousFilter.rename("bloom:archive");
         currentFilter.rename("bloom:previous");
-        
+
         // Create new current
         currentFilter = redisson.getBloomFilter("bloom:current");
         currentFilter.tryInit(expectedInsertions, falsePositiveRate);
-        
+
         log.info("Rotated Bloom filters");
     }
-    
+
     public boolean mightExist(String alias) {
-        return currentFilter.contains(alias) || 
+        return currentFilter.contains(alias) ||
                previousFilter.contains(alias);
     }
-    
+
     public void add(String alias) {
         currentFilter.add(alias);
     }
@@ -215,10 +215,10 @@ sequenceDiagram
 
     Note over DDB: URL expires (TTL)
     DDB->>DDB: Background delete 'promo2024'
-    
+
     Note over App: New user requests 'promo2024'
     App->>DAX: exists('promo2024')?
-    
+
     alt DAX cache still has stale entry
         DAX-->>App: true (stale!)
         Note over App: Incorrectly blocked
@@ -254,7 +254,7 @@ flowchart TD
 ```java
 @Configuration
 public class DaxTtlConfig {
-    
+
     // Set DAX TTL shorter than minimum URL TTL
     // If min URL TTL = 1 day, set DAX TTL = 1 hour
     @Bean
@@ -268,24 +268,24 @@ public class DaxTtlConfig {
 
 @Service
 public class TtlAwareAliasChecker {
-    
+
     public boolean exists(String alias) {
         // First check DAX
         Optional<ShortUrl> cached = daxRepository.findByShortCode(alias);
-        
+
         if (cached.isEmpty()) {
             return false;
         }
-        
+
         // Verify not expired (DAX might have stale data)
         ShortUrl url = cached.get();
-        if (url.getExpiresAt() != null && 
+        if (url.getExpiresAt() != null &&
             url.getExpiresAt().isBefore(Instant.now())) {
             // Expired! Invalidate DAX cache
             daxRepository.evict(alias);
             return false;
         }
-        
+
         return true;
     }
 }
@@ -378,7 +378,7 @@ flowchart TD
 flowchart TB
     subgraph TTLAlignment["TTL Alignment Strategy"]
         Rule["Cache TTL < Source TTL"]
-        
+
         L1_TTL["L1: 5 minutes"]
         L2_TTL["L2: 30 minutes"]
         L3_TTL["L3: 2 hours"]
@@ -398,10 +398,10 @@ flowchart TB
 ```java
 // Lambda function triggered by DynamoDB Streams
 public class CacheInvalidationHandler implements RequestHandler<DynamodbEvent, Void> {
-    
+
     private final RedisTemplate<String, Object> redis;
     private final SnsClient sns;
-    
+
     @Override
     public Void handleRequest(DynamodbEvent event, Context context) {
         for (DynamodbStreamRecord record : event.getRecords()) {
@@ -409,26 +409,26 @@ public class CacheInvalidationHandler implements RequestHandler<DynamodbEvent, V
                 // URL was deleted (TTL or manual)
                 String alias = record.getDynamodb().getKeys()
                     .get("short_code").getS();
-                
+
                 invalidateAllCaches(alias);
             }
         }
         return null;
     }
-    
+
     private void invalidateAllCaches(String alias) {
         // L2: Redis (direct)
         redis.delete("alias:" + alias);
-        
+
         // L1: Caffeine (via SNS to all instances)
         sns.publish(PublishRequest.builder()
             .topicArn(CACHE_INVALIDATION_TOPIC)
             .message(alias)
             .build());
-        
+
         // L3: DAX (via DynamoDB - automatic)
         // DAX watches DynamoDB streams internally
-        
+
         log.info("Invalidated caches for expired alias: {}", alias);
     }
 }
@@ -438,9 +438,9 @@ public class CacheInvalidationHandler implements RequestHandler<DynamodbEvent, V
 // Application-side SNS listener for L1 invalidation
 @Component
 public class L1CacheInvalidationListener {
-    
+
     private final Cache<String, Boolean> l1Cache;
-    
+
     @SqsListener("cache-invalidation-queue")
     public void onInvalidation(String alias) {
         l1Cache.invalidate(alias);
@@ -464,7 +464,7 @@ sequenceDiagram
     Note over DDB: TTL expires, record deleted
     DDB->>Stream: REMOVE event
     Stream->>Lambda: Trigger
-    
+
     par Invalidate L2
         Lambda->>Redis: DELETE alias:promo2024
     and Invalidate L1 (all instances)
@@ -512,10 +512,10 @@ sequenceDiagram
 
     Queue->>Validator: Process
     Validator->>DDB: Check 'promo2024' status
-    
+
     Note over DDB: Old record deleted by TTL<br/>New PENDING record exists
     DDB-->>Validator: Only PENDING exists
-    
+
     Validator->>DDB: Update status → ACTIVE
     Validator-->>User: Webhook: confirmed ✓
 ```
@@ -533,7 +533,7 @@ sequenceDiagram
     User2->>DDB: Create 'promo2024' (PENDING)
     Note over DDB: TTL triggers, deletes old record
     Note over DDB: New PENDING record remains
-    
+
     DDB-->>User2: Validated → ACTIVE ✓
 ```
 
@@ -577,25 +577,25 @@ flowchart TB
 ```java
 @Component
 public class ConsistentHashTtlHandler {
-    
+
     private final ConsistentHash<String> hashRing;
     private final SnsClient sns;
-    
+
     // Called when DynamoDB TTL deletes a record
     @DynamoDbStreamListener
     public void onTtlExpiry(DynamodbStreamRecord record) {
         if (!"REMOVE".equals(record.getEventName())) return;
-        
+
         String alias = record.getDynamodb().getKeys()
             .get("short_code").getS();
         String ownerRegion = hashRing.get(alias);
-        
+
         if (currentRegion.equals(ownerRegion)) {
             // We are the owner - broadcast to other regions
             broadcastInvalidation(alias);
         }
     }
-    
+
     private void broadcastInvalidation(String alias) {
         // SNS topic with cross-region subscriptions
         sns.publish(PublishRequest.builder()
@@ -603,7 +603,7 @@ public class ConsistentHashTtlHandler {
             .message(new InvalidationMessage(alias, Instant.now()).toJson())
             .build());
     }
-    
+
     @SnsListener("invalidation-queue")
     public void onInvalidationReceived(InvalidationMessage msg) {
         // Invalidate local caches
@@ -625,10 +625,10 @@ sequenceDiagram
 
     Note over EU_DDB: TTL expires 'promo2024'
     EU_DDB->>EU_App: Stream: REMOVE
-    
+
     EU_App->>EU_App: I own 'promo2024' (hash)
     EU_App->>SNS: Broadcast invalidation
-    
+
     par Fan out
         SNS->>US_App: Invalidate 'promo2024'
         US_App->>US_App: Clear local caches
@@ -706,24 +706,24 @@ flowchart TB
 ```java
 @Service
 public class TtlAwareAliasService {
-    
+
     private final CountingBloomFilter bloomFilter;
     private final DaxRepository daxRepository;
     private final ShortUrlRepository repository;
-    
+
     public boolean canCreate(String alias) {
         // Step 1: Counting Bloom Filter (sub-ms)
         if (!bloomFilter.mightExist(alias)) {
             return true; // Definitely available
         }
-        
+
         // Step 2: DAX check (ms)
         Optional<ShortUrl> cached = daxRepository.findByShortCode(alias);
         if (cached.isEmpty()) {
             // Bloom filter false positive
             return true;
         }
-        
+
         // Step 3: Check if expired
         ShortUrl url = cached.get();
         if (isExpired(url)) {
@@ -732,27 +732,27 @@ public class TtlAwareAliasService {
             triggerCleanup(alias);
             return true;
         }
-        
+
         return false; // Alias in use
     }
-    
+
     // Called by DynamoDB Streams Lambda
     @SnsListener("alias-ttl-expired")
     public void onAliasExpired(String alias) {
         // Remove from Counting Bloom Filter
         bloomFilter.remove(alias);
-        
+
         // DAX auto-invalidates via DynamoDB Streams
         log.info("Alias {} expired and removed from bloom filter", alias);
     }
-    
+
     public void createAlias(String alias, String url) {
         if (!canCreate(alias)) {
             throw new AliasAlreadyExistsException(alias);
         }
-        
+
         repository.save(/* ... */);
-        
+
         // Add to Counting Bloom Filter
         bloomFilter.add(alias);
     }
