@@ -877,6 +877,7 @@ Detailed documentation is available in the `docs/` directory:
 |----------|-------------|
 | [GLOBAL_RANGE_ALLOCATION.md](docs/GLOBAL_RANGE_ALLOCATION.md) | How distributed ID generation works across regions |
 | [CUSTOM_ALIAS_HANDLING.md](docs/CUSTOM_ALIAS_HANDLING.md) | Custom alias validation and collision prevention |
+| [SCALING_GLOBAL_VALIDATION.md](docs/SCALING_GLOBAL_VALIDATION.md) | Scaling strategies for global uniqueness checks |
 
 ### Architecture Decisions
 
