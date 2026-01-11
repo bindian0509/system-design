@@ -52,42 +52,42 @@ flowchart TB
 ```java
 @Service
 public class BloomFilterAliasChecker {
-    
+
     private final RedissonClient redisson;
     private final ShortUrlRepository repository;
-    
+
     // Bloom filter with 0.1% false positive rate
     // Size: ~1.2GB for 1 billion entries
     private static final String BLOOM_FILTER_KEY = "url:aliases:bloom";
-    
+
     public boolean mightExist(String alias) {
         RBloomFilter<String> bloomFilter = redisson.getBloomFilter(BLOOM_FILTER_KEY);
         return bloomFilter.contains(alias);
     }
-    
+
     public boolean checkAndCreate(String alias, String url) {
         // Step 1: Fast Bloom filter check (local, <1ms)
         if (!mightExist(alias)) {
             // Definitely doesn't exist - create without DB query
             return createAlias(alias, url);
         }
-        
+
         // Step 2: Bloom filter says "might exist" - verify with DB
         if (repository.existsByShortCode(alias)) {
             throw new AliasAlreadyExistsException(alias);
         }
-        
+
         // False positive - create the alias
         return createAlias(alias, url);
     }
-    
+
     private boolean createAlias(String alias, String url) {
         ShortUrl saved = repository.save(/* ... */);
-        
+
         // Add to Bloom filter for future checks
         RBloomFilter<String> bloomFilter = redisson.getBloomFilter(BLOOM_FILTER_KEY);
         bloomFilter.add(alias);
-        
+
         return true;
     }
 }
@@ -143,7 +143,7 @@ flowchart LR
 ```java
 @Configuration
 public class DaxConfig {
-    
+
     @Bean
     public DynamoDbClient dynamoDbClient() {
         // Use DAX endpoint instead of direct DynamoDB
@@ -174,11 +174,11 @@ flowchart TB
     subgraph Strategy["Regional Prefix Strategy"]
         User["User requests: 'my-brand'"]
         Region{"Which region?"}
-        
+
         Region -->|US| US_Alias["Stored as: us-my-brand"]
         Region -->|EU| EU_Alias["Stored as: eu-my-brand"]
         Region -->|IN| IN_Alias["Stored as: in-my-brand"]
-        
+
         US_Alias --> US_Check["Check only US partition"]
         EU_Alias --> EU_Check["Check only EU partition"]
         IN_Alias --> IN_Check["Check only IN partition"]
@@ -195,38 +195,38 @@ flowchart TB
 ```java
 @Service
 public class RegionalAliasService {
-    
+
     @Value("${AWS_REGION}")
     private String region;
-    
+
     public String createAlias(String alias, String url) {
         // Add region prefix internally
         String prefixedAlias = region + "-" + alias;
-        
+
         // Only check local region's partition
         if (repository.existsByShortCodeAndRegion(prefixedAlias, region)) {
             throw new AliasAlreadyExistsException(alias);
         }
-        
+
         // Save with prefix
         repository.save(ShortUrl.builder()
             .shortCode(prefixedAlias)
             .displayCode(alias)  // User sees this
             .region(region)
             .build());
-        
+
         return alias;
     }
-    
+
     public String resolve(String alias, String requestRegion) {
         // Try current region first
         String prefixedAlias = requestRegion + "-" + alias;
         Optional<ShortUrl> url = repository.findByShortCode(prefixedAlias);
-        
+
         if (url.isPresent()) {
             return url.get().getOriginalUrl();
         }
-        
+
         // Fallback: check other regions (rare)
         return checkOtherRegions(alias);
     }
@@ -277,11 +277,11 @@ flowchart TB
 ```java
 @Service
 public class HierarchicalAliasCache {
-    
+
     private final Cache<String, Boolean> l1Cache;  // Caffeine
     private final RedisTemplate<String, Boolean> l2Cache;  // Redis
     private final DynamoDbClient l3Client;  // DAX
-    
+
     public boolean exists(String alias) {
         // L1: Check in-process cache (nanoseconds)
         Boolean l1Result = l1Cache.getIfPresent(alias);
@@ -289,7 +289,7 @@ public class HierarchicalAliasCache {
             metrics.increment("cache.l1.hit");
             return l1Result;
         }
-        
+
         // L2: Check regional Redis (sub-millisecond)
         Boolean l2Result = l2Cache.opsForValue().get("alias:" + alias);
         if (l2Result != null) {
@@ -297,14 +297,14 @@ public class HierarchicalAliasCache {
             l1Cache.put(alias, l2Result);
             return l2Result;
         }
-        
+
         // L3: Check DAX (milliseconds)
         boolean exists = checkDax(alias);
-        
+
         // Populate caches
         l1Cache.put(alias, exists);
         l2Cache.opsForValue().set("alias:" + alias, exists, Duration.ofHours(1));
-        
+
         return exists;
     }
 }
@@ -339,12 +339,12 @@ sequenceDiagram
     API->>API: Quick local checks only
     API->>DDB: Optimistic save (pending status)
     API-->>User: 202 Accepted (pending)
-    
+
     API->>Queue: Validate async
-    
+
     Queue->>Validator: Process validation
     Validator->>DDB: Global uniqueness check
-    
+
     alt Unique
         Validator->>DDB: Update status → active
         Validator->>User: Webhook: confirmed
@@ -359,25 +359,25 @@ sequenceDiagram
 ```java
 @Service
 public class AsyncAliasValidator {
-    
+
     private final SqsTemplate sqsTemplate;
-    
+
     public CreateUrlResponse createAliasAsync(CreateUrlRequest request) {
         String alias = request.customAlias();
-        
+
         // Quick local validation only
         validateFormat(alias);
-        
+
         // Optimistic create with PENDING status
         ShortUrl pending = repository.save(ShortUrl.builder()
             .shortCode(alias)
             .status(UrlStatus.PENDING)
             .build());
-        
+
         // Queue for async validation
-        sqsTemplate.send("alias-validation-queue", 
+        sqsTemplate.send("alias-validation-queue",
             new ValidationMessage(alias, pending.getId()));
-        
+
         return new CreateUrlResponse(
             pending.getId(),
             alias,
@@ -385,12 +385,12 @@ public class AsyncAliasValidator {
             "Alias is being validated. You will receive a webhook notification."
         );
     }
-    
+
     @SqsListener("alias-validation-queue")
     public void validateAlias(ValidationMessage message) {
         // Full global validation
         boolean isUnique = performGlobalCheck(message.alias());
-        
+
         if (isUnique) {
             repository.updateStatus(message.id(), UrlStatus.ACTIVE);
             webhookService.notify(message.userId(), "alias_confirmed", message.alias());
@@ -412,7 +412,7 @@ Assign alias "ownership" to specific regions based on hash:
 flowchart TB
     subgraph Hashing["Consistent Hash Ring"]
         Ring["Hash Ring<br/>0 → 2^32"]
-        
+
         US_Range["US owns: 0 - 1.4B"]
         EU_Range["EU owns: 1.4B - 2.8B"]
         IN_Range["IN owns: 2.8B - 4.3B"]
@@ -431,11 +431,11 @@ flowchart TB
 #### Implementation
 
 ```java
-@Service  
+@Service
 public class ConsistentHashAliasChecker {
-    
+
     private final ConsistentHash<String> hashRing;
-    
+
     @PostConstruct
     public void init() {
         // Build hash ring with regions
@@ -445,14 +445,14 @@ public class ConsistentHashAliasChecker {
             List.of("us-east-1", "eu-west-1", "ap-south-1")
         );
     }
-    
+
     public String getOwnerRegion(String alias) {
         return hashRing.get(alias);
     }
-    
+
     public boolean checkUniqueness(String alias) {
         String ownerRegion = getOwnerRegion(alias);
-        
+
         if (ownerRegion.equals(currentRegion)) {
             // We own this alias - check locally
             return !repository.existsByShortCode(alias);
@@ -477,7 +477,7 @@ quadrantChart
     quadrant-2 Over-engineered
     quadrant-3 Quick Wins
     quadrant-4 Avoid
-    
+
     Bloom Filter: [0.3, 0.9]
     DAX: [0.2, 0.7]
     Regional Prefix: [0.4, 0.6]
