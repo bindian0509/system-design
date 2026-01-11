@@ -1,215 +1,329 @@
-# System Design for Engineering Managers
+# System Design Knowledge Base
 
-A curated collection of production-grade system design case studies with complete implementations, architecture diagrams, and detailed documentation. Perfect for engineering managers, senior engineers, and anyone preparing for system design interviews.
-
----
-
-## 📚 Table of Contents
-
-| Topic                                                                   | Complexity | Key Concepts                                           |
-| ----------------------------------------------------------------------- | ---------- | ------------------------------------------------------ |
-| [🏦 Financial Clearing House](#-financial-clearing-house)               | Advanced   | Distributed Transactions, Graph Algorithms, Settlement |
-| [📊 Fintech Data Platform](#-fintech-data-platform)                     | Advanced   | CDC, Event Streaming, HTAP, Data Lake                  |
-| [🛒 E-Commerce Merchandise Browsing](#-e-commerce-merchandise-browsing) | Advanced   | Real-time Analytics, Personalization, Batch Processing |
+> A comprehensive collection of system design case studies, architectural patterns, production-grade implementations, and interview preparation resources.
 
 ---
 
-## 🏦 Financial Clearing House
+## 📖 Glossary & Quick Navigation
 
-**[→ View Full Documentation](./financial-clearing-house/README.md)**
-
-A complete interbank clearing house system that demonstrates how financial institutions settle transactions efficiently at the end of each business day.
-
-### What You'll Learn
-
-- **Pairwise Balance Calculation** — Calculate net balances between each pair of banks using efficient data structures
-- **Multilateral Netting Algorithm** — Minimize actual money movements using graph-based optimization (93%+ netting efficiency)
-- **Settlement System Design** — Fault-tolerant architecture for handling billions of transactions with exactly-once guarantees
-
-### Key Highlights
-
-```
-Input: 9 transactions totaling $5,757 gross volume
-Output: 2 settlement transfers totaling $387
-Efficiency: 93.3% reduction in money movements
+```mermaid
+mindmap
+  root((System Design))
+    Case Studies
+      Financial Systems
+      E-Commerce
+      Food Delivery
+      IoT & Streaming
+    Patterns
+      Communication
+      Resilience
+      Data
+      Messaging
+      Deployment
+    Implementations
+      URL Shortener
+      Rate Limiter
+      Codec Library
+    Resources
+      Interview Prep
+      Workflow Tools
 ```
 
-### Technical Stack
+---
 
-- **Languages:** Python, Java
-- **Algorithms:** Greedy heap-based matching, Graph optimization
-- **Patterns:** Immutable records, Two-phase settlement with saga
+## 🏗️ System Design Case Studies
 
-### 📁 Key Files
+### Financial Systems
 
-| File                                                                                                    | Description                         |
-| ------------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| [`clearing-house-settlement-design.md`](./financial-clearing-house/clearing-house-settlement-design.md) | Complete architecture documentation |
-| [`clearing-house-system-flow.md`](./financial-clearing-house/clearing-house-system-flow.md)             | System flow diagrams                |
-| [`src/python/`](./financial-clearing-house/src/python/)                                                 | Python implementation with demo     |
-| [`src/java/`](./financial-clearing-house/src/java/)                                                     | Java implementation                 |
+| Topic | Description | Key Concepts | Links |
+|-------|-------------|--------------|-------|
+| **Financial Clearing House** | Interbank settlement system with multilateral netting achieving 93%+ efficiency | Graph algorithms, Two-phase settlement, Saga pattern | [📘 Overview](./financial-clearing-house/README.md) • [🏛️ Architecture](./financial-clearing-house/clearing-house-settlement-design.md) • [🔄 Flow](./financial-clearing-house/clearing-house-system-flow.md) |
+| **Seller Payment System** | E-commerce seller payouts with configurable schedules and fee optimization | Exactly-once semantics, State machines, Idempotency | [📘 Overview](./seller-side-payment-system/README.md) • [🏛️ Architecture](./seller-side-payment-system/design/system-architecture.md) • [💾 Data Models](./seller-side-payment-system/design/data-models.md) |
+| **Fintech Data Platform** | End-to-end data architecture with CDC, event streaming, and federated queries | CDC (Debezium), Kafka, HTAP, Data Lake | [📘 Overview](./fintech-data-platform/fintech-data-architecture.md) • [📊 E2E Diagram](./fintech-data-platform/e2e-system-diagram.md) |
+
+### E-Commerce & Marketplace
+
+| Topic | Description | Key Concepts | Links |
+|-------|-------------|--------------|-------|
+| **Merchandise Browsing** | Large-scale product discovery for 1M+ DAU with real-time trending | Popularity scoring, Flink streaming, Personalization | [📘 Overview](./merchandise-listing/ecommerce-browsing-system-design.md) • [📊 Diagrams](./merchandise-listing/diagrams/architecture-diagrams.md) |
+| **Uber Cart System** | Multi-merchant cart with family accounts and offline-first behavior | CRDT sync, Multi-tenant, Event sourcing | [📘 Overview](./uber-cart-design/README.md) • [🏛️ Architecture](./uber-cart-design/architecture/system-overview.md) • [📱 API](./uber-cart-design/api-design/api-contracts.md) |
+
+### Food Delivery & Logistics
+
+| Topic | Description | Key Concepts | Links |
+|-------|-------------|--------------|-------|
+| **Uber Eats Feed** | Restaurant feed with H3 spatial indexing handling 10K+ views/sec | H3 hexagonal grid, Geo-sharding, ML ranking | [📘 Overview](./uber-eats-feed-design/README.md) • [🗺️ Spatial Indexing](./uber-eats-feed-design/spatial-indexing.md) • [📊 Ranking](./uber-eats-feed-design/ranking-system.md) |
+
+### IoT & Real-Time Systems
+
+| Topic | Description | Key Concepts | Links |
+|-------|-------------|--------------|-------|
+| **Trucking Crash Detection** | Real-time crash detection for 1M vehicles with <30s notification | Stream processing, ML inference, IoT ingestion | [📘 Overview](./trucking-crash-detection/README.md) • [🏛️ Architecture](./trucking-crash-detection/system-architecture.md) • [🧠 ML Pipeline](./trucking-crash-detection/ml-pipeline.md) |
 
 ---
 
-## 📊 Fintech Data Platform
+## 📐 Distributed System Patterns
 
-**[→ View Full Documentation](./fintech-data-platform/fintech-data-architecture.md)**
+> **[📚 Complete Pattern Reference](./distributed-system-architectural-patterns/README.md)** — Decision flowcharts, trade-off analysis, and implementation examples
 
-A modern end-to-end data architecture for fintech payment platforms, demonstrating how to build real-time analytics, batch processing, and business intelligence capabilities at scale.
+### API & Communication Patterns
 
-### What You'll Learn
+| Pattern | When to Use | Trade-offs | Link |
+|---------|-------------|------------|------|
+| **REST API** | Public APIs, CRUD operations | Simple ↔ Over/under-fetching | [📄 Docs](./distributed-system-architectural-patterns/01-api-communication-styles/rest-api.md) |
+| **GraphQL** | Mobile apps, complex queries | Flexible ↔ Caching complexity | [📄 Docs](./distributed-system-architectural-patterns/01-api-communication-styles/graphql.md) |
+| **gRPC** | Internal microservices, high performance | Fast ↔ Browser support | [📄 Docs](./distributed-system-architectural-patterns/01-api-communication-styles/grpc.md) |
+| **WebSockets** | Real-time bidirectional | Low latency ↔ Connection overhead | [📄 Docs](./distributed-system-architectural-patterns/01-api-communication-styles/websockets.md) |
 
-- **Change Data Capture (CDC)** — Stream database changes in real-time using Debezium and Maxwell
-- **Event-Driven Architecture** — Decouple services with Apache Kafka as the central event bus
-- **Multi-Speed Data Processing** — Real-time (100ms), near real-time (2s), and batch (15 min) pipelines
-- **Federated Query Layer** — Query any data source with SQL using Trino
+### Gateway & Routing Patterns
 
-### Architecture Overview
+| Pattern | When to Use | Trade-offs | Link |
+|---------|-------------|------------|------|
+| **API Gateway** | Centralized entry point | Single entry ↔ SPOF risk | [📄 Docs](./distributed-system-architectural-patterns/02-api-gateway-patterns/api-gateway.md) |
+| **Backend for Frontend** | Multi-platform clients | Optimized UX ↔ Code duplication | [📄 Docs](./distributed-system-architectural-patterns/02-api-gateway-patterns/backend-for-frontend.md) |
+| **Aggregator** | Composite responses | Reduced round trips ↔ Complexity | [📄 Docs](./distributed-system-architectural-patterns/02-api-gateway-patterns/aggregator-pattern.md) |
 
+### Resilience Patterns
+
+| Pattern | When to Use | Trade-offs | Link |
+|---------|-------------|------------|------|
+| **Circuit Breaker** | Prevent cascading failures | Fail-fast ↔ Implementation complexity | [📄 Docs](./distributed-system-architectural-patterns/03-resilience-patterns/circuit-breaker.md) |
+| **Retry with Backoff** | Handle transient failures | Reliability ↔ Thundering herd | [📄 Docs](./distributed-system-architectural-patterns/03-resilience-patterns/retry-with-backoff.md) |
+| **Bulkhead** | Isolate resource pools | Fault isolation ↔ Resource underutilization | [📄 Docs](./distributed-system-architectural-patterns/03-resilience-patterns/bulkhead.md) |
+| **Rate Limiting** | Traffic spike protection | System protection ↔ User experience | [📄 Docs](./distributed-system-architectural-patterns/03-resilience-patterns/rate-limiting.md) |
+| **Timeout** | Prevent hung connections | Responsiveness ↔ False positives | [📄 Docs](./distributed-system-architectural-patterns/03-resilience-patterns/timeout-pattern.md) |
+
+### Data Patterns
+
+| Pattern | When to Use | Trade-offs | Link |
+|---------|-------------|------------|------|
+| **CQRS** | Separate read/write scaling | Performance ↔ Complexity | [📄 Docs](./distributed-system-architectural-patterns/04-data-patterns/cqrs.md) |
+| **Event Sourcing** | Audit trails, temporal queries | Complete history ↔ Storage costs | [📄 Docs](./distributed-system-architectural-patterns/04-data-patterns/event-sourcing.md) |
+| **Saga Pattern** | Distributed transactions | Eventual consistency ↔ Coordination | [📄 Docs](./distributed-system-architectural-patterns/04-data-patterns/saga-pattern.md) |
+| **Outbox Pattern** | Reliable event publishing | Guaranteed delivery ↔ At-least-once | [📄 Docs](./distributed-system-architectural-patterns/04-data-patterns/outbox-pattern.md) |
+| **Two-Phase Commit** | Strong consistency needed | ACID guarantees ↔ Availability | [📄 Docs](./distributed-system-architectural-patterns/04-data-patterns/two-phase-commit.md) |
+
+### Messaging Patterns
+
+| Pattern | When to Use | Trade-offs | Link |
+|---------|-------------|------------|------|
+| **Pub/Sub** | Fan-out notifications | Decoupling ↔ Message ordering | [📄 Docs](./distributed-system-architectural-patterns/05-messaging-patterns/pub-sub.md) |
+| **Message Queue** | Work distribution | Reliability ↔ Latency | [📄 Docs](./distributed-system-architectural-patterns/05-messaging-patterns/message-queue.md) |
+| **Event-Driven Architecture** | Reactive systems | Flexibility ↔ Debugging complexity | [📄 Docs](./distributed-system-architectural-patterns/05-messaging-patterns/event-driven-architecture.md) |
+
+### Service Discovery & Mesh
+
+| Pattern | When to Use | Trade-offs | Link |
+|---------|-------------|------------|------|
+| **Service Registry** | Dynamic service discovery | Flexibility ↔ Additional infrastructure | [📄 Docs](./distributed-system-architectural-patterns/06-service-discovery-mesh/service-registry.md) |
+| **Sidecar** | Cross-cutting concerns | Separation of concerns ↔ Resource overhead | [📄 Docs](./distributed-system-architectural-patterns/06-service-discovery-mesh/sidecar-pattern.md) |
+| **Service Mesh** | Complex microservices | Full observability ↔ Operational complexity | [📄 Docs](./distributed-system-architectural-patterns/06-service-discovery-mesh/service-mesh.md) |
+
+### Deployment & Infrastructure
+
+| Pattern | When to Use | Trade-offs | Link |
+|---------|-------------|------------|------|
+| **Blue-Green Deployment** | Zero-downtime releases | Instant rollback ↔ 2x infrastructure | [📄 Docs](./distributed-system-architectural-patterns/07-deployment-infrastructure-patterns/blue-green-deployment.md) |
+| **Canary Deployment** | Gradual rollouts | Lower risk ↔ Complexity | [📄 Docs](./distributed-system-architectural-patterns/07-deployment-infrastructure-patterns/canary-deployment.md) |
+| **Rolling Deployment** | Resource-efficient updates | Simple ↔ Slower rollback | [📄 Docs](./distributed-system-architectural-patterns/07-deployment-infrastructure-patterns/rolling-deployment.md) |
+| **Feature Flags** | Runtime feature control | Flexibility ↔ Tech debt | [📄 Docs](./distributed-system-architectural-patterns/07-deployment-infrastructure-patterns/feature-flags.md) |
+| **Strangler Fig** | Legacy migration | Incremental ↔ Longer timeline | [📄 Docs](./distributed-system-architectural-patterns/07-deployment-infrastructure-patterns/strangler-fig-pattern.md) |
+| **Database Per Service** | Microservices data isolation | Autonomy ↔ Distributed complexity | [📄 Docs](./distributed-system-architectural-patterns/07-deployment-infrastructure-patterns/database-per-service.md) |
+
+---
+
+## 🔧 Production Implementations
+
+### URL Shortener
+
+> Full-stack URL shortener scaling from local to 500M URLs/month globally
+
+| Tier | Scale | Architecture |
+|------|-------|--------------|
+| 1 | Local | SQLite + Single binary |
+| 2 | Startup (100K/mo) | PostgreSQL + Redis |
+| 3 | Growth (10M/mo) | Multi-instance + Replicas |
+| 4 | Scale (100M/mo) | Multi-region + DynamoDB |
+| 5 | Global (500M/mo) | Edge computing + Sharded |
+
+**Stack:** Rust (Axum) • DynamoDB Global Tables • CloudFront • Terraform • Kubernetes
+
+| Resource | Link |
+|----------|------|
+| **Overview** | [📘 README](./url-shortener/README.md) |
+| **Architecture** | [🏛️ Docs](./url-shortener/docs/03-architecture.md) |
+| **Database Design** | [💾 Schema](./url-shortener/docs/04-database-design.md) |
+| **Security & Compliance** | [🔒 GDPR/SOC2](./url-shortener/docs/05-security-compliance.md) |
+| **Deployment** | [☁️ AWS](./url-shortener/docs/07-deployment.md) |
+| **Java Version** | [☕ Alternative](./url-shortener-java/README.md) |
+
+### Distributed Rate Limiter
+
+> High-performance rate limiter for API Gateway (100K-1M RPS)
+
+**Features:** Sliding window counter • Composite keys (user + endpoint) • Fail-open/closed modes • Circuit breaker integration
+
+**Stack:** Java 21 (Spring Boot) • Redis Cluster • Resilience4j • Prometheus
+
+| Resource | Link |
+|----------|------|
+| **Overview** | [📘 README](./rate-limiter/README.md) |
+| **Architecture** | [🏛️ Docs](./rate-limiter/docs/architecture.md) |
+| **Algorithms** | [🧮 Docs](./rate-limiter/docs/algorithms.md) |
+
+### Codec Library
+
+> MySQL column type codecs with zero-copy decoding (Go)
+
+**Features:** Text/Binary protocol • Temporal types with timezone • DECIMAL precision • database/sql helpers
+
+| Resource | Link |
+|----------|------|
+| **Overview** | [📘 README](./codec-library/README.md) |
+| **Source** | [📦 Go Package](./codec-library/codec/mysql/) |
+
+---
+
+## 🎓 Interview & Career Resources
+
+### Job Search HQ
+
+> Complete job search framework with trackers, templates, and guides
+
+| Category | Topics | Link |
+|----------|--------|------|
+| **Resume** | Quantified achievements, LinkedIn optimization | [📄 Resume Guide](./job-search/resume/resume-master.md) |
+| **Behavioral** | STAR stories, EM philosophy | [📄 STAR Bank](./job-search/behavioral/star-stories-bank.md) |
+| **System Design** | Quick reference sheets | [📄 Cheat Sheets](./job-search/system-design/quick-reference-sheets.md) |
+| **LLD** | Patterns, problem bank | [📄 LLD Guide](./job-search/lld/lld-patterns-guide.md) |
+| **Coding** | Pattern-based approach | [📄 Coding Patterns](./job-search/coding/coding-patterns-guide.md) |
+| **Negotiation** | Compensation strategy | [📄 Negotiation](./job-search/negotiation/negotiation-guide.md) |
+| **Tracker** | Company research template | [📄 Tracker](./job-search/tracker/company-tracker.md) |
+
+**[📚 Full Job Search Guide](./job-search/README.md)**
+
+### Interview Experiences
+
+| Company | Type | Link |
+|---------|------|------|
+| Agoda | System Design + LLD | [📁 Folder](./interview_experiences/agoda/) |
+| Kuvera | System Design | [📁 Folder](./interview_experiences/kuvera/) |
+| Fintech Org | Architecture Review | [📁 Folder](./interview_experiences/fintech_org/) |
+
+---
+
+## 🛠️ Tools & Workflow
+
+### Apache Airflow
+
+> Workflow orchestration with practical DAG examples
+
+**Use Cases:** ETL pipelines • ML orchestration • Data quality • Report generation
+
+| Resource | Link |
+|----------|------|
+| **Getting Started** | [📘 README](./apache-airflow/README.md) |
+| **Core Concepts** | [📄 Concepts](./apache-airflow/docs/core-concepts.md) |
+| **Best Practices** | [📄 Guide](./apache-airflow/docs/best-practices.md) |
+| **Example DAGs** | [📦 dags/](./apache-airflow/dags/) |
+
+---
+
+## 🗺️ Learning Paths
+
+### Path 1: System Design Fundamentals
+
+```mermaid
+flowchart LR
+    A[Patterns Reference] --> B[URL Shortener]
+    B --> C[Rate Limiter]
+    C --> D[Clearing House]
 ```
-OLTP Layer (PostgreSQL, MySQL)
-    ↓ CDC (Debezium, Maxwell)
-Event Streaming (Apache Kafka)
-    ↓ Fan-out
-├── TiDB (HTAP) → Real-time reports
-├── Apache Pinot → Sub-second dashboards
-└── Data Lake (Parquet) → ML & Compliance
-    ↓
-Trino (Federated SQL)
-    ↓
-BI Tools (Querybook, Redash, Tableau)
+
+1. **Start:** [Distributed Patterns](./distributed-system-architectural-patterns/README.md)
+2. **Build:** [URL Shortener](./url-shortener/README.md) (implements multiple patterns)
+3. **Scale:** [Rate Limiter](./rate-limiter/README.md) (resilience focus)
+4. **Finance:** [Clearing House](./financial-clearing-house/README.md) (transactions)
+
+### Path 2: Real-Time Systems
+
+```mermaid
+flowchart LR
+    A[Event-Driven Patterns] --> B[Uber Eats Feed]
+    B --> C[Crash Detection]
+    C --> D[Fintech Platform]
 ```
 
-### Technical Stack
+1. **Foundation:** [Messaging Patterns](./distributed-system-architectural-patterns/05-messaging-patterns/)
+2. **Geo-Spatial:** [Uber Eats Feed](./uber-eats-feed-design/README.md)
+3. **IoT Streaming:** [Crash Detection](./trucking-crash-detection/README.md)
+4. **Data Platform:** [Fintech Data](./fintech-data-platform/fintech-data-architecture.md)
 
-- **Databases:** PostgreSQL, MySQL, TiDB
-- **Streaming:** Apache Kafka, Debezium, Maxwell
-- **Analytics:** Apache Pinot, Trino, Parquet
-- **BI Tools:** Querybook, Redash, Tableau
+### Path 3: Interview Preparation
 
-### 📁 Key Files
-
-| File                                                                                   | Description                                  |
-| -------------------------------------------------------------------------------------- | -------------------------------------------- |
-| [`fintech-data-architecture.md`](./fintech-data-platform/fintech-data-architecture.md) | Complete architecture with component details |
-| [`e2e-system-diagram.md`](./fintech-data-platform/e2e-system-diagram.md)               | Visual end-to-end system diagram             |
-
----
-
-## 🛒 E-Commerce Merchandise Browsing
-
-**[→ View Full Documentation](./merchandise-listing/ecommerce-browsing-system-design.md)**
-
-A comprehensive system design for large-scale e-commerce product discovery, handling 1M+ daily active users with real-time trending detection and personalized recommendations.
-
-### What You'll Learn
-
-- **Popularity Scoring** — Batch computation with time-decay for product rankings
-- **Hot/Trending Detection** — Real-time streaming analytics with Apache Flink
-- **Personalization Engine** — Collaborative filtering, content-based, and contextual re-ranking
-- **API Design** — RESTful APIs with pagination, filtering, and caching strategies
-
-### Scale Targets
-
-| Metric              | Target   |
-| ------------------- | -------- |
-| Daily Active Users  | 1M+      |
-| Products in Catalog | 100K+    |
-| API Latency (p99)   | < 100ms  |
-| Availability        | 99.9%+   |
-| Peak Throughput     | 50K+ RPS |
-
-### System Components
-
-```
-┌─────────────────────────────────────────────────────┐
-│                   API Gateway                        │
-└─────────────────────┬───────────────────────────────┘
-                      │
-    ┌─────────────────┼─────────────────┐
-    ▼                 ▼                 ▼
-┌─────────┐    ┌───────────┐    ┌─────────────┐
-│ Browse  │    │ Ranking   │    │Personalize  │
-│ Service │    │ Service   │    │  Service    │
-└────┬────┘    └─────┬─────┘    └──────┬──────┘
-     │               │                 │
-     ▼               ▼                 ▼
-┌─────────────────────────────────────────────────────┐
-│        Redis (Popularity & Hot Items Cache)         │
-└─────────────────────────────────────────────────────┘
-     │                                 │
-     ▼                                 ▼
-┌──────────────┐              ┌───────────────┐
-│  PostgreSQL  │              │  Data Lake    │
-│  (Products)  │              │  (Events)     │
-└──────────────┘              └───────────────┘
+```mermaid
+flowchart LR
+    A[Quick Reference] --> B[Case Studies]
+    B --> C[Practice Problems]
+    C --> D[Mock Interviews]
 ```
 
-### Technical Stack
-
-- **API:** Go/Rust (100K+ RPS per node)
-- **Database:** PostgreSQL + Citus (sharding)
-- **Cache:** Redis Cluster
-- **Batch:** Apache Spark + Airflow
-- **Streaming:** Apache Kafka + Flink
-- **ML:** pgvector, XGBoost, Collaborative Filtering
-
-### 📁 Key Files
-
-| File                                                                                               | Description                         |
-| -------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| [`ecommerce-browsing-system-design.md`](./merchandise-listing/ecommerce-browsing-system-design.md) | Complete 2000+ line design document |
-| [`diagrams/architecture-diagrams.md`](./merchandise-listing/diagrams/architecture-diagrams.md)     | Architecture visualizations         |
+1. **Reference:** [System Design Sheets](./job-search/system-design/quick-reference-sheets.md)
+2. **Study:** Any case study from above
+3. **Practice:** [LLD Problems](./job-search/lld/lld-problems-bank.md)
+4. **Review:** [Interview Experiences](./interview_experiences/)
 
 ---
 
-## 🎯 Who Is This For?
+## 📊 Pattern Cross-Reference
 
-- **Engineering Managers** — Understand system design trade-offs to guide technical decisions
-- **Senior Engineers** — Learn production-grade patterns for distributed systems
-- **Interview Candidates** — Practice with real-world system design problems
-- **Tech Leads** — Reference architectures for greenfield projects
-
----
-
-## 🔑 Common Patterns Across Designs
-
-| Pattern                    | Used In                           |
-| -------------------------- | --------------------------------- |
-| Event Sourcing / CDC       | Fintech Data Platform, E-Commerce |
-| CQRS                       | E-Commerce, Fintech Data Platform |
-| Saga Pattern               | Financial Clearing House          |
-| Exactly-Once Semantics     | Financial Clearing House, Fintech |
-| Batch + Real-time (Lambda) | E-Commerce, Fintech Data Platform |
-| Federated Queries          | Fintech Data Platform             |
-| Sharding / Partitioning    | All designs                       |
+| Pattern | Used In |
+|---------|---------|
+| Event Sourcing / CDC | Fintech Data Platform, E-Commerce |
+| CQRS | E-Commerce, Uber Eats Feed |
+| Saga Pattern | Financial Clearing House, Seller Payments |
+| Exactly-Once Semantics | Clearing House, Seller Payments |
+| Batch + Real-time (Lambda) | E-Commerce, Crash Detection |
+| Federated Queries | Fintech Data Platform |
+| H3 Spatial Indexing | Uber Eats Feed |
+| Circuit Breaker | Rate Limiter, Seller Payments |
+| Sharding / Partitioning | All case studies |
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Quick Start
 
-### Run the Financial Clearing House Demo
+### Run Financial Clearing House Demo
 
 ```bash
 # Python
-cd financial-clearing-house/src/python
-python3 demo.py
+cd financial-clearing-house/src/python && python3 demo.py
 
 # Java
 cd financial-clearing-house
-mkdir -p target
-find src/java -name "*.java" | xargs javac -d target
+mkdir -p target && find src/java -name "*.java" | xargs javac -d target
 java -cp target com.clearinghouse.SettlementApp
 ```
 
----
+### Run URL Shortener
 
-## 📖 How to Use This Repository
+```bash
+cd url-shortener && docker-compose up -d
+# API available at http://localhost:8080
+```
 
-1. **Start with the README** in each folder for an overview
-2. **Read the design documents** (`.md` files) for architecture decisions
-3. **Explore the code** for implementation details
-4. **Run the demos** to see the systems in action
+### Run Rate Limiter
+
+```bash
+cd rate-limiter && docker-compose up -d redis && ./mvnw spring-boot:run
+```
+
+### Run Airflow Examples
+
+```bash
+cd apache-airflow && docker-compose up -d
+# UI at http://localhost:8080 (admin/admin)
+```
 
 ---
 
@@ -220,5 +334,5 @@ MIT — See [LICENSE](./LICENSE) for details.
 ---
 
 <p align="center">
-  <i>Built for engineering managers who want to stay close to the code.</i>
+  <i>Built for engineers who want depth over breadth in system design.</i>
 </p>
