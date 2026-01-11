@@ -1,6 +1,7 @@
 services:
   # URL Shortener application
   url-shortener:
+    container_name: url-shortener-app
     build:
       context: .
       dockerfile: docker/Dockerfile.dev
@@ -26,6 +27,7 @@ services:
   # Redis for caching (optional, start with: docker-compose --profile redis up -d)
   redis:
     image: redis:7-alpine
+    container_name: url-shortener-redis
     profiles:
       - redis
     ports:
@@ -41,6 +43,7 @@ services:
   # Start with: docker-compose --profile aws up -d
   localstack:
     image: localstack/localstack:3.0
+    container_name: url-shortener-localstack
     profiles:
       - aws
     ports:
@@ -62,10 +65,29 @@ services:
     networks:
       - url-shortener-network
 
+  # Prometheus for metrics collection
+  # Start with: docker-compose --profile monitoring up -d
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: url-shortener-prometheus
+    profiles:
+      - monitoring
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - url-shortener-network
+
   # Grafana for dashboards (optional)
   # Start with: docker-compose --profile monitoring up -d
   grafana:
     image: grafana/grafana:latest
+    container_name: url-shortener-grafana
     profiles:
       - monitoring
     ports:
@@ -75,6 +97,8 @@ services:
       - GF_USERS_ALLOW_SIGN_UP=false
     volumes:
       - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
     networks:
       - url-shortener-network
 
@@ -82,6 +106,7 @@ volumes:
   url-data:
   redis-data:
   localstack-data:
+  prometheus-data:
   grafana-data:
   cargo-cache:
   target-cache:

@@ -1,0 +1,18 @@
+# Prometheus configuration for URL Shortener
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Scrape the URL Shortener application
+  - job_name: 'url-shortener'
+    static_configs:
+      - targets: ['url-shortener-app:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # Scrape Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
