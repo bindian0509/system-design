@@ -1,0 +1,208 @@
+spring:
+  application:
+    name: real-time-leaderboard
+
+  # Redis Configuration
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 50
+          max-idle: 20
+          min-idle: 5
+          max-wait: 1000ms
+
+  # Kafka Configuration
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 1
+    consumer:
+      group-id: leaderboard-processors
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: earliest
+      properties:
+        spring.json.trusted.packages: com.leaderboard.domain,com.leaderboard.domain.dto
+
+  # PostgreSQL Configuration
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/leaderboard}
+    username: ${DATABASE_USER:leaderboard}
+    password: ${DATABASE_PASSWORD:leaderboard123}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          batch_size: 50
+
+  # Cache Configuration
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=10000,expireAfterWrite=1s
+
+# Server Configuration
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    export:
+      prometheus:
+        enabled: true
+
+# Leaderboard Configuration
+leaderboard:
+  # Key prefix for Redis
+  key-prefix: lb
+
+  # Default top N limit
+  default-top-limit: 10
+  max-top-limit: 100
+
+  # Surrounding players range
+  default-surrounding-range: 5
+  max-surrounding-range: 50
+
+  # Kafka topics
+  topics:
+    score-events: score-events
+    rank-updates: rank-updates
+
+  # Time windows
+  time-windows:
+    daily-retention-days: 7
+    weekly-retention-weeks: 4
+    monthly-retention-months: 12
+
+  # Snapshot configuration
+  snapshot:
+    enabled: true
+    cron: "0 0 * * * *"  # Every hour
+
+  # WebSocket configuration
+  websocket:
+    endpoint: /ws/leaderboard
+    heartbeat-interval-seconds: 30
+
+  # Notification thresholds
+  notifications:
+    top-n-threshold: 100  # Notify when entering top 100
+
+# Resilience4j Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      redis:
+        register-health-indicator: true
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+        wait-duration-in-open-state: 10s
+        failure-rate-threshold: 50
+        slow-call-rate-threshold: 80
+        slow-call-duration-threshold: 2s
+      kafka:
+        register-health-indicator: true
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+
+  retry:
+    instances:
+      redis:
+        max-attempts: 3
+        wait-duration: 100ms
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - org.springframework.data.redis.RedisConnectionFailureException
+      kafka:
+        max-attempts: 3
+        wait-duration: 500ms
+        exponential-backoff-multiplier: 2
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.leaderboard: DEBUG
+    org.springframework.data.redis: INFO
+    org.springframework.kafka: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{traceId:-},%X{spanId:-}] %-5level %logger{36} - %msg%n"
+
+---
+# Docker Profile
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  data:
+    redis:
+      host: redis
+
+  kafka:
+    bootstrap-servers: kafka:29092
+
+  datasource:
+    url: jdbc:postgresql://postgres:5432/leaderboard
+
+---
+# Test Profile
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  data:
+    redis:
+      port: 6370
+
+  kafka:
+    bootstrap-servers: localhost:9093
+
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect

@@ -1,0 +1,25 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+rule_files: []
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'leaderboard'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['leaderboard:8080']
+    scrape_interval: 5s
+
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
