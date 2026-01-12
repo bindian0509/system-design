@@ -19,11 +19,11 @@ flowchart TB
     subgraph Edge["CloudFront (200+ PoPs) + Lambda@Edge + WAF"]
         CF["Edge Layer"]
     end
-    
+
     CF --> US["US-East-1<br/>EKS + Redis"]
     CF --> EU["EU-West-1<br/>EKS + Redis"]
     CF --> AP["AP-South-1<br/>EKS + Redis"]
-    
+
     US --> Data["DynamoDB Global Tables<br/>+ Kinesis + Timestream"]
     EU --> Data
     AP --> Data
@@ -106,7 +106,7 @@ flowchart LR
     T3["Tier 3: GROWTH<br/>10M URLs/mo<br/>Multi-instance"]
     T4["Tier 4: SCALE<br/>100M URLs/mo<br/>Multi-region"]
     T5["Tier 5: GLOBAL<br/>500M URLs/mo<br/>Edge computing"]
-    
+
     T1 --> T2 --> T3 --> T4 --> T5
 ```
 
@@ -129,18 +129,18 @@ flowchart LR
         DELETE["DELETE /api/v1/urls/:code"]
         BULK["POST /api/v1/urls/bulk"]
     end
-    
+
     subgraph Analytics["Analytics"]
         SUMMARY["GET /api/v1/analytics/:code"]
         REALTIME["GET /api/v1/analytics/:code/realtime"]
         GEO["GET /api/v1/analytics/:code/geo"]
     end
-    
+
     subgraph Compliance["Compliance"]
         EXPORT["GET /api/v1/compliance/gdpr/export"]
         ERASURE["DELETE /api/v1/compliance/gdpr/erasure"]
     end
-    
+
     subgraph Health["Health"]
         LIVE["/health"]
         READY["/ready"]
@@ -187,9 +187,9 @@ flowchart TB
         Local["Local atomic counter"]
         Encode["Base62 encode<br/>7 characters"]
     end
-    
+
     Counter --> Batch --> Local --> Encode
-    
+
     subgraph Capacity["Capacity"]
         Total["62^7 = 3.5 trillion codes"]
         Years["At 500M/month = 580 years"]
@@ -226,18 +226,18 @@ flowchart LR
         APIKeys["API Keys<br/>(Argon2 hashed)"]
         JWT["JWT Tokens"]
     end
-    
+
     subgraph Protection["Protection"]
         RateLimit["Rate Limiting"]
         Shield["AWS Shield"]
         WAF["AWS WAF"]
     end
-    
+
     subgraph Encryption["Encryption"]
         TLS["TLS 1.3 in transit"]
         AES["AES-256 at rest"]
     end
-    
+
     subgraph Audit["Audit"]
         Logs["Immutable logs"]
         Retention["7-year retention"]

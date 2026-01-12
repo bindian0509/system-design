@@ -14,7 +14,7 @@ flowchart TB
         SignedURLs["CloudFront Signed URLs"]
         EdgeRate["Rate Limiting"]
     end
-    
+
     subgraph Layer2["Layer 2: Network Security"]
         VPC["VPC"]
         PrivateSub["Private Subnets"]
@@ -22,7 +22,7 @@ flowchart TB
         NACLs["NACLs"]
         Endpoints["VPC Endpoints"]
     end
-    
+
     subgraph Layer3["Layer 3: Application Security"]
         TLS["TLS 1.3"]
         APIAuth["API Authentication"]
@@ -30,14 +30,14 @@ flowchart TB
         CORS["CORS"]
         CSP["CSP Headers"]
     end
-    
+
     subgraph Layer4["Layer 4: Data Security"]
         EncryptRest["Encryption at Rest"]
         EncryptTransit["Encryption in Transit"]
         KMS["Key Management"]
         Secrets["Secrets Manager"]
     end
-    
+
     subgraph Layer5["Layer 5: Identity & Access"]
         IAM["IAM Roles"]
         RBAC["RBAC"]
@@ -46,7 +46,7 @@ flowchart TB
         SSO["SSO/SAML"]
         MFA["MFA"]
     end
-    
+
     subgraph Layer6["Layer 6: Audit & Monitoring"]
         CloudTrail["CloudTrail"]
         AuditLogs["Audit Logs"]
@@ -54,7 +54,7 @@ flowchart TB
         Anomaly["Anomaly Detection"]
         IR["Incident Response"]
     end
-    
+
     Layer1 --> Layer2 --> Layer3 --> Layer4 --> Layer5 --> Layer6
 ```
 
@@ -74,7 +74,7 @@ flowchart LR
         D["Denial of Service<br/>Unavailability"]
         E["Elevation of Privilege<br/>Unauthorized access"]
     end
-    
+
     subgraph Mitigations["Mitigations"]
         S --> M1["API key auth, JWT, IP validation"]
         T --> M2["Input validation, checksums, audit logs"]
@@ -94,19 +94,19 @@ flowchart TB
         Mit1["• URL validation<br/>• Google Safe Browsing API<br/>• Domain reputation<br/>• Rate limiting"]
         Attack1 --> Mit1
     end
-    
+
     subgraph Redirect["2. Redirect Endpoint (/:code)"]
         Attack2["Open redirect vulnerability"]
         Mit2["• Validate stored URLs<br/>• No user-controlled params<br/>• Log suspicious patterns<br/>• Interstitial warning option"]
         Attack2 --> Mit2
     end
-    
+
     subgraph Auth["3. Authentication"]
         Attack3["API key theft, brute force"]
         Mit3["• Argon2id hashing<br/>• Key rotation<br/>• IP allowlisting<br/>• Lockout policy<br/>• Anomaly detection"]
         Attack3 --> Mit3
     end
-    
+
     subgraph DDoS["4. DDoS Attacks"]
         Attack4["Volumetric, protocol, app-layer"]
         Mit4["• AWS Shield Advanced<br/>• CloudFront absorption<br/>• WAF rate rules<br/>• Geo blocking<br/>• Auto-scaling"]
@@ -126,14 +126,14 @@ sequenceDiagram
     participant API
     participant Auth as Auth Service
     participant DB
-    
+
     User->>API: Request with API Key
     API->>Auth: Validate Key
     Auth->>Auth: Extract prefix
     Auth->>DB: Lookup by prefix
     DB-->>Auth: Key hash + metadata
     Auth->>Auth: Verify Argon2id hash
-    
+
     alt Valid Key
         Auth->>Auth: Check expiration
         Auth->>Auth: Verify scopes
@@ -156,7 +156,7 @@ flowchart TB
         Owner["Owner<br/>All permissions"]
         SuperAdmin["Super Admin<br/>+ platform:*"]
     end
-    
+
     Viewer --> Member --> Admin --> Owner --> SuperAdmin
 ```
 
@@ -185,14 +185,14 @@ flowchart LR
         Geo["Geolocation"]
         Ref["Referrer URL"]
     end
-    
+
     subgraph Transform["Privacy Transformations"]
         IP --> Hash["Hash with daily salt"]
         UA --> Generalize["Generalize (device/browser only)"]
         Geo --> Limit["Country/region only"]
         Ref --> Domain["Domain only (strip params)"]
     end
-    
+
     subgraph Stored["Stored Data"]
         Hash --> SafeIP["ip_hash: sha256(...)"]
         Generalize --> SafeUA["device_type: mobile"]
@@ -218,7 +218,7 @@ flowchart TB
         Integrity["Integrity<br/>Encryption, access controls"]
         Accountability["Accountability<br/>DPO, documentation, DPIA"]
     end
-    
+
     subgraph Rights["Articles 15-22: Data Subject Rights"]
         Access["Right of Access<br/>GET /compliance/gdpr/data<br/>SLA: 30 days"]
         Rectification["Rectification<br/>PUT /users/:id<br/>SLA: 72 hours"]
@@ -238,7 +238,7 @@ flowchart LR
         Geolocation["Geolocation<br/>Country, region from IP"]
         Inferences["Inferences<br/>Device type, browser, bot detection"]
     end
-    
+
     subgraph Rights["Consumer Rights"]
         Know["Right to Know<br/>45 days response"]
         Delete["Right to Delete<br/>45 days response"]
@@ -260,25 +260,25 @@ flowchart TB
         CM["Change Management: GitOps, PR reviews"]
         RA["Risk Assessment: Quarterly reviews, pen testing"]
     end
-    
+
     subgraph Availability["Availability"]
         SLA["SLA: 99.95% uptime"]
         MultiRegion["Multi-region with auto failover"]
         DR["DR: RPO < 1 min, RTO < 15 min"]
     end
-    
+
     subgraph ProcessingIntegrity["Processing Integrity"]
         Validation["Input validation on all endpoints"]
         Idempotency["Idempotent API operations"]
         Testing["Automated testing: unit, integration, e2e"]
     end
-    
+
     subgraph Confidentiality["Confidentiality"]
         Classification["Data classification"]
         NeedToKnow["Need-to-know access"]
         Disposal["Secure data disposal"]
     end
-    
+
     subgraph Privacy["Privacy"]
         Notice["Privacy notice at collection"]
         PurposeLimitation["Purpose limitation"]
@@ -293,7 +293,7 @@ flowchart TB
     subgraph Applicability["Applicability"]
         Note["Only for Enterprise tier<br/>handling PHI"]
     end
-    
+
     subgraph Administrative["Administrative Safeguards"]
         SO["Security Officer"]
         RA["Annual Risk Analysis"]
@@ -301,20 +301,20 @@ flowchart TB
         Access["Access Management"]
         IR["60-day Breach Notification"]
     end
-    
+
     subgraph Physical["Physical Safeguards"]
         Facility["AWS Data Centers (SOC 2)"]
         Workstation["AWS managed"]
         Device["Encrypted EBS, Secure disposal"]
     end
-    
+
     subgraph Technical["Technical Safeguards"]
         UniqueID["Unique user identification"]
         AutoLogoff["Automatic logoff"]
         AuditControls["All access logged to S3"]
         TLS["TLS 1.3 for all transmission"]
     end
-    
+
     subgraph BAA["Business Associate Agreement"]
         Required["BAA required for Enterprise"]
         AWS["AWS BAA in place"]
@@ -335,10 +335,10 @@ flowchart TB
         Rule5["Priority 5: AWS Common Rules<br/>Managed ruleset"]
         Rule6["Priority 6: Bot Control<br/>Managed ruleset"]
     end
-    
+
     Request["Incoming Request"] --> Rule1
     Rule1 --> Rule2 --> Rule3 --> Rule4 --> Rule5 --> Rule6 --> Allow["Allow"]
-    
+
     Rule1 -->|"Block"| Blocked["403 Forbidden"]
     Rule2 -->|"Block"| Blocked
     Rule3 -->|"Block"| Blocked
@@ -363,17 +363,17 @@ flowchart TB
 ```mermaid
 flowchart TB
     Detection["Detection<br/>GuardDuty, WAF, Anomaly alerts, User reports"]
-    
+
     Triage["Triage<br/>• Assess scope/severity<br/>• Identify affected systems<br/>• Determine if breach occurred"]
-    
+
     Containment["Containment<br/>• Isolate affected systems<br/>• Revoke compromised credentials<br/>• Block malicious IPs<br/>• Enable enhanced logging"]
-    
+
     Eradication["Eradication<br/>• Remove malicious artifacts<br/>• Patch vulnerabilities<br/>• Reset affected credentials"]
-    
+
     Recovery["Recovery<br/>• Restore from clean backups<br/>• Validate functionality<br/>• Monitor for recurrence"]
-    
+
     PostIncident["Post-Incident<br/>• Conduct postmortem<br/>• Update runbooks<br/>• Implement preventive measures<br/>• Notify affected parties"]
-    
+
     Detection --> Triage --> Containment --> Eradication --> Recovery --> PostIncident
 ```
 
@@ -384,22 +384,22 @@ flowchart LR
     subgraph Breach["Data Breach"]
         Detected["Breach Detected"]
     end
-    
+
     subgraph GDPR["GDPR"]
         GDPR_Timeline["72 hours to DPA"]
         GDPR_Threshold["Risk to individuals"]
     end
-    
+
     subgraph HIPAA["HIPAA"]
         HIPAA_Timeline["60 days to HHS"]
         HIPAA_Threshold["500+ individuals affected"]
     end
-    
+
     subgraph CCPA["CCPA"]
         CCPA_Timeline["Most expedient time"]
         CCPA_Threshold["Any unencrypted PI breach"]
     end
-    
+
     Breach --> GDPR
     Breach --> HIPAA
     Breach --> CCPA

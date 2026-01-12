@@ -15,39 +15,39 @@ flowchart TB
         API["API Clients"]
         Partner["Partner Integrations"]
     end
-    
+
     subgraph Edge["EDGE LAYER"]
         CF["CloudFront CDN (200+ PoPs)"]
         Lambda["Lambda@Edge"]
         WAF["AWS WAF"]
         Shield["AWS Shield"]
     end
-    
+
     subgraph Gateway["API GATEWAY LAYER"]
         ALB["Application Load Balancer<br/>• SSL/TLS Termination<br/>• Health Checks<br/>• Request Routing"]
     end
-    
+
     subgraph App["APPLICATION LAYER - EKS Cluster"]
         Pod1["Pod 1 (Axum)"]
         Pod2["Pod 2 (Axum)"]
         Pod3["Pod 3 (Axum)"]
         PodN["Pod N (Axum)"]
     end
-    
+
     subgraph Cache["CACHE LAYER"]
         Redis["ElastiCache Redis Cluster<br/>• URL mappings<br/>• Rate limits<br/>• Session cache"]
     end
-    
+
     subgraph Data["DATA LAYER"]
         DDB["DynamoDB Global Tables<br/>• URLs<br/>• Users<br/>• Analytics<br/>• Audit logs"]
     end
-    
+
     subgraph Analytics["ANALYTICS LAYER"]
         Kinesis["Kinesis Streams<br/>(Click Events)"]
         LambdaProc["Lambda Processors"]
         Timestream["Timestream<br/>(Analytics)"]
     end
-    
+
     Clients --> Edge
     Edge --> Gateway
     Gateway --> App
@@ -72,11 +72,11 @@ sequenceDiagram
     participant Lambda@Edge
     participant EdgeCache
     participant Origin
-    
+
     User->>CloudFront: GET /abc123X
     CloudFront->>Lambda@Edge: Viewer Request
     Lambda@Edge->>EdgeCache: Check Edge Cache
-    
+
     alt Cache Hit
         EdgeCache-->>Lambda@Edge: URL Found
         Lambda@Edge-->>CloudFront: Return Redirect
@@ -110,26 +110,26 @@ flowchart TB
             Redirect["/:code<br/>(Redirect)"]
             Health["/health<br/>(Health)"]
         end
-        
+
         subgraph Middleware["MIDDLEWARE STACK"]
             Tracing["Tracing"]
             RateLimit["Rate Limit"]
             Auth["Auth"]
             Metrics["Metrics"]
         end
-        
+
         subgraph Handlers["HANDLERS"]
             URLHandlers["URL Handlers"]
             AnalyticsHandlers["Analytics Handlers"]
             AdminHandlers["Admin Handlers"]
         end
-        
+
         subgraph Domain["DOMAIN LAYER"]
             URLService["URL Service"]
             AnalyticsService["Analytics Service"]
             ComplianceService["Compliance Service"]
         end
-        
+
         subgraph Infra["INFRASTRUCTURE LAYER"]
             DDBClient["DynamoDB Client"]
             RedisClient["Redis Client"]
@@ -137,7 +137,7 @@ flowchart TB
             KinesisClient["Kinesis Client"]
             SESClient["SES Client"]
         end
-        
+
         Router --> Middleware --> Handlers --> Domain --> Infra
     end
 ```
@@ -182,7 +182,7 @@ flowchart LR
     Lambda["Lambda Processor"]
     Timestream["Timestream Database"]
     S3["S3 (Raw Archives)"]
-    
+
     Click --> Kinesis --> Lambda
     Lambda --> Timestream
     Lambda --> S3
@@ -221,7 +221,7 @@ sequenceDiagram
     participant Service
     participant Redis
     participant DynamoDB
-    
+
     Client->>ALB: POST /api/v1/urls
     ALB->>Service: Forward
     Service->>Service: Validate URL
@@ -245,14 +245,14 @@ sequenceDiagram
     participant Lambda@Edge
     participant Redis as Redis (Global)
     participant Origin as Origin (EKS)
-    
+
     Client->>CloudFront: GET /abc123X
     CloudFront->>Lambda@Edge: Viewer Request
     Lambda@Edge->>Redis: Check Cache
     Redis-->>Lambda@Edge: Cache Hit!
     Lambda@Edge-->>CloudFront: 301 Redirect
     CloudFront-->>Client: 301 Redirect
-    
+
     Note over Lambda@Edge,Origin: Async: Send click event
 ```
 
@@ -265,7 +265,7 @@ sequenceDiagram
     participant ALB
     participant EKS
     participant DynamoDB
-    
+
     Client->>CloudFront: GET /xyz789Z
     CloudFront->>CloudFront: Cache Miss
     CloudFront->>ALB: Forward
@@ -286,36 +286,36 @@ sequenceDiagram
 ```mermaid
 flowchart TB
     R53["Route 53 (DNS)<br/>Latency-based + Health"]
-    
+
     R53 --> US["US-EAST-1 (Primary)"]
     R53 --> EU["EU-WEST-1 (Secondary)"]
     R53 --> AP["AP-SOUTH-1 (Secondary)"]
-    
+
     subgraph US["US-EAST-1"]
         US_ALB["ALB"]
         US_EKS["EKS (3 nodes)"]
         US_Redis["ElastiCache Redis"]
         US_ALB --> US_EKS --> US_Redis
     end
-    
+
     subgraph EU["EU-WEST-1"]
         EU_ALB["ALB"]
         EU_EKS["EKS (3 nodes)"]
         EU_Redis["ElastiCache Redis"]
         EU_ALB --> EU_EKS --> EU_Redis
     end
-    
+
     subgraph AP["AP-SOUTH-1"]
         AP_ALB["ALB"]
         AP_EKS["EKS (3 nodes)"]
         AP_Redis["ElastiCache Redis"]
         AP_ALB --> AP_EKS --> AP_Redis
     end
-    
+
     US_Redis --> DDB["DynamoDB Global Tables"]
     EU_Redis --> DDB
     AP_Redis --> DDB
-    
+
     subgraph DDBDetails["DynamoDB Replication"]
         DDB_US["us-east"]
         DDB_EU["eu-west"]
@@ -344,19 +344,19 @@ flowchart TB
     subgraph Layer1["Layer 1: CloudFront Edge Cache"]
         L1["200+ locations<br/>TTL: 86400s (24 hours)<br/>Hit rate target: 60-70%"]
     end
-    
+
     subgraph Layer2["Layer 2: Regional Redis Cluster"]
         L2["Per region<br/>TTL: 86400s (24 hours)<br/>Hit rate target: 30-35%"]
     end
-    
+
     subgraph Layer3["Layer 3: DynamoDB DAX (optional)"]
         L3["TTL: 300s (5 minutes)<br/>Hit rate target: 5-10%"]
     end
-    
+
     subgraph Layer4["Layer 4: DynamoDB"]
         L4["Source of truth<br/>Strongly consistent reads when needed"]
     end
-    
+
     Layer1 --> Layer2 --> Layer3 --> Layer4
 ```
 
@@ -379,7 +379,7 @@ flowchart TB
         subgraph Shield["AWS Shield Advanced"]
             DDoS["DDoS Protection - Layer 3/4/7"]
         end
-        
+
         subgraph WAF_Layer["AWS WAF"]
             RateLimit["Rate Limit Rules"]
             SQLi["SQL Injection Detection"]
@@ -388,20 +388,20 @@ flowchart TB
             BotControl["Bot Control Rules"]
             IPRep["IP Reputation Lists"]
         end
-        
+
         subgraph VPC["VPC Security"]
             Public["Public Subnets<br/>(ALB only)"]
             Private["Private Subnets<br/>(EKS)"]
             DataSubnet["Data Subnets<br/>(Redis, DB)"]
         end
-        
+
         subgraph AppSec["Application Security"]
             mTLS["mTLS between services"]
             Argon2["API keys hashed with Argon2"]
             JWT["JWT with RS256 signatures"]
             RequestSign["Request signing for internal calls"]
         end
-        
+
         subgraph DataSec["Data Security"]
             DDBEncrypt["DynamoDB: Encrypted at rest (AES-256)"]
             RedisEncrypt["Redis: Encrypted at rest + in-transit"]
@@ -426,7 +426,7 @@ flowchart LR
         Verify["4. Verify uniqueness"]
         Retry["5. Retry with suffix<br/>if collision"]
     end
-    
+
     Counter --> Encode --> Pad --> Verify
     Verify -->|"Collision"| Retry --> Counter
 ```
@@ -442,18 +442,18 @@ flowchart TB
     subgraph DDBCounter["DynamoDB Counter Table"]
         Counter["PK: COUNTER<br/>current_value: 1,234,567,890,000<br/>last_allocated: 2024-01-15T10:30:00Z"]
     end
-    
+
     subgraph Allocation["Allocation Strategy"]
         Step1["1. Each instance requests 1M IDs batch"]
         Step2["2. Atomic increment in DynamoDB"]
         Step3["3. Instance generates codes from range"]
         Step4["4. Request new batch at 90% depleted"]
     end
-    
+
     subgraph Instance["Instance Memory"]
         Range["start: 1,234,567M<br/>end: 1,235,567M<br/>current: 1,234,890M"]
     end
-    
+
     DDBCounter --> Allocation --> Instance
 ```
 
@@ -486,17 +486,17 @@ stateDiagram-v2
     Open --> HalfOpen: 30s timeout
     HalfOpen --> Closed: 3 successes
     HalfOpen --> Open: Any failure
-    
+
     state Closed {
         [*] --> NormalOps
         NormalOps: Normal operation
     }
-    
+
     state Open {
         [*] --> Fallback
         Fallback: Use fallback (DynamoDB)
     }
-    
+
     state HalfOpen {
         [*] --> Testing
         Testing: Test recovery
@@ -546,7 +546,7 @@ flowchart TB
     DB["3. Fallback to database<br/>(non-blocking)"]
     UpdateCache["4. Update cache<br/>(non-blocking)"]
     Response["Return Response"]
-    
+
     Request --> Cache
     Cache -->|"Hit"| Analytics --> Response
     Cache -->|"Miss"| DB --> UpdateCache --> Response

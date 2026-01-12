@@ -12,22 +12,22 @@ flowchart LR
         T1_DB["SQLite"]
         T1_Cache["In-memory HashMap"]
     end
-    
+
     subgraph Tier2["Tier 2: Startup"]
         T2_DB["PostgreSQL"]
         T2_Cache["Redis (single)"]
     end
-    
+
     subgraph Tier3["Tier 3: Growth"]
         T3_DB["PostgreSQL + Replicas"]
         T3_Cache["Redis Cluster"]
     end
-    
+
     subgraph Tier4_5["Tier 4-5: Scale/Global"]
         T4_DB["DynamoDB Global Tables"]
         T4_Cache["ElastiCache + Edge"]
     end
-    
+
     Tier1 --> Tier2 --> Tier3 --> Tier4_5
 ```
 
@@ -53,7 +53,7 @@ erDiagram
     urls ||--o{ click_events : "generates"
     click_events ||--o{ click_aggregates : "aggregates to"
     users ||--o{ custom_domains : "owns"
-    
+
     users {
         uuid id PK
         varchar email UK
@@ -64,7 +64,7 @@ erDiagram
         boolean is_active
         jsonb metadata
     }
-    
+
     api_keys {
         uuid id PK
         uuid user_id FK
@@ -75,7 +75,7 @@ erDiagram
         timestamp expires_at
         boolean is_active
     }
-    
+
     urls {
         uuid id PK
         varchar short_code UK
@@ -88,7 +88,7 @@ erDiagram
         boolean is_custom_alias
         jsonb metadata
     }
-    
+
     click_events {
         uuid id PK
         uuid url_id
@@ -99,7 +99,7 @@ erDiagram
         varchar browser
         boolean is_bot
     }
-    
+
     click_aggregates {
         varchar short_code PK
         timestamp hour PK
@@ -118,11 +118,11 @@ flowchart TB
         UpdateTrigger["update_updated_at_column()<br/>Auto-update timestamps"]
         ClickTrigger["increment_click_count()<br/>Atomic counter increment"]
     end
-    
+
     subgraph Functions["Aggregation Functions"]
         Aggregate["aggregate_hourly_clicks()<br/>Scheduled hourly job"]
     end
-    
+
     Triggers --> Functions
 ```
 
@@ -140,19 +140,19 @@ flowchart TB
         URLs_GSI2["GSI2: expires-at-index<br/>PK: expires_at_date, SK: expires_at"]
         URLs_TTL["TTL: expires_at"]
     end
-    
+
     subgraph UsersTable["USERS TABLE"]
         Users_PK["PK: USER#user_id<br/>SK: PROFILE"]
         Users_Items["Additional SK patterns:<br/>• APIKEY#prefix<br/>• SESSION#session_id"]
         Users_GSI["GSI: email-index"]
     end
-    
+
     subgraph AnalyticsTable["ANALYTICS (Timestream)"]
         Analytics_Dims["Dimensions:<br/>short_code, country, device, browser"]
         Analytics_Measures["Measures:<br/>click_count, unique_visitors"]
         Analytics_Retention["Retention:<br/>• Memory: 24 hours<br/>• Magnetic: 2 years"]
     end
-    
+
     subgraph AuditTable["AUDIT LOGS (S3 + Athena)"]
         Audit_Path["Path: s3://bucket/year=YYYY/month=MM/day=DD/"]
         Audit_Format["Format: Parquet (compressed)"]
@@ -182,23 +182,23 @@ flowchart LR
         Active["ACTIVE DATA"]
         Archived["ARCHIVED DATA"]
         Deleted["DELETED DATA"]
-        
+
         Active -->|"TTL/Inactive"| Archived
         Archived -->|"Retention period"| Deleted
     end
-    
+
     subgraph URLs["URLs Lifecycle"]
         Free["Free tier: 1 year auto-expire"]
         Premium["Premium: User-defined"]
         Enterprise["Enterprise: Permanent"]
     end
-    
+
     subgraph Analytics["Analytics Lifecycle"]
         Realtime["Real-time: 24h in memory"]
         ShortTerm["Short-term: 7d magnetic"]
         Aggregated["Aggregated: 2 years"]
     end
-    
+
     subgraph Audit["Audit Logs Lifecycle"]
         Hot["Hot: 90d (S3 Standard)"]
         Warm["Warm: 1y (Glacier Instant)"]
@@ -247,20 +247,20 @@ flowchart TB
     subgraph Hourly["Hourly Jobs"]
         AggClicks["aggregate-clicks<br/>Aggregate raw click events"]
     end
-    
+
     subgraph Daily["Daily Jobs (2-3 AM UTC)"]
         CleanExpired["cleanup-expired-urls<br/>Remove expired URLs"]
         PurgeSoftDel["purge-soft-deleted<br/>Purge past retention"]
     end
-    
+
     subgraph Weekly["Weekly Jobs (Sunday 4 AM)"]
         ArchiveAnalytics["archive-analytics<br/>Archive old analytics to S3"]
     end
-    
+
     subgraph Monthly["Monthly Jobs (1st of month)"]
         CleanOrphans["cleanup-orphans<br/>Remove orphaned data"]
     end
-    
+
     subgraph Continuous["Continuous"]
         GDPR["process-gdpr-erasure<br/>SQS triggered, max 10 concurrent"]
     end
@@ -275,21 +275,21 @@ flowchart TB
     Request["GDPR Erasure Request"]
     Validate["1. Validate request"]
     CheckHold["2. Check legal holds"]
-    
+
     Request --> Validate --> CheckHold
-    
+
     CheckHold -->|"Hold exists"| Error["Return Error:<br/>LegalHoldActive"]
     CheckHold -->|"No hold"| CreateAudit["3. Create audit record"]
-    
+
     CreateAudit --> DeleteData["4. Delete all user data"]
-    
+
     subgraph Parallel["Parallel Deletion"]
         DelURLs["Delete URLs"]
         DelAnalytics["Delete Analytics"]
         DelAPIKeys["Delete API Keys"]
         DelProfile["Delete Profile"]
     end
-    
+
     DeleteData --> Parallel
     Parallel --> InvalidateCache["5. Invalidate caches globally"]
     InvalidateCache --> Confirm["6. Return confirmation"]
@@ -306,11 +306,11 @@ flowchart LR
     subgraph DynamoDB["DynamoDB PITR"]
         DDB_PITR["35 days retention<br/>Restore to any point"]
     end
-    
+
     subgraph PostgreSQL["PostgreSQL PITR (RDS)"]
         PG_PITR["Restore to any point<br/>within retention window"]
     end
-    
+
     subgraph SoftDelete["Soft Delete Recovery"]
         SoftDel["Within 30 days<br/>User can restore via API"]
     end
@@ -325,12 +325,12 @@ sequenceDiagram
     participant DB
     participant Cache
     participant Audit
-    
+
     User->>API: Restore URL request
     API->>DB: Verify ownership
     DB-->>API: URL found (soft-deleted)
     API->>API: Check retention period
-    
+
     alt Within 30 days
         API->>DB: Set is_active = true
         DB-->>API: Success
@@ -354,11 +354,11 @@ flowchart TB
         GDPRBacklog["gdpr-erasure-backlog<br/>Threshold: 100 pending"]
         JobFailure["cleanup-job-failure<br/>Any failure in 24h"]
     end
-    
+
     subgraph Actions["Alert Actions"]
         OnCall["Alert on-call engineer"]
         Investigate["Trigger investigation"]
     end
-    
+
     Alarms --> Actions
 ```

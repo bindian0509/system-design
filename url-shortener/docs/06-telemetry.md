@@ -13,18 +13,18 @@ flowchart TB
             M1["What is happening?"]
             M2["Counters, Gauges, Histograms"]
         end
-        
+
         subgraph Logs["LOGS"]
             L1["What happened?"]
             L2["Events, Errors, Audit"]
         end
-        
+
         subgraph Traces["TRACES"]
             T1["How does it flow?"]
             T2["Spans, Context, Latency"]
         end
     end
-    
+
     Metrics --> CorrelationID["Correlation ID<br/>(Request Tracing)"]
     Logs --> CorrelationID
     Traces --> CorrelationID
@@ -57,22 +57,22 @@ flowchart LR
         Logs["Logs"]
         Traces["Traces"]
     end
-    
+
     subgraph OTEL["OpenTelemetry"]
         SDK["Rust SDK"]
         OTLP["OTLP Exporter"]
     end
-    
+
     subgraph AWS["AWS Services"]
         CW["CloudWatch"]
         XRay["X-Ray"]
         Logs_CW["CloudWatch Logs"]
     end
-    
+
     subgraph Viz["Visualization"]
         Grafana["Grafana"]
     end
-    
+
     App --> SDK --> OTLP
     OTLP --> CW
     OTLP --> XRay
@@ -91,14 +91,14 @@ flowchart TB
         cache_hits["cache.hits<br/>Cache hits"]
         cache_misses["cache.misses<br/>Cache misses"]
     end
-    
+
     subgraph Histograms["Histograms"]
         redirect_latency["redirect.latency<br/>Redirect latency (ms)"]
         create_latency["create.latency<br/>URL creation latency (ms)"]
         db_latency["db.query.latency<br/>Database query latency (ms)"]
         cache_latency["cache.operation.latency<br/>Cache operation latency (ms)"]
     end
-    
+
     subgraph Gauges["Gauges"]
         active_connections["connections.active<br/>Active connections"]
         cache_size["cache.size<br/>Items in cache"]
@@ -150,24 +150,24 @@ flowchart LR
     subgraph Sources["Log Sources"]
         EKS["EKS Pod (stdout)"]
     end
-    
+
     subgraph Collection["Collection"]
         FluentBit["FluentBit (DaemonSet)"]
     end
-    
+
     subgraph Storage["Storage"]
         CWLogs["CloudWatch Logs"]
         OpenSearch["OpenSearch (Optional)"]
     end
-    
+
     subgraph Analysis["Analysis"]
         Insights["CloudWatch Logs Insights<br/>• Query and analyze<br/>• Create dashboards<br/>• Metric filters"]
     end
-    
+
     subgraph Archive["Long-term Archive"]
         S3["S3<br/>• 90 days hot<br/>• 1 year Glacier IR<br/>• 7 years Deep Archive"]
     end
-    
+
     EKS --> FluentBit --> CWLogs
     CWLogs --> OpenSearch
     CWLogs --> Insights
@@ -187,14 +187,14 @@ flowchart TB
         R2["creates.rate"]
         R3["api.requests.rate"]
     end
-    
+
     subgraph Errors["ERRORS (Error rate)"]
         E1["errors.rate"]
         E2["errors.ratio (%)"]
         E3["errors.by_type (4xx, 5xx)"]
         E4["errors.by_endpoint"]
     end
-    
+
     subgraph Duration["DURATION (Latency percentiles)"]
         D1["latency.p50 (median)"]
         D2["latency.p90"]
@@ -240,24 +240,24 @@ flowchart LR
         C2["Data breach"]
         C3["Error rate > 5%"]
     end
-    
+
     subgraph High["High (P2)"]
         H1["Latency > 500ms p99"]
         H2["Error rate > 1%"]
         H3["DynamoDB throttling"]
     end
-    
+
     subgraph Warning["Warning (P3)"]
         W1["Latency > 100ms p99"]
         W2["Error rate > 0.1%"]
         W3["Cache hit rate < 90%"]
     end
-    
+
     subgraph Info["Info (P4)"]
         I1["Unusual traffic spike"]
         I2["No URLs created 1 hour"]
     end
-    
+
     Critical -->|"15 min response"| PagerDuty["PagerDuty"]
     High -->|"1 hour response"| PagerDuty
     Warning -->|"4 hour response"| Slack["Slack"]
@@ -272,16 +272,16 @@ flowchart TB
         HighLatency["high-p99-latency<br/>P99 > 100ms, 5 min<br/>Severity: Warning"]
         CriticalLatency["critical-p99-latency<br/>P99 > 500ms, 1 min<br/>Severity: Critical"]
     end
-    
+
     subgraph ErrorAlerts["Error Rate Alerts"]
         ElevatedError["elevated-error-rate<br/>Error > 0.1%, 5 min<br/>Severity: Warning"]
         CriticalError["critical-error-rate<br/>Error > 1%, 1 min<br/>Severity: Critical"]
     end
-    
+
     subgraph AvailabilityAlerts["Availability Alerts"]
         Unavailable["service-unavailable<br/>Health check fail, 1 min<br/>Severity: Critical"]
     end
-    
+
     subgraph InfraAlerts["Infrastructure Alerts"]
         HighCPU["high-cpu-utilization<br/>CPU > 80%, 5 min<br/>Severity: Warning"]
         DDBThrottle["dynamodb-throttling<br/>Throttled > 10, 1 min<br/>Severity: High"]
@@ -294,12 +294,12 @@ flowchart TB
 ```mermaid
 flowchart TB
     Incident["Incident Triggered"]
-    
+
     L1["Level 1: Primary On-Call<br/>0 minutes"]
     L2["Level 2: Secondary On-Call<br/>15 minutes"]
     L3["Level 3: Engineering Manager<br/>30 minutes"]
     L4["Level 4: VP Engineering<br/>45 minutes"]
-    
+
     Incident --> L1
     L1 -->|"No response"| L2
     L2 -->|"No response"| L3
@@ -319,12 +319,12 @@ flowchart LR
         Readiness["/ready<br/>Readiness probe<br/>Returns: JSON status"]
         Metrics["/metrics<br/>Prometheus metrics"]
     end
-    
+
     subgraph ReadinessChecks["Readiness Checks"]
         DDB["DynamoDB connectivity"]
         Redis["Redis connectivity"]
     end
-    
+
     Readiness --> DDB
     Readiness --> Redis
 ```

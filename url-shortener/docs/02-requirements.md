@@ -13,31 +13,31 @@ flowchart LR
         F2["Custom Alias"]
         F3["Click Counting"]
     end
-    
+
     subgraph Tier2["Tier 2"]
         F4["API Key Auth"]
         F5["Rate Limiting"]
         F6["Basic Analytics"]
     end
-    
+
     subgraph Tier3["Tier 3"]
         F7["Real-time Analytics"]
         F8["Custom Domains"]
         F9["Webhooks"]
     end
-    
+
     subgraph Tier4["Tier 4"]
         F10["A/B Testing"]
         F11["Multi-tenant"]
         F12["SSO/SAML"]
     end
-    
+
     subgraph Tier5["Tier 5"]
         F13["Edge Redirects"]
         F14["Fraud Detection"]
         F15["ML Abuse Prevention"]
     end
-    
+
     Tier1 --> Tier2 --> Tier3 --> Tier4 --> Tier5
 ```
 
@@ -79,7 +79,7 @@ flowchart LR
         GET_URL["GET /api/v1/urls/:code"]
         DEL_URL["DELETE /api/v1/urls/:code"]
     end
-    
+
     subgraph Redirect["Redirect"]
         GET_CODE["GET /:code → 301 Redirect"]
     end
@@ -177,7 +177,7 @@ erDiagram
         varchar browser
         varchar os
     }
-    
+
     click_aggregates {
         varchar short_code PK
         timestamp hour PK
@@ -187,7 +187,7 @@ erDiagram
         jsonb device_breakdown
         jsonb referrer_breakdown
     }
-    
+
     click_events ||--o{ click_aggregates : "aggregates into"
 ```
 
@@ -232,23 +232,23 @@ erDiagram
 ```mermaid
 flowchart TB
     Request["Incoming Request<br/>GET /abc123X"]
-    
+
     Lookup["Lookup URL"]
     Check{"Is A/B Test?"}
-    
+
     Request --> Lookup --> Check
-    
+
     Check -->|"No"| Direct["Direct Redirect"]
     Check -->|"Yes"| Variants["Get Variants"]
-    
+
     Variants --> Weight["Apply Weights"]
-    
+
     subgraph Destinations["Traffic Split"]
         A["Variant A (Control)<br/>60% weight"]
         B["Variant B<br/>30% weight"]
         C["Variant C<br/>10% weight"]
     end
-    
+
     Weight --> A
     Weight --> B
     Weight --> C
@@ -301,11 +301,11 @@ sequenceDiagram
     participant Lambda@Edge
     participant Redis as Redis Global
     participant Origin as Origin (EKS)
-    
+
     User->>CloudFront: GET /abc123X
     CloudFront->>Lambda@Edge: Viewer Request
     Lambda@Edge->>Redis: Check Cache
-    
+
     alt Cache Hit
         Redis-->>Lambda@Edge: URL Found
         Lambda@Edge-->>CloudFront: 301 Redirect
@@ -332,31 +332,31 @@ flowchart TB
         HTTPS1["HTTPS"]
         Input1["Input Validation"]
     end
-    
+
     subgraph Tier2_Sec["Tier 2"]
         Rate["Rate Limiting"]
         Auth["API Auth"]
         Basic_DDoS["Basic DDoS"]
     end
-    
+
     subgraph Tier3_Sec["Tier 3"]
         WAF["WAF"]
         Audit["Audit Logging"]
         Vuln["Vuln Scanning"]
     end
-    
+
     subgraph Tier4_Sec["Tier 4"]
         Shield["AWS Shield"]
         Encrypt["Encryption at Rest"]
         Pentest["Pen Testing"]
     end
-    
+
     subgraph Tier5_Sec["Tier 5"]
         Shield_Adv["Shield Advanced"]
         FIPS["FIPS 140-2"]
         Immutable["Immutable Logs"]
     end
-    
+
     Tier1_Sec --> Tier2_Sec --> Tier3_Sec --> Tier4_Sec --> Tier5_Sec
 ```
 
@@ -381,13 +381,13 @@ flowchart LR
         Base["Base URL:<br/>api.shortener.io/v1/"]
         Header["Version Header:<br/>X-API-Version: 2024-01-15"]
     end
-    
+
     subgraph Deprecation["Deprecation Policy"]
         Notice["12 months notice"]
         Sunset["Sunset header in responses"]
         Migration["Migration guides provided"]
     end
-    
+
     Versioning --> Deprecation
 ```
 

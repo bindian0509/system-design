@@ -33,27 +33,27 @@ flowchart LR
         T1_scale["1K URLs/mo<br/>10 RPS"]
         T1_tech["SQLite<br/>Single Binary"]
     end
-    
+
     subgraph Tier2["Tier 2: STARTUP"]
         T2_scale["100K URLs/mo<br/>100 RPS"]
         T2_tech["PostgreSQL<br/>+ Redis"]
     end
-    
+
     subgraph Tier3["Tier 3: GROWTH"]
         T3_scale["10M URLs/mo<br/>1K RPS"]
         T3_tech["Multi-Instance<br/>+ Replicas"]
     end
-    
+
     subgraph Tier4["Tier 4: SCALE"]
         T4_scale["100M URLs/mo<br/>10K RPS"]
         T4_tech["Multi-Region<br/>+ Global DB"]
     end
-    
+
     subgraph Tier5["Tier 5: GLOBAL"]
         T5_scale["500M URLs/mo<br/>50K+ RPS"]
         T5_tech["Edge Computing"]
     end
-    
+
     Tier1 --> Tier2 --> Tier3 --> Tier4 --> Tier5
 ```
 
@@ -98,7 +98,7 @@ flowchart LR
         Axum["Axum Server"]
         Redis["Redis Cache"]
         PG["PostgreSQL<br/>(Primary)"]
-        
+
         Axum --> Redis
         Redis --> PG
     end
@@ -120,15 +120,15 @@ flowchart LR
 ```mermaid
 flowchart TB
     ALB["ALB"]
-    
+
     ALB --> I1["Instance 1"]
     ALB --> I2["Instance 2"]
     ALB --> I3["Instance 3"]
-    
+
     I1 --> Redis["Redis Cluster"]
     I2 --> Redis
     I3 --> Redis
-    
+
     Redis --> PG_Primary["PostgreSQL<br/>Primary"]
     PG_Primary <--> PG_Replica["Read Replica"]
 ```
@@ -149,11 +149,11 @@ flowchart TB
 ```mermaid
 flowchart TB
     CF["CloudFront CDN"]
-    
+
     CF --> US["US-East-1<br/>EKS Cluster<br/>+ Redis"]
     CF --> EU["EU-West-1<br/>EKS Cluster<br/>+ Redis"]
     CF --> AP["AP-South-1<br/>EKS Cluster<br/>+ Redis"]
-    
+
     US --> DDB["DynamoDB Global<br/>Tables (Multi-Region)"]
     EU --> DDB
     AP --> DDB
@@ -177,36 +177,36 @@ flowchart TB
     subgraph Edge["CloudFront (200+ PoPs) + Lambda@Edge + AWS WAF + Shield"]
         CF["Edge Layer"]
     end
-    
+
     CF --> US_Region
     CF --> EU_Region
     CF --> AP_Region
-    
+
     subgraph US_Region["US-East-1"]
         US_ALB["ALB"]
         US_EKS["EKS Cluster"]
         US_Redis["ElastiCache Redis"]
         US_ALB --> US_EKS --> US_Redis
     end
-    
+
     subgraph EU_Region["EU-West-1"]
         EU_ALB["ALB"]
         EU_EKS["EKS Cluster"]
         EU_Redis["ElastiCache Redis"]
         EU_ALB --> EU_EKS --> EU_Redis
     end
-    
+
     subgraph AP_Region["AP-South-1"]
         AP_ALB["ALB"]
         AP_EKS["EKS Cluster"]
         AP_Redis["ElastiCache Redis"]
         AP_ALB --> AP_EKS --> AP_Redis
     end
-    
+
     US_Redis --> DDB["DynamoDB Global Tables<br/>(Active-Active Multi-Region)"]
     EU_Redis --> DDB
     AP_Redis --> DDB
-    
+
     DDB --> Kinesis["Kinesis Streams<br/>(Click Events)"]
     Kinesis --> Lambda["Lambda Processors<br/>(Real-time ETL)"]
     Lambda --> Timestream["Timestream<br/>(Analytics)"]
@@ -226,13 +226,13 @@ flowchart LR
         W2["~16.7M URLs/day"]
         W3["~193 URLs/second"]
     end
-    
+
     subgraph Read["Redirect Traffic (100:1)"]
         R1["50B redirects/month"]
         R2["~1.67B redirects/day"]
         R3["~19,300 redirects/second"]
     end
-    
+
     subgraph Peak["Peak Traffic (3x)"]
         P1["~580 URLs/sec write"]
         P2["~58,000 redirects/sec read"]
@@ -283,7 +283,7 @@ flowchart LR
     Counter["Counter: 1234567890"]
     Base62["Base62 Encode"]
     Result["Result: 1LY7VK"]
-    
+
     Counter --> Base62 --> Result
 ```
 
@@ -297,11 +297,11 @@ flowchart LR
 ```mermaid
 flowchart TB
     DDB[("DynamoDB Counter")]
-    
+
     Pod1["Pod 1<br/>Range: 0-1M"]
     Pod2["Pod 2<br/>Range: 1M-2M"]
     Pod3["Pod 3<br/>Range: 2M-3M"]
-    
+
     DDB -->|"Allocate 1M"| Pod1
     DDB -->|"Allocate 1M"| Pod2
     DDB -->|"Allocate 1M"| Pod3
