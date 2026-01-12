@@ -14,26 +14,19 @@ This project demonstrates a complete system design implementation including:
 
 ## Architecture
 
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                     CloudFront (200+ PoPs)                        │
-│                     + Lambda@Edge + WAF                           │
-└────────────────────────────────┬─────────────────────────────────┘
-                                 │
-        ┌────────────────────────┼────────────────────────┐
-        ▼                        ▼                        ▼
-   US-East-1                EU-West-1               AP-South-1
-   ┌─────────┐              ┌─────────┐             ┌─────────┐
-   │   EKS   │              │   EKS   │             │   EKS   │
-   │ + Redis │              │ + Redis │             │ + Redis │
-   └────┬────┘              └────┬────┘             └────┬────┘
-        │                        │                        │
-        └────────────────────────┼────────────────────────┘
-                                 │
-                    ┌────────────┴────────────┐
-                    │  DynamoDB Global Tables │
-                    │  + Kinesis + Timestream │
-                    └─────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Edge["CloudFront (200+ PoPs) + Lambda@Edge + WAF"]
+        CF["Edge Layer"]
+    end
+    
+    CF --> US["US-East-1<br/>EKS + Redis"]
+    CF --> EU["EU-West-1<br/>EKS + Redis"]
+    CF --> AP["AP-South-1<br/>EKS + Redis"]
+    
+    US --> Data["DynamoDB Global Tables<br/>+ Kinesis + Timestream"]
+    EU --> Data
+    AP --> Data
 ```
 
 ## Quick Start
@@ -106,6 +99,17 @@ url-shortener/
 
 ## Scaling Tiers
 
+```mermaid
+flowchart LR
+    T1["Tier 1: LOCAL<br/>1K URLs/mo<br/>SQLite"]
+    T2["Tier 2: STARTUP<br/>100K URLs/mo<br/>PostgreSQL + Redis"]
+    T3["Tier 3: GROWTH<br/>10M URLs/mo<br/>Multi-instance"]
+    T4["Tier 4: SCALE<br/>100M URLs/mo<br/>Multi-region"]
+    T5["Tier 5: GLOBAL<br/>500M URLs/mo<br/>Edge computing"]
+    
+    T1 --> T2 --> T3 --> T4 --> T5
+```
+
 | Tier | Scale | URLs/Month | Architecture |
 |------|-------|------------|--------------|
 | 1 | Local | 1K | Single binary + SQLite |
@@ -116,26 +120,33 @@ url-shortener/
 
 ## API Endpoints
 
-### URL Management
-- `POST /api/v1/urls` - Create short URL
-- `GET /api/v1/urls` - List your URLs
-- `GET /api/v1/urls/:code` - Get URL details
-- `DELETE /api/v1/urls/:code` - Delete URL
-- `POST /api/v1/urls/bulk` - Bulk create
-
-### Analytics
-- `GET /api/v1/analytics/:code` - Get analytics summary
-- `GET /api/v1/analytics/:code/realtime` - Real-time clicks
-- `GET /api/v1/analytics/:code/geo` - Geographic breakdown
-
-### Compliance
-- `GET /api/v1/compliance/gdpr/export` - Export your data
-- `DELETE /api/v1/compliance/gdpr/erasure` - Delete all your data
-
-### Health
-- `GET /health` - Liveness probe
-- `GET /ready` - Readiness probe
-- `GET /metrics` - Prometheus metrics
+```mermaid
+flowchart LR
+    subgraph URLs["URL Management"]
+        POST["POST /api/v1/urls"]
+        GET_ALL["GET /api/v1/urls"]
+        GET_ONE["GET /api/v1/urls/:code"]
+        DELETE["DELETE /api/v1/urls/:code"]
+        BULK["POST /api/v1/urls/bulk"]
+    end
+    
+    subgraph Analytics["Analytics"]
+        SUMMARY["GET /api/v1/analytics/:code"]
+        REALTIME["GET /api/v1/analytics/:code/realtime"]
+        GEO["GET /api/v1/analytics/:code/geo"]
+    end
+    
+    subgraph Compliance["Compliance"]
+        EXPORT["GET /api/v1/compliance/gdpr/export"]
+        ERASURE["DELETE /api/v1/compliance/gdpr/erasure"]
+    end
+    
+    subgraph Health["Health"]
+        LIVE["/health"]
+        READY["/ready"]
+        METRICS["/metrics"]
+    end
+```
 
 ## Configuration
 
@@ -166,6 +177,25 @@ OTLP_ENDPOINT=http://localhost:4317
 BASE_URL=http://localhost:8080
 ```
 
+## ID Generation
+
+```mermaid
+flowchart TB
+    subgraph Generation["ID Generation Strategy"]
+        Counter["Distributed Counter<br/>(DynamoDB)"]
+        Batch["Allocate 1M IDs<br/>per instance"]
+        Local["Local atomic counter"]
+        Encode["Base62 encode<br/>7 characters"]
+    end
+    
+    Counter --> Batch --> Local --> Encode
+    
+    subgraph Capacity["Capacity"]
+        Total["62^7 = 3.5 trillion codes"]
+        Years["At 500M/month = 580 years"]
+    end
+```
+
 ## Deployment
 
 ### Kubernetes (EKS)
@@ -190,11 +220,29 @@ terraform apply
 
 ## Security Features
 
-- **Authentication**: API keys (Argon2 hashed) + JWT
-- **Rate Limiting**: Token bucket algorithm
-- **DDoS Protection**: AWS Shield + WAF
-- **Encryption**: TLS 1.3 in transit, AES-256 at rest
-- **Audit Logging**: Immutable logs with 7-year retention
+```mermaid
+flowchart LR
+    subgraph Auth["Authentication"]
+        APIKeys["API Keys<br/>(Argon2 hashed)"]
+        JWT["JWT Tokens"]
+    end
+    
+    subgraph Protection["Protection"]
+        RateLimit["Rate Limiting"]
+        Shield["AWS Shield"]
+        WAF["AWS WAF"]
+    end
+    
+    subgraph Encryption["Encryption"]
+        TLS["TLS 1.3 in transit"]
+        AES["AES-256 at rest"]
+    end
+    
+    subgraph Audit["Audit"]
+        Logs["Immutable logs"]
+        Retention["7-year retention"]
+    end
+```
 
 ## Compliance
 
@@ -206,6 +254,14 @@ terraform apply
 | HIPAA | Ready | Enterprise tier with BAA |
 
 ## Performance Targets
+
+```mermaid
+xychart-beta
+    title "Latency by Tier (p99)"
+    x-axis ["Tier 1", "Tier 2", "Tier 3", "Tier 4", "Tier 5"]
+    y-axis "Latency (ms)" 0 --> 100
+    bar [50, 100, 50, 30, 20]
+```
 
 | Metric | Target (Tier 5) |
 |--------|-----------------|

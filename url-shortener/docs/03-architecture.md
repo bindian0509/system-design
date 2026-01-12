@@ -6,75 +6,55 @@ This document describes the detailed architecture of the URL shortener system, i
 
 ## High-Level Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                              CLIENT LAYER                                        │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐           │
-│  │ Browser  │  │ Mobile   │  │   CLI    │  │   API    │  │ Partner  │           │
-│  │  Users   │  │   Apps   │  │  Tools   │  │ Clients  │  │ Integr.  │           │
-│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘           │
-└───────┼─────────────┼─────────────┼─────────────┼─────────────┼─────────────────┘
-        │             │             │             │             │
-        └─────────────┴─────────────┴──────┬──────┴─────────────┘
-                                           ▼
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                              EDGE LAYER                                          │
-│  ┌────────────────────────────────────────────────────────────────────────┐     │
-│  │                        CloudFront CDN (200+ PoPs)                       │     │
-│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐    │     │
-│  │  │ Edge Cache  │  │ Lambda@Edge │  │   AWS WAF   │  │AWS Shield   │    │     │
-│  │  │  (Hot URLs) │  │ (Redirects) │  │  (Firewall) │  │(DDoS Prot.) │    │     │
-│  │  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘    │     │
-│  └────────────────────────────────────────────────────────────────────────┘     │
-└────────────────────────────────────────────┬────────────────────────────────────┘
-                                             │
-                                             ▼
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                              API GATEWAY LAYER                                   │
-│  ┌────────────────────────────────────────────────────────────────────────┐     │
-│  │                    Application Load Balancer (ALB)                      │     │
-│  │  • SSL/TLS Termination  • Health Checks  • Request Routing              │     │
-│  └────────────────────────────────────────────────────────────────────────┘     │
-└────────────────────────────────────────────┬────────────────────────────────────┘
-                                             │
-                                             ▼
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                              APPLICATION LAYER                                   │
-│  ┌─────────────────────────────────────────────────────────────────────────┐    │
-│  │                     EKS Cluster (Kubernetes)                             │    │
-│  │  ┌───────────────────────────────────────────────────────────────┐      │    │
-│  │  │                   URL Shortener Service                        │      │    │
-│  │  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐       │      │    │
-│  │  │  │  Pod 1   │  │  Pod 2   │  │  Pod 3   │  │  Pod N   │       │      │    │
-│  │  │  │ (Axum)   │  │ (Axum)   │  │ (Axum)   │  │ (Axum)   │       │      │    │
-│  │  │  └──────────┘  └──────────┘  └──────────┘  └──────────┘       │      │    │
-│  │  └───────────────────────────────────────────────────────────────┘      │    │
-│  └─────────────────────────────────────────────────────────────────────────┘    │
-└────────────────────────────────────────────┬────────────────────────────────────┘
-                                             │
-              ┌──────────────────────────────┼──────────────────────────────┐
-              │                              │                              │
-              ▼                              ▼                              ▼
-┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│      CACHE LAYER        │  │      DATA LAYER         │  │     ANALYTICS LAYER     │
-│  ┌───────────────────┐  │  │  ┌───────────────────┐  │  │  ┌───────────────────┐  │
-│  │   ElastiCache     │  │  │  │    DynamoDB       │  │  │  │  Kinesis Streams  │  │
-│  │   (Redis Cluster) │  │  │  │  (Global Tables)  │  │  │  │  (Click Events)   │  │
-│  │                   │  │  │  │                   │  │  │  │                   │  │
-│  │  • URL mappings   │  │  │  │  • URLs           │  │  │  │         │         │  │
-│  │  • Rate limits    │  │  │  │  • Users          │  │  │  │         ▼         │  │
-│  │  • Session cache  │  │  │  │  • Analytics      │  │  │  │  ┌─────────────┐  │  │
-│  └───────────────────┘  │  │  │  • Audit logs     │  │  │  │  │  Lambda     │  │  │
-└─────────────────────────┘  │  └───────────────────┘  │  │  │  │ Processors  │  │  │
-                             └─────────────────────────┘  │  │  └──────┬──────┘  │  │
-                                                          │  │         │         │  │
-                                                          │  │         ▼         │  │
-                                                          │  │  ┌─────────────┐  │  │
-                                                          │  │  │ Timestream  │  │  │
-                                                          │  │  │ (Analytics) │  │  │
-                                                          │  │  └─────────────┘  │  │
-                                                          │  └───────────────────┘  │
-                                                          └─────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Clients["CLIENT LAYER"]
+        Browser["Browser Users"]
+        Mobile["Mobile Apps"]
+        CLI["CLI Tools"]
+        API["API Clients"]
+        Partner["Partner Integrations"]
+    end
+    
+    subgraph Edge["EDGE LAYER"]
+        CF["CloudFront CDN (200+ PoPs)"]
+        Lambda["Lambda@Edge"]
+        WAF["AWS WAF"]
+        Shield["AWS Shield"]
+    end
+    
+    subgraph Gateway["API GATEWAY LAYER"]
+        ALB["Application Load Balancer<br/>• SSL/TLS Termination<br/>• Health Checks<br/>• Request Routing"]
+    end
+    
+    subgraph App["APPLICATION LAYER - EKS Cluster"]
+        Pod1["Pod 1 (Axum)"]
+        Pod2["Pod 2 (Axum)"]
+        Pod3["Pod 3 (Axum)"]
+        PodN["Pod N (Axum)"]
+    end
+    
+    subgraph Cache["CACHE LAYER"]
+        Redis["ElastiCache Redis Cluster<br/>• URL mappings<br/>• Rate limits<br/>• Session cache"]
+    end
+    
+    subgraph Data["DATA LAYER"]
+        DDB["DynamoDB Global Tables<br/>• URLs<br/>• Users<br/>• Analytics<br/>• Audit logs"]
+    end
+    
+    subgraph Analytics["ANALYTICS LAYER"]
+        Kinesis["Kinesis Streams<br/>(Click Events)"]
+        LambdaProc["Lambda Processors"]
+        Timestream["Timestream<br/>(Analytics)"]
+    end
+    
+    Clients --> Edge
+    Edge --> Gateway
+    Gateway --> App
+    App --> Cache
+    App --> Data
+    App --> Analytics
+    Kinesis --> LambdaProc --> Timestream
 ```
 
 ---
@@ -85,29 +65,28 @@ This document describes the detailed architecture of the URL shortener system, i
 
 The edge layer handles the majority of redirect traffic with ultra-low latency.
 
-```
-Request Flow at Edge:
-
-User Request                  Lambda@Edge                    Origin
-    │                             │                            │
-    │  GET /abc123X               │                            │
-    │────────────────────────────▶│                            │
-    │                             │                            │
-    │                       ┌─────┴─────┐                      │
-    │                       │ Check     │                      │
-    │                       │ Edge Cache│                      │
-    │                       └─────┬─────┘                      │
-    │                             │                            │
-    │                    Cache Hit│Cache Miss                  │
-    │                    ┌────────┴────────┐                   │
-    │                    │                 │                   │
-    │              ┌─────▼─────┐     ┌─────▼─────┐             │
-    │              │ Return    │     │ Forward   │             │
-    │              │ Redirect  │     │ to Origin │─────────────▶
-    │              └─────┬─────┘     └───────────┘             │
-    │                    │                                     │
-    │◀───────────────────┘                                     │
-    │  301 Redirect                                            │
+```mermaid
+sequenceDiagram
+    participant User
+    participant CloudFront
+    participant Lambda@Edge
+    participant EdgeCache
+    participant Origin
+    
+    User->>CloudFront: GET /abc123X
+    CloudFront->>Lambda@Edge: Viewer Request
+    Lambda@Edge->>EdgeCache: Check Edge Cache
+    
+    alt Cache Hit
+        EdgeCache-->>Lambda@Edge: URL Found
+        Lambda@Edge-->>CloudFront: Return Redirect
+        CloudFront-->>User: 301 Redirect
+    else Cache Miss
+        Lambda@Edge->>CloudFront: Forward to Origin
+        CloudFront->>Origin: Request
+        Origin-->>CloudFront: Response
+        CloudFront-->>User: 301 Redirect
+    end
 ```
 
 **Lambda@Edge Functions:**
@@ -123,49 +102,44 @@ User Request                  Lambda@Edge                    Origin
 
 The core application is built with Rust and the Axum framework.
 
-```
-┌────────────────────────────────────────────────────────────────────┐
-│                        AXUM APPLICATION                             │
-│                                                                     │
-│  ┌──────────────────────────────────────────────────────────────┐  │
-│  │                         ROUTER                                 │  │
-│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐              │  │
-│  │  │  /api/v1/*  │ │    /:code   │ │  /health    │              │  │
-│  │  │  (API)      │ │ (Redirect)  │ │  (Health)   │              │  │
-│  │  └──────┬──────┘ └──────┬──────┘ └──────┬──────┘              │  │
-│  └─────────┼───────────────┼───────────────┼─────────────────────┘  │
-│            │               │               │                        │
-│  ┌─────────▼───────────────▼───────────────▼─────────────────────┐  │
-│  │                      MIDDLEWARE STACK                          │  │
-│  │  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────┐  │  │
-│  │  │   Tracing  │ │ Rate Limit │ │    Auth    │ │  Metrics   │  │  │
-│  │  └────────────┘ └────────────┘ └────────────┘ └────────────┘  │  │
-│  └───────────────────────────────────────────────────────────────┘  │
-│                                                                     │
-│  ┌───────────────────────────────────────────────────────────────┐  │
-│  │                         HANDLERS                               │  │
-│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐              │  │
-│  │  │    URL      │ │  Analytics  │ │   Admin     │              │  │
-│  │  │  Handlers   │ │  Handlers   │ │  Handlers   │              │  │
-│  │  └──────┬──────┘ └──────┬──────┘ └──────┬──────┘              │  │
-│  └─────────┼───────────────┼───────────────┼─────────────────────┘  │
-│            │               │               │                        │
-│  ┌─────────▼───────────────▼───────────────▼─────────────────────┐  │
-│  │                      DOMAIN LAYER                              │  │
-│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐              │  │
-│  │  │    URL      │ │  Analytics  │ │  Compliance │              │  │
-│  │  │   Service   │ │   Service   │ │   Service   │              │  │
-│  │  └──────┬──────┘ └──────┬──────┘ └──────┬──────┘              │  │
-│  └─────────┼───────────────┼───────────────┼─────────────────────┘  │
-│            │               │               │                        │
-│  ┌─────────▼───────────────▼───────────────▼─────────────────────┐  │
-│  │                   INFRASTRUCTURE LAYER                         │  │
-│  │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ │  │
-│  │  │DynamoDB │ │  Redis  │ │   S3    │ │ Kinesis │ │   SES   │ │  │
-│  │  │ Client  │ │ Client  │ │ Client  │ │ Client  │ │ Client  │ │  │
-│  │  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘ │  │
-│  └───────────────────────────────────────────────────────────────┘  │
-└────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph AxumApp["AXUM APPLICATION"]
+        subgraph Router["ROUTER"]
+            API["/api/v1/*<br/>(API)"]
+            Redirect["/:code<br/>(Redirect)"]
+            Health["/health<br/>(Health)"]
+        end
+        
+        subgraph Middleware["MIDDLEWARE STACK"]
+            Tracing["Tracing"]
+            RateLimit["Rate Limit"]
+            Auth["Auth"]
+            Metrics["Metrics"]
+        end
+        
+        subgraph Handlers["HANDLERS"]
+            URLHandlers["URL Handlers"]
+            AnalyticsHandlers["Analytics Handlers"]
+            AdminHandlers["Admin Handlers"]
+        end
+        
+        subgraph Domain["DOMAIN LAYER"]
+            URLService["URL Service"]
+            AnalyticsService["Analytics Service"]
+            ComplianceService["Compliance Service"]
+        end
+        
+        subgraph Infra["INFRASTRUCTURE LAYER"]
+            DDBClient["DynamoDB Client"]
+            RedisClient["Redis Client"]
+            S3Client["S3 Client"]
+            KinesisClient["Kinesis Client"]
+            SESClient["SES Client"]
+        end
+        
+        Router --> Middleware --> Handlers --> Domain --> Infra
+    end
 ```
 
 ### 3. Data Layer
@@ -190,46 +164,38 @@ The core application is built with Rust and the Axum framework.
 
 **Access Patterns:**
 
-| Pattern | Keys | Use Case |
-|---------|------|----------|
-| Get URL by code | PK = `URL#abc123X` | Redirect lookup |
-| List user's URLs | GSI2-PK = user_id | Dashboard |
-| Find expiring URLs | GSI1-PK < current_time | Cleanup |
-
-**Global Secondary Indexes:**
-
-```
-GSI1: expires_at-index
-  PK: expires_at (sparse - only if set)
-  SK: pk
-  Projection: short_code, original_url
-
-GSI2: user_id-index
-  PK: user_id
-  SK: created_at
-  Projection: ALL
+```mermaid
+flowchart LR
+    subgraph Patterns["DynamoDB Access Patterns"]
+        P1["Get URL by code<br/>PK = URL#abc123X"]
+        P2["List user's URLs<br/>GSI2-PK = user_id"]
+        P3["Find expiring URLs<br/>GSI1-PK < current_time"]
+    end
 ```
 
 ### 4. Analytics Pipeline
 
+```mermaid
+flowchart LR
+    Click["Click Event"]
+    Kinesis["Kinesis Stream"]
+    Lambda["Lambda Processor"]
+    Timestream["Timestream Database"]
+    S3["S3 (Raw Archives)"]
+    
+    Click --> Kinesis --> Lambda
+    Lambda --> Timestream
+    Lambda --> S3
 ```
-┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
-│   Click      │    │   Kinesis    │    │    Lambda    │    │  Timestream  │
-│   Event      │───▶│   Stream     │───▶│  Processor   │───▶│   Database   │
-└──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘
-                                              │
-                                              ▼
-                                        ┌──────────────┐
-                                        │  S3 (Raw)    │
-                                        │  Archives    │
-                                        └──────────────┘
 
-Click Event Schema:
+**Click Event Schema:**
+
+```json
 {
   "event_id": "uuid",
   "short_code": "abc123X",
   "timestamp": 1704067200000,
-  "ip_hash": "sha256(...)",      // Privacy-preserving
+  "ip_hash": "sha256(...)",
   "country": "US",
   "region": "California",
   "city": "San Francisco",
@@ -248,109 +214,67 @@ Click Event Schema:
 
 ### URL Creation Flow
 
-```
-┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐
-│  Client  │     │   ALB    │     │  Service │     │   Redis  │     │ DynamoDB │
-└────┬─────┘     └────┬─────┘     └────┬─────┘     └────┬─────┘     └────┬─────┘
-     │                │                │                │                │
-     │ POST /api/v1/urls               │                │                │
-     │───────────────▶│                │                │                │
-     │                │ Forward        │                │                │
-     │                │───────────────▶│                │                │
-     │                │                │                │                │
-     │                │                │ Validate URL   │                │
-     │                │                │───────┐        │                │
-     │                │                │       │        │                │
-     │                │                │◀──────┘        │                │
-     │                │                │                │                │
-     │                │                │ Generate Code  │                │
-     │                │                │───────┐        │                │
-     │                │                │       │        │                │
-     │                │                │◀──────┘        │                │
-     │                │                │                │                │
-     │                │                │ Check exists   │                │
-     │                │                │───────────────▶│                │
-     │                │                │                │                │
-     │                │                │ Not found      │                │
-     │                │                │◀───────────────│                │
-     │                │                │                │                │
-     │                │                │ Write to cache │                │
-     │                │                │───────────────▶│                │
-     │                │                │                │                │
-     │                │                │ ACK            │                │
-     │                │                │◀───────────────│                │
-     │                │                │                │                │
-     │                │                │ Write to DB    │                │
-     │                │                │────────────────────────────────▶│
-     │                │                │                │                │
-     │                │                │ ACK            │                │
-     │                │                │◀────────────────────────────────│
-     │                │                │                │                │
-     │                │ 201 Created    │                │                │
-     │                │◀───────────────│                │                │
-     │ Response       │                │                │                │
-     │◀───────────────│                │                │                │
+```mermaid
+sequenceDiagram
+    participant Client
+    participant ALB
+    participant Service
+    participant Redis
+    participant DynamoDB
+    
+    Client->>ALB: POST /api/v1/urls
+    ALB->>Service: Forward
+    Service->>Service: Validate URL
+    Service->>Service: Generate Code
+    Service->>Redis: Check exists
+    Redis-->>Service: Not found
+    Service->>Redis: Write to cache
+    Redis-->>Service: ACK
+    Service->>DynamoDB: Write to DB
+    DynamoDB-->>Service: ACK
+    Service-->>ALB: 201 Created
+    ALB-->>Client: Response
 ```
 
 ### URL Redirect Flow (Edge)
 
-```
-┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐
-│  Client  │     │CloudFront│     │Lambda@   │     │  Redis   │     │  Origin  │
-│          │     │          │     │Edge      │     │ (Global) │     │ (EKS)    │
-└────┬─────┘     └────┬─────┘     └────┬─────┘     └────┬─────┘     └────┬─────┘
-     │                │                │                │                │
-     │ GET /abc123X   │                │                │                │
-     │───────────────▶│                │                │                │
-     │                │                │                │                │
-     │                │ Viewer Request │                │                │
-     │                │───────────────▶│                │                │
-     │                │                │                │                │
-     │                │                │ Check Cache    │                │
-     │                │                │───────────────▶│                │
-     │                │                │                │                │
-     │                │                │ Cache Hit!     │                │
-     │                │                │◀───────────────│                │
-     │                │                │                │                │
-     │                │ 301 Redirect   │                │                │
-     │                │◀───────────────│                │                │
-     │ 301 Redirect   │                │                │                │
-     │◀───────────────│                │                │                │
-     │                │                │                │                │
-     │                │                │ Async: Send    │                │
-     │                │                │ click event    │                │
-     │                │                │────────────────────────────────▶│
+```mermaid
+sequenceDiagram
+    participant Client
+    participant CloudFront
+    participant Lambda@Edge
+    participant Redis as Redis (Global)
+    participant Origin as Origin (EKS)
+    
+    Client->>CloudFront: GET /abc123X
+    CloudFront->>Lambda@Edge: Viewer Request
+    Lambda@Edge->>Redis: Check Cache
+    Redis-->>Lambda@Edge: Cache Hit!
+    Lambda@Edge-->>CloudFront: 301 Redirect
+    CloudFront-->>Client: 301 Redirect
+    
+    Note over Lambda@Edge,Origin: Async: Send click event
 ```
 
 ### Cache Miss Flow
 
-```
-┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐
-│  Client  │     │CloudFront│     │   ALB    │     │   EKS    │     │ DynamoDB │
-└────┬─────┘     └────┬─────┘     └────┬─────┘     └────┬─────┘     └────┬─────┘
-     │                │                │                │                │
-     │ GET /xyz789Z   │                │                │                │
-     │───────────────▶│                │                │                │
-     │                │                │                │                │
-     │                │ Cache Miss     │                │                │
-     │                │───────────────▶│                │                │
-     │                │                │                │                │
-     │                │                │ Forward        │                │
-     │                │                │───────────────▶│                │
-     │                │                │                │                │
-     │                │                │                │ Get URL        │
-     │                │                │                │───────────────▶│
-     │                │                │                │                │
-     │                │                │                │ URL Data       │
-     │                │                │                │◀───────────────│
-     │                │                │                │                │
-     │                │                │ 301 + Headers  │                │
-     │                │                │◀───────────────│                │
-     │                │                │                │                │
-     │                │ Cache Response │                │                │
-     │                │◀───────────────│                │                │
-     │ 301 Redirect   │                │                │                │
-     │◀───────────────│                │                │                │
+```mermaid
+sequenceDiagram
+    participant Client
+    participant CloudFront
+    participant ALB
+    participant EKS
+    participant DynamoDB
+    
+    Client->>CloudFront: GET /xyz789Z
+    CloudFront->>CloudFront: Cache Miss
+    CloudFront->>ALB: Forward
+    ALB->>EKS: Forward
+    EKS->>DynamoDB: Get URL
+    DynamoDB-->>EKS: URL Data
+    EKS-->>ALB: 301 + Headers
+    ALB-->>CloudFront: Cache Response
+    CloudFront-->>Client: 301 Redirect
 ```
 
 ---
@@ -359,50 +283,45 @@ Click Event Schema:
 
 ### Active-Active Deployment
 
-```
-                          ┌────────────────────────────────┐
-                          │        Route 53 (DNS)          │
-                          │   Latency-based + Health       │
-                          └───────────────┬────────────────┘
-                                          │
-                    ┌─────────────────────┼─────────────────────┐
-                    │                     │                     │
-                    ▼                     ▼                     ▼
-        ┌───────────────────┐ ┌───────────────────┐ ┌───────────────────┐
-        │    US-EAST-1      │ │    EU-WEST-1      │ │    AP-SOUTH-1     │
-        │   (Primary)       │ │   (Secondary)     │ │   (Secondary)     │
-        ├───────────────────┤ ├───────────────────┤ ├───────────────────┤
-        │                   │ │                   │ │                   │
-        │  ┌─────────────┐  │ │  ┌─────────────┐  │ │  ┌─────────────┐  │
-        │  │     ALB     │  │ │  │     ALB     │  │ │  │     ALB     │  │
-        │  └──────┬──────┘  │ │  └──────┬──────┘  │ │  └──────┬──────┘  │
-        │         │         │ │         │         │ │         │         │
-        │  ┌──────▼──────┐  │ │  ┌──────▼──────┐  │ │  ┌──────▼──────┐  │
-        │  │     EKS     │  │ │  │     EKS     │  │ │  │     EKS     │  │
-        │  │  (3 nodes)  │  │ │  │  (3 nodes)  │  │ │  │  (3 nodes)  │  │
-        │  └──────┬──────┘  │ │  └──────┬──────┘  │ │  └──────┬──────┘  │
-        │         │         │ │         │         │ │         │         │
-        │  ┌──────▼──────┐  │ │  ┌──────▼──────┐  │ │  ┌──────▼──────┐  │
-        │  │ ElastiCache │  │ │  │ ElastiCache │  │ │  │ ElastiCache │  │
-        │  │   Redis     │  │ │  │   Redis     │  │ │  │   Redis     │  │
-        │  └─────────────┘  │ │  └─────────────┘  │ │  └─────────────┘  │
-        │                   │ │                   │ │                   │
-        └─────────┬─────────┘ └─────────┬─────────┘ └─────────┬─────────┘
-                  │                     │                     │
-                  └──────────────┬──────┴─────────────────────┘
-                                 │
-                                 ▼
-                  ┌──────────────────────────────┐
-                  │   DynamoDB Global Tables     │
-                  │                              │
-                  │  ┌────────┐ ┌────────┐ ┌────────┐
-                  │  │us-east │◀▶│eu-west │◀▶│ap-south│
-                  │  └────────┘ └────────┘ └────────┘
-                  │                              │
-                  │  • Automatic replication     │
-                  │  • ~1 second propagation     │
-                  │  • Conflict resolution       │
-                  └──────────────────────────────┘
+```mermaid
+flowchart TB
+    R53["Route 53 (DNS)<br/>Latency-based + Health"]
+    
+    R53 --> US["US-EAST-1 (Primary)"]
+    R53 --> EU["EU-WEST-1 (Secondary)"]
+    R53 --> AP["AP-SOUTH-1 (Secondary)"]
+    
+    subgraph US["US-EAST-1"]
+        US_ALB["ALB"]
+        US_EKS["EKS (3 nodes)"]
+        US_Redis["ElastiCache Redis"]
+        US_ALB --> US_EKS --> US_Redis
+    end
+    
+    subgraph EU["EU-WEST-1"]
+        EU_ALB["ALB"]
+        EU_EKS["EKS (3 nodes)"]
+        EU_Redis["ElastiCache Redis"]
+        EU_ALB --> EU_EKS --> EU_Redis
+    end
+    
+    subgraph AP["AP-SOUTH-1"]
+        AP_ALB["ALB"]
+        AP_EKS["EKS (3 nodes)"]
+        AP_Redis["ElastiCache Redis"]
+        AP_ALB --> AP_EKS --> AP_Redis
+    end
+    
+    US_Redis --> DDB["DynamoDB Global Tables"]
+    EU_Redis --> DDB
+    AP_Redis --> DDB
+    
+    subgraph DDBDetails["DynamoDB Replication"]
+        DDB_US["us-east"]
+        DDB_EU["eu-west"]
+        DDB_AP["ap-south"]
+        DDB_US <--> DDB_EU <--> DDB_AP
+    end
 ```
 
 ### Conflict Resolution Strategy
@@ -420,41 +339,25 @@ DynamoDB Global Tables use "last writer wins" conflict resolution. Our applicati
 
 ### Cache Layers
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                         CACHE HIERARCHY                              │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  Layer 1: CloudFront Edge Cache (200+ locations)                    │
-│  ┌────────────────────────────────────────────────────────────────┐ │
-│  │  • TTL: 86400s (24 hours) for redirects                        │ │
-│  │  • Cache key: URL path only (no query string)                  │ │
-│  │  • Hit rate target: 60-70%                                     │ │
-│  └────────────────────────────────────────────────────────────────┘ │
-│                              │                                       │
-│                              ▼                                       │
-│  Layer 2: Regional Redis Cluster (per region)                       │
-│  ┌────────────────────────────────────────────────────────────────┐ │
-│  │  • TTL: 86400s (24 hours)                                      │ │
-│  │  • Data: URL mappings, rate limit counters, session cache      │ │
-│  │  • Hit rate target: 30-35% (of edge misses)                    │ │
-│  └────────────────────────────────────────────────────────────────┘ │
-│                              │                                       │
-│                              ▼                                       │
-│  Layer 3: DynamoDB DAX (optional)                                   │
-│  ┌────────────────────────────────────────────────────────────────┐ │
-│  │  • TTL: 300s (5 minutes)                                       │ │
-│  │  • Hit rate target: 5-10% (of Redis misses)                    │ │
-│  └────────────────────────────────────────────────────────────────┘ │
-│                              │                                       │
-│                              ▼                                       │
-│  Layer 4: DynamoDB (source of truth)                                │
-│  ┌────────────────────────────────────────────────────────────────┐ │
-│  │  • Strongly consistent reads when needed                       │ │
-│  │  • Eventually consistent for redirects (acceptable)            │ │
-│  └────────────────────────────────────────────────────────────────┘ │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Layer1["Layer 1: CloudFront Edge Cache"]
+        L1["200+ locations<br/>TTL: 86400s (24 hours)<br/>Hit rate target: 60-70%"]
+    end
+    
+    subgraph Layer2["Layer 2: Regional Redis Cluster"]
+        L2["Per region<br/>TTL: 86400s (24 hours)<br/>Hit rate target: 30-35%"]
+    end
+    
+    subgraph Layer3["Layer 3: DynamoDB DAX (optional)"]
+        L3["TTL: 300s (5 minutes)<br/>Hit rate target: 5-10%"]
+    end
+    
+    subgraph Layer4["Layer 4: DynamoDB"]
+        L4["Source of truth<br/>Strongly consistent reads when needed"]
+    end
+    
+    Layer1 --> Layer2 --> Layer3 --> Layer4
 ```
 
 ### Cache Invalidation
@@ -470,60 +373,42 @@ DynamoDB Global Tables use "last writer wins" conflict resolution. Our applicati
 
 ## Security Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                      SECURITY PERIMETER                              │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  ┌──────────────────────────────────────────────────────────────┐   │
-│  │                    AWS Shield Advanced                        │   │
-│  │          (DDoS Protection - Layer 3/4/7)                      │   │
-│  └──────────────────────────────────────────────────────────────┘   │
-│                              │                                       │
-│  ┌──────────────────────────────────────────────────────────────┐   │
-│  │                       AWS WAF                                 │   │
-│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐             │   │
-│  │  │ Rate Limit  │ │ SQL Inject  │ │ XSS Filter  │             │   │
-│  │  │   Rules     │ │  Detection  │ │   Rules     │             │   │
-│  │  └─────────────┘ └─────────────┘ └─────────────┘             │   │
-│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐             │   │
-│  │  │ Geo Block   │ │ Bot Control │ │ IP Rep.     │             │   │
-│  │  │   Rules     │ │   Rules     │ │   Lists     │             │   │
-│  │  └─────────────┘ └─────────────┘ └─────────────┘             │   │
-│  └──────────────────────────────────────────────────────────────┘   │
-│                              │                                       │
-│  ┌──────────────────────────────────────────────────────────────┐   │
-│  │                   VPC Security                                │   │
-│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐             │   │
-│  │  │ Public      │ │ Private     │ │ Data        │             │   │
-│  │  │ Subnets     │ │ Subnets     │ │ Subnets     │             │   │
-│  │  │ (ALB only)  │ │ (EKS)       │ │ (Redis, DB) │             │   │
-│  │  └─────────────┘ └─────────────┘ └─────────────┘             │   │
-│  │                                                               │   │
-│  │  Security Groups:                                             │   │
-│  │  • ALB: 443/tcp from 0.0.0.0/0                               │   │
-│  │  • EKS: 8080/tcp from ALB SG only                            │   │
-│  │  • Redis: 6379/tcp from EKS SG only                          │   │
-│  │  • (DynamoDB via VPC Endpoint - no public access)            │   │
-│  └──────────────────────────────────────────────────────────────┘   │
-│                                                                      │
-│  ┌──────────────────────────────────────────────────────────────┐   │
-│  │                 Application Security                          │   │
-│  │  • mTLS between services                                      │   │
-│  │  • API keys hashed with Argon2                               │   │
-│  │  • JWT with RS256 signatures                                  │   │
-│  │  • Request signing for internal calls                         │   │
-│  └──────────────────────────────────────────────────────────────┘   │
-│                                                                      │
-│  ┌──────────────────────────────────────────────────────────────┐   │
-│  │                   Data Security                               │   │
-│  │  • DynamoDB: Encrypted at rest (AES-256)                     │   │
-│  │  • Redis: Encrypted at rest + in-transit                      │   │
-│  │  • S3: SSE-KMS encryption                                     │   │
-│  │  • Secrets: AWS Secrets Manager                               │   │
-│  └──────────────────────────────────────────────────────────────┘   │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Perimeter["SECURITY PERIMETER"]
+        subgraph Shield["AWS Shield Advanced"]
+            DDoS["DDoS Protection - Layer 3/4/7"]
+        end
+        
+        subgraph WAF_Layer["AWS WAF"]
+            RateLimit["Rate Limit Rules"]
+            SQLi["SQL Injection Detection"]
+            XSS["XSS Filter Rules"]
+            GeoBlock["Geo Block Rules"]
+            BotControl["Bot Control Rules"]
+            IPRep["IP Reputation Lists"]
+        end
+        
+        subgraph VPC["VPC Security"]
+            Public["Public Subnets<br/>(ALB only)"]
+            Private["Private Subnets<br/>(EKS)"]
+            DataSubnet["Data Subnets<br/>(Redis, DB)"]
+        end
+        
+        subgraph AppSec["Application Security"]
+            mTLS["mTLS between services"]
+            Argon2["API keys hashed with Argon2"]
+            JWT["JWT with RS256 signatures"]
+            RequestSign["Request signing for internal calls"]
+        end
+        
+        subgraph DataSec["Data Security"]
+            DDBEncrypt["DynamoDB: Encrypted at rest (AES-256)"]
+            RedisEncrypt["Redis: Encrypted at rest + in-transit"]
+            S3Encrypt["S3: SSE-KMS encryption"]
+            Secrets["Secrets: AWS Secrets Manager"]
+        end
+    end
 ```
 
 ---
@@ -532,60 +417,50 @@ DynamoDB Global Tables use "last writer wins" conflict resolution. Our applicati
 
 ### Base62 Encoding
 
-```rust
-// Character set: 0-9, a-z, A-Z (62 characters)
-const CHARSET: &[u8] = b"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-const CODE_LENGTH: usize = 7;
-
-// 62^7 = 3,521,614,606,208 unique codes
-// At 500M/month = 7,000 years of capacity
-
-Algorithm:
-1. Get next ID from distributed counter
-2. Encode to Base62
-3. Pad to 7 characters if needed
-4. Verify uniqueness (collision check)
-5. Retry with random suffix if collision
-
-Example:
-  Counter: 1,234,567,890
-  Base62:  "1ly7vk" (padded to "01ly7vk")
+```mermaid
+flowchart LR
+    subgraph Algorithm["ID Generation"]
+        Counter["1. Get next ID<br/>from distributed counter"]
+        Encode["2. Encode to Base62"]
+        Pad["3. Pad to 7 characters"]
+        Verify["4. Verify uniqueness"]
+        Retry["5. Retry with suffix<br/>if collision"]
+    end
+    
+    Counter --> Encode --> Pad --> Verify
+    Verify -->|"Collision"| Retry --> Counter
 ```
+
+- Character set: `0-9`, `a-z`, `A-Z` (62 characters)
+- 7 characters = 62^7 = **3,521,614,606,208** unique codes
+- At 500M/month = 7,000 years of capacity
 
 ### Distributed Counter Implementation
 
+```mermaid
+flowchart TB
+    subgraph DDBCounter["DynamoDB Counter Table"]
+        Counter["PK: COUNTER<br/>current_value: 1,234,567,890,000<br/>last_allocated: 2024-01-15T10:30:00Z"]
+    end
+    
+    subgraph Allocation["Allocation Strategy"]
+        Step1["1. Each instance requests 1M IDs batch"]
+        Step2["2. Atomic increment in DynamoDB"]
+        Step3["3. Instance generates codes from range"]
+        Step4["4. Request new batch at 90% depleted"]
+    end
+    
+    subgraph Instance["Instance Memory"]
+        Range["start: 1,234,567M<br/>end: 1,235,567M<br/>current: 1,234,890M"]
+    end
+    
+    DDBCounter --> Allocation --> Instance
 ```
-┌────────────────────────────────────────────────────────────────────┐
-│                    COUNTER ALLOCATION                               │
-├────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  DynamoDB Counter Table:                                            │
-│  ┌──────────────────────────────────────────────────────────────┐  │
-│  │  PK: COUNTER                                                  │  │
-│  │  current_value: 1,234,567,890,000                            │  │
-│  │  last_allocated: 2024-01-15T10:30:00Z                        │  │
-│  └──────────────────────────────────────────────────────────────┘  │
-│                                                                     │
-│  Allocation Strategy:                                               │
-│  1. Each instance requests a batch of 1,000,000 IDs               │
-│  2. Atomic increment in DynamoDB                                   │
-│  3. Instance generates codes from its allocated range              │
-│  4. Request new batch when 90% depleted                            │
-│                                                                     │
-│  Benefits:                                                          │
-│  • No coordination for most writes                                  │
-│  • Atomic operation prevents duplicates                             │
-│  • Predictable, sequential IDs (helps cache locality)             │
-│                                                                     │
-│  Instance Memory:                                                   │
-│  ┌────────────────────┐                                            │
-│  │ start: 1,234,567M  │                                            │
-│  │ end:   1,235,567M  │                                            │
-│  │ current: 1,234,890M│                                            │
-│  └────────────────────┘                                            │
-│                                                                     │
-└────────────────────────────────────────────────────────────────────┘
-```
+
+**Benefits:**
+- No coordination for most writes
+- Atomic operation prevents duplicates
+- Predictable, sequential IDs (helps cache locality)
 
 ---
 
@@ -604,29 +479,28 @@ Example:
 
 ### Circuit Breaker Pattern
 
-```rust
-// Circuit breaker states:
-// CLOSED -> Normal operation
-// OPEN -> Failing, reject requests immediately
-// HALF_OPEN -> Testing if service recovered
-
-struct CircuitBreaker {
-    state: State,
-    failure_count: u32,
-    failure_threshold: u32,    // 5 failures
-    success_threshold: u32,    // 3 successes
-    timeout: Duration,         // 30 seconds
-    last_failure: Instant,
-}
-
-// Usage in Redis calls:
-match circuit_breaker.call(|| redis.get(key)).await {
-    Ok(value) => value,
-    Err(CircuitOpen) => {
-        // Fallback to DynamoDB
-        dynamodb.get(key).await
+```mermaid
+stateDiagram-v2
+    [*] --> Closed
+    Closed --> Open: Failures > 5
+    Open --> HalfOpen: 30s timeout
+    HalfOpen --> Closed: 3 successes
+    HalfOpen --> Open: Any failure
+    
+    state Closed {
+        [*] --> NormalOps
+        NormalOps: Normal operation
     }
-}
+    
+    state Open {
+        [*] --> Fallback
+        Fallback: Use fallback (DynamoDB)
+    }
+    
+    state HalfOpen {
+        [*] --> Testing
+        Testing: Test recovery
+    }
 ```
 
 ---
@@ -643,12 +517,6 @@ let redis_pool = Pool::builder()
     .min_idle(10)            // Keep 10 warm
     .connection_timeout(Duration::from_millis(100))
     .build(redis_manager)?;
-
-// HTTP client for external calls
-let http_client = reqwest::Client::builder()
-    .pool_max_idle_per_host(50)
-    .timeout(Duration::from_secs(5))
-    .build()?;
 ```
 
 ### Batch Operations
@@ -670,27 +538,16 @@ let results: Vec<Option<String>> = pipe.query_async(&mut conn).await?;
 
 ### Async Everywhere
 
-```rust
-// All I/O is non-blocking
-async fn redirect(
-    State(state): State<AppState>,
-    Path(code): Path<String>,
-) -> Response {
-    // 1. Try cache (non-blocking)
-    if let Some(url) = state.cache.get(&code).await {
-        // 2. Fire-and-forget analytics (non-blocking)
-        tokio::spawn(record_click(code.clone(), request_context));
-        return Redirect::to(&url).into_response();
-    }
-
-    // 3. Fallback to database (non-blocking)
-    match state.db.get_url(&code).await {
-        Some(url) => {
-            // 4. Update cache (non-blocking)
-            tokio::spawn(state.cache.set(code.clone(), url.clone()));
-            Redirect::to(&url).into_response()
-        }
-        None => StatusCode::NOT_FOUND.into_response()
-    }
-}
+```mermaid
+flowchart TB
+    Request["Incoming Request"]
+    Cache["1. Try cache<br/>(non-blocking)"]
+    Analytics["2. Fire-and-forget analytics<br/>(non-blocking)"]
+    DB["3. Fallback to database<br/>(non-blocking)"]
+    UpdateCache["4. Update cache<br/>(non-blocking)"]
+    Response["Return Response"]
+    
+    Request --> Cache
+    Cache -->|"Hit"| Analytics --> Response
+    Cache -->|"Miss"| DB --> UpdateCache --> Response
 ```

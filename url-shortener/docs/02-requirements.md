@@ -4,6 +4,45 @@ This document details the requirements for each scaling tier of the URL shortene
 
 ---
 
+## Requirements Evolution by Tier
+
+```mermaid
+flowchart LR
+    subgraph Tier1["Tier 1"]
+        F1["Basic CRUD"]
+        F2["Custom Alias"]
+        F3["Click Counting"]
+    end
+    
+    subgraph Tier2["Tier 2"]
+        F4["API Key Auth"]
+        F5["Rate Limiting"]
+        F6["Basic Analytics"]
+    end
+    
+    subgraph Tier3["Tier 3"]
+        F7["Real-time Analytics"]
+        F8["Custom Domains"]
+        F9["Webhooks"]
+    end
+    
+    subgraph Tier4["Tier 4"]
+        F10["A/B Testing"]
+        F11["Multi-tenant"]
+        F12["SSO/SAML"]
+    end
+    
+    subgraph Tier5["Tier 5"]
+        F13["Edge Redirects"]
+        F14["Fraud Detection"]
+        F15["ML Abuse Prevention"]
+    end
+    
+    Tier1 --> Tier2 --> Tier3 --> Tier4 --> Tier5
+```
+
+---
+
 ## Tier 1: Local Development (1K URLs/month)
 
 ### Functional Requirements
@@ -32,12 +71,18 @@ This document details the requirements for each scaling tier of the URL shortene
 
 ### API Endpoints (Tier 1)
 
-```
-POST   /api/v1/urls              # Create short URL
-GET    /api/v1/urls              # List URLs
-GET    /api/v1/urls/:code        # Get URL details
-DELETE /api/v1/urls/:code        # Delete URL
-GET    /:code                    # Redirect to original URL
+```mermaid
+flowchart LR
+    subgraph URLs["URL Management"]
+        POST_URL["POST /api/v1/urls"]
+        GET_URLS["GET /api/v1/urls"]
+        GET_URL["GET /api/v1/urls/:code"]
+        DEL_URL["DELETE /api/v1/urls/:code"]
+    end
+    
+    subgraph Redirect["Redirect"]
+        GET_CODE["GET /:code → 301 Redirect"]
+    end
 ```
 
 ---
@@ -70,28 +115,16 @@ GET    /:code                    # Redirect to original URL
 | NF2.7 | Recovery Time | < 1 hour | From latest backup |
 | NF2.8 | Security | TLS 1.2+ | All traffic encrypted |
 
-### API Endpoints (Tier 2 Additions)
-
-```
-POST   /api/v1/auth/keys         # Create API key
-GET    /api/v1/auth/keys         # List API keys
-DELETE /api/v1/auth/keys/:id     # Revoke API key
-
-GET    /api/v1/analytics/:code   # Basic analytics for URL
-
-POST   /api/v1/urls/bulk         # Bulk create URLs
-
-GET    /health                   # Health check endpoint
-GET    /ready                    # Readiness probe
-```
-
 ### Rate Limits (Tier 2)
 
-| Plan | Creates/hour | Redirects/hour | Burst |
-|------|--------------|----------------|-------|
-| Free | 100 | 10,000 | 10 |
-| Basic | 1,000 | 100,000 | 100 |
-| Pro | 10,000 | 1,000,000 | 1,000 |
+```mermaid
+flowchart TB
+    subgraph Plans["Rate Limit Plans"]
+        Free["Free Plan<br/>100 creates/hr<br/>10,000 redirects/hr<br/>Burst: 10"]
+        Basic["Basic Plan<br/>1,000 creates/hr<br/>100,000 redirects/hr<br/>Burst: 100"]
+        Pro["Pro Plan<br/>10,000 creates/hr<br/>1,000,000 redirects/hr<br/>Burst: 1,000"]
+    end
+```
 
 ---
 
@@ -127,63 +160,35 @@ GET    /ready                    # Readiness probe
 | NF3.9 | Horizontal Scale | Linear | Add nodes = add capacity |
 | NF3.10 | Geographic Coverage | Single region | Primary + DR region |
 
-### API Endpoints (Tier 3 Additions)
-
-```
-# Analytics
-GET    /api/v1/analytics/:code/realtime    # Real-time stats
-GET    /api/v1/analytics/:code/geo         # Geographic breakdown
-GET    /api/v1/analytics/:code/devices     # Device breakdown
-GET    /api/v1/analytics/:code/referrers   # Referrer breakdown
-GET    /api/v1/analytics/:code/timeseries  # Time-series data
-
-# Custom Domains
-POST   /api/v1/domains                     # Add custom domain
-GET    /api/v1/domains                     # List domains
-DELETE /api/v1/domains/:id                 # Remove domain
-POST   /api/v1/domains/:id/verify          # Verify domain ownership
-
-# Webhooks
-POST   /api/v1/webhooks                    # Create webhook
-GET    /api/v1/webhooks                    # List webhooks
-DELETE /api/v1/webhooks/:id                # Delete webhook
-
-# QR Codes
-GET    /api/v1/urls/:code/qr               # Generate QR code
-
-# Bulk Operations
-POST   /api/v1/urls/import                 # Import from CSV
-GET    /api/v1/urls/export                 # Export to CSV
-```
-
 ### Analytics Schema (Tier 3)
 
-```sql
--- Click events (before aggregation)
-click_events (
-    id UUID,
-    short_code VARCHAR(10),
-    timestamp TIMESTAMP,
-    ip_hash VARCHAR(64),      -- Hashed for privacy
-    country VARCHAR(2),
-    city VARCHAR(100),
-    referrer VARCHAR(500),
-    user_agent VARCHAR(500),
-    device_type VARCHAR(20),
-    browser VARCHAR(50),
-    os VARCHAR(50)
-)
-
--- Hourly aggregates
-click_aggregates (
-    short_code VARCHAR(10),
-    hour TIMESTAMP,
-    total_clicks INT,
-    unique_visitors INT,
-    country_breakdown JSONB,
-    device_breakdown JSONB,
-    referrer_breakdown JSONB
-)
+```mermaid
+erDiagram
+    click_events {
+        uuid id PK
+        varchar short_code
+        timestamp clicked_at
+        varchar ip_hash
+        varchar country
+        varchar city
+        varchar referrer
+        varchar user_agent
+        varchar device_type
+        varchar browser
+        varchar os
+    }
+    
+    click_aggregates {
+        varchar short_code PK
+        timestamp hour PK
+        int total_clicks
+        int unique_visitors
+        jsonb country_breakdown
+        jsonb device_breakdown
+        jsonb referrer_breakdown
+    }
+    
+    click_events ||--o{ click_aggregates : "aggregates into"
 ```
 
 ---
@@ -222,62 +227,31 @@ click_aggregates (
 | NF4.9 | Encryption | At rest + transit | AES-256, TLS 1.3 |
 | NF4.10 | Audit Retention | 2 years | Compliance requirement |
 
-### API Endpoints (Tier 4 Additions)
+### A/B Testing Flow
 
-```
-# A/B Testing
-POST   /api/v1/urls/:code/variants         # Add A/B variant
-PUT    /api/v1/urls/:code/variants/:id     # Update variant
-DELETE /api/v1/urls/:code/variants/:id     # Remove variant
-GET    /api/v1/urls/:code/variants/stats   # Variant performance
-
-# Advanced Analytics
-GET    /api/v1/analytics/:code/funnel      # Funnel analysis
-GET    /api/v1/analytics/:code/cohorts     # Cohort analysis
-GET    /api/v1/analytics/:code/retention   # Retention metrics
-
-# Multi-tenant
-POST   /api/v1/workspaces                  # Create workspace
-GET    /api/v1/workspaces                  # List workspaces
-PUT    /api/v1/workspaces/:id              # Update workspace
-DELETE /api/v1/workspaces/:id              # Delete workspace
-
-# Team Management
-POST   /api/v1/workspaces/:id/members      # Add member
-DELETE /api/v1/workspaces/:id/members/:uid # Remove member
-PUT    /api/v1/workspaces/:id/members/:uid # Update role
-
-# SSO
-GET    /api/v1/auth/sso/saml/metadata      # SAML metadata
-POST   /api/v1/auth/sso/saml/acs           # SAML assertion consumer
-GET    /api/v1/auth/sso/oidc/authorize     # OIDC authorization
-
-# Compliance
-GET    /api/v1/compliance/gdpr/export      # GDPR data export
-DELETE /api/v1/compliance/gdpr/erasure     # Right to erasure
-GET    /api/v1/compliance/audit-log        # Audit log access
-```
-
-### A/B Testing Schema
-
-```
-variants (
-    id UUID,
-    short_code VARCHAR(10),
-    destination_url VARCHAR(2048),
-    weight INT,                -- Traffic percentage (0-100)
-    is_control BOOLEAN,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP
-)
-
-variant_events (
-    id UUID,
-    variant_id UUID,
-    event_type VARCHAR(20),    -- click, conversion, bounce
-    timestamp TIMESTAMP,
-    metadata JSONB
-)
+```mermaid
+flowchart TB
+    Request["Incoming Request<br/>GET /abc123X"]
+    
+    Lookup["Lookup URL"]
+    Check{"Is A/B Test?"}
+    
+    Request --> Lookup --> Check
+    
+    Check -->|"No"| Direct["Direct Redirect"]
+    Check -->|"Yes"| Variants["Get Variants"]
+    
+    Variants --> Weight["Apply Weights"]
+    
+    subgraph Destinations["Traffic Split"]
+        A["Variant A (Control)<br/>60% weight"]
+        B["Variant B<br/>30% weight"]
+        C["Variant C<br/>10% weight"]
+    end
+    
+    Weight --> A
+    Weight --> B
+    Weight --> C
 ```
 
 ---
@@ -318,54 +292,32 @@ variant_events (
 | NF5.11 | Audit Retention | 7 years | SOC2/HIPAA requirement |
 | NF5.12 | Encryption | FIPS 140-2 | Government/enterprise compliance |
 
-### API Endpoints (Tier 5 Additions)
-
-```
-# Edge Management
-GET    /api/v1/edge/status                 # Edge deployment status
-POST   /api/v1/edge/invalidate             # Invalidate edge cache
-GET    /api/v1/edge/metrics                # Edge performance metrics
-
-# Fraud Detection
-GET    /api/v1/security/threats            # Active threats
-POST   /api/v1/security/block              # Block IP/pattern
-GET    /api/v1/security/rules              # Firewall rules
-PUT    /api/v1/security/rules/:id          # Update rule
-
-# Real-time
-WS     /api/v1/realtime/clicks             # WebSocket click stream
-WS     /api/v1/realtime/dashboard          # Dashboard updates
-
-# Reports
-POST   /api/v1/reports                     # Create report
-GET    /api/v1/reports                     # List reports
-GET    /api/v1/reports/:id                 # Get report
-GET    /api/v1/reports/:id/download        # Download report
-
-# Partner API
-POST   /api/v1/oauth/token                 # OAuth 2.0 token
-POST   /api/v1/oauth/refresh               # Refresh token
-GET    /api/v1/partner/usage               # API usage stats
-```
-
 ### Edge Architecture (Tier 5)
 
-```
-Lambda@Edge Function Flow:
-
-1. CloudFront receives request: https://short.io/abc123X
-2. Lambda@Edge (Viewer Request):
-   - Check Redis Global Datastore for cached mapping
-   - If hit: Return 301/302 redirect immediately
-   - If miss: Forward to origin
-3. Origin (EKS):
-   - Lookup in DynamoDB
-   - Update cache
-   - Return redirect
-4. Lambda@Edge (Origin Response):
-   - Cache the redirect for future requests
-
-Result: ~5-15ms response time at edge
+```mermaid
+sequenceDiagram
+    participant User
+    participant CloudFront
+    participant Lambda@Edge
+    participant Redis as Redis Global
+    participant Origin as Origin (EKS)
+    
+    User->>CloudFront: GET /abc123X
+    CloudFront->>Lambda@Edge: Viewer Request
+    Lambda@Edge->>Redis: Check Cache
+    
+    alt Cache Hit
+        Redis-->>Lambda@Edge: URL Found
+        Lambda@Edge-->>CloudFront: 301 Redirect
+        CloudFront-->>User: 301 → destination.com
+        Note over Lambda@Edge: ~5-15ms response
+    else Cache Miss
+        Lambda@Edge->>CloudFront: Forward to Origin
+        CloudFront->>Origin: Fetch URL
+        Origin-->>CloudFront: URL + Cache Headers
+        CloudFront-->>User: 301 Redirect
+        Note over Lambda@Edge: Cache for future
+    end
 ```
 
 ---
@@ -374,17 +326,39 @@ Result: ~5-15ms response time at edge
 
 ### Security Requirements (All Tiers)
 
-| Requirement | Tier 1 | Tier 2 | Tier 3 | Tier 4 | Tier 5 |
-|-------------|--------|--------|--------|--------|--------|
-| HTTPS Only | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Input Validation | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Rate Limiting | - | ✓ | ✓ | ✓ | ✓ |
-| API Authentication | - | ✓ | ✓ | ✓ | ✓ |
-| DDoS Protection | - | Basic | WAF | Shield | Shield Advanced |
-| Encryption at Rest | - | ✓ | ✓ | ✓ | FIPS 140-2 |
-| Audit Logging | - | Basic | Full | Full | Immutable |
-| Vulnerability Scanning | - | - | ✓ | ✓ | Continuous |
-| Penetration Testing | - | - | Annual | Quarterly | Continuous |
+```mermaid
+flowchart TB
+    subgraph Tier1_Sec["Tier 1"]
+        HTTPS1["HTTPS"]
+        Input1["Input Validation"]
+    end
+    
+    subgraph Tier2_Sec["Tier 2"]
+        Rate["Rate Limiting"]
+        Auth["API Auth"]
+        Basic_DDoS["Basic DDoS"]
+    end
+    
+    subgraph Tier3_Sec["Tier 3"]
+        WAF["WAF"]
+        Audit["Audit Logging"]
+        Vuln["Vuln Scanning"]
+    end
+    
+    subgraph Tier4_Sec["Tier 4"]
+        Shield["AWS Shield"]
+        Encrypt["Encryption at Rest"]
+        Pentest["Pen Testing"]
+    end
+    
+    subgraph Tier5_Sec["Tier 5"]
+        Shield_Adv["Shield Advanced"]
+        FIPS["FIPS 140-2"]
+        Immutable["Immutable Logs"]
+    end
+    
+    Tier1_Sec --> Tier2_Sec --> Tier3_Sec --> Tier4_Sec --> Tier5_Sec
+```
 
 ### Operational Requirements (All Tiers)
 
@@ -401,15 +375,20 @@ Result: ~5-15ms response time at edge
 
 ## API Versioning Strategy
 
-```
-Base URL: https://api.shortener.io/v1/
-
-Version Header (optional): X-API-Version: 2024-01-15
-
-Deprecation:
-- 12 months notice before version sunset
-- Sunset header in responses for deprecated versions
-- Migration guides provided
+```mermaid
+flowchart LR
+    subgraph Versioning["API Versioning"]
+        Base["Base URL:<br/>api.shortener.io/v1/"]
+        Header["Version Header:<br/>X-API-Version: 2024-01-15"]
+    end
+    
+    subgraph Deprecation["Deprecation Policy"]
+        Notice["12 months notice"]
+        Sunset["Sunset header in responses"]
+        Migration["Migration guides provided"]
+    end
+    
+    Versioning --> Deprecation
 ```
 
 ## Error Response Format

@@ -27,21 +27,34 @@ Shortened: https://short.io/abc123X
 
 The system is designed to evolve through five distinct scaling tiers, each building upon the previous one:
 
-```
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                            SCALING PROGRESSION                                   │
-├─────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                  │
-│  Tier 1          Tier 2          Tier 3          Tier 4          Tier 5         │
-│  LOCAL           STARTUP         GROWTH          SCALE           GLOBAL         │
-│  ─────           ───────         ──────          ─────           ──────         │
-│  1K URLs/mo      100K URLs/mo    10M URLs/mo     100M URLs/mo    500M URLs/mo   │
-│  10 RPS          100 RPS         1K RPS          10K RPS         50K+ RPS       │
-│                                                                                  │
-│  SQLite          PostgreSQL      Multi-Instance  Multi-Region    Edge           │
-│  Single Binary   + Redis         + Replicas      + Global DB     Computing      │
-│                                                                                  │
-└─────────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    subgraph Tier1["Tier 1: LOCAL"]
+        T1_scale["1K URLs/mo<br/>10 RPS"]
+        T1_tech["SQLite<br/>Single Binary"]
+    end
+    
+    subgraph Tier2["Tier 2: STARTUP"]
+        T2_scale["100K URLs/mo<br/>100 RPS"]
+        T2_tech["PostgreSQL<br/>+ Redis"]
+    end
+    
+    subgraph Tier3["Tier 3: GROWTH"]
+        T3_scale["10M URLs/mo<br/>1K RPS"]
+        T3_tech["Multi-Instance<br/>+ Replicas"]
+    end
+    
+    subgraph Tier4["Tier 4: SCALE"]
+        T4_scale["100M URLs/mo<br/>10K RPS"]
+        T4_tech["Multi-Region<br/>+ Global DB"]
+    end
+    
+    subgraph Tier5["Tier 5: GLOBAL"]
+        T5_scale["500M URLs/mo<br/>50K+ RPS"]
+        T5_tech["Edge Computing"]
+    end
+    
+    Tier1 --> Tier2 --> Tier3 --> Tier4 --> Tier5
 ```
 
 ### Tier 1: Local Development (1K URLs/month)
@@ -56,14 +69,14 @@ The system is designed to evolve through five distinct scaling tiers, each build
 | Cost | $0 - $5/month |
 
 **Architecture**:
-```
-┌──────────────────────────────────────┐
-│         Single Rust Binary           │
-│  ┌──────────┐    ┌────────────────┐  │
-│  │  Axum    │────│    SQLite      │  │
-│  │  Server  │    │   (File DB)    │  │
-│  └──────────┘    └────────────────┘  │
-└──────────────────────────────────────┘
+
+```mermaid
+flowchart LR
+    subgraph SingleBinary["Single Rust Binary"]
+        Axum["Axum Server"]
+        SQLite["SQLite<br/>(File DB)"]
+        Axum --> SQLite
+    end
 ```
 
 ### Tier 2: Startup (100K URLs/month)
@@ -78,14 +91,17 @@ The system is designed to evolve through five distinct scaling tiers, each build
 | Cost | $50 - $200/month |
 
 **Architecture**:
-```
-┌────────────────────────────────────────────────────────────┐
-│                      Single Server                          │
-│  ┌──────────┐    ┌──────────┐    ┌────────────────────┐    │
-│  │  Axum    │────│  Redis   │    │    PostgreSQL      │    │
-│  │  Server  │    │  Cache   │────│    (Primary)       │    │
-│  └──────────┘    └──────────┘    └────────────────────┘    │
-└────────────────────────────────────────────────────────────┘
+
+```mermaid
+flowchart LR
+    subgraph SingleServer["Single Server"]
+        Axum["Axum Server"]
+        Redis["Redis Cache"]
+        PG["PostgreSQL<br/>(Primary)"]
+        
+        Axum --> Redis
+        Redis --> PG
+    end
 ```
 
 ### Tier 3: Growth (10M URLs/month)
@@ -100,27 +116,21 @@ The system is designed to evolve through five distinct scaling tiers, each build
 | Cost | $1,000 - $5,000/month |
 
 **Architecture**:
-```
-                    ┌─────────────┐
-                    │    ALB      │
-                    └──────┬──────┘
-           ┌───────────────┼───────────────┐
-           ▼               ▼               ▼
-    ┌────────────┐  ┌────────────┐  ┌────────────┐
-    │  Instance  │  │  Instance  │  │  Instance  │
-    │     1      │  │     2      │  │     3      │
-    └─────┬──────┘  └─────┬──────┘  └─────┬──────┘
-          │               │               │
-          └───────────────┼───────────────┘
-                          ▼
-    ┌──────────────────────────────────────────────┐
-    │              Redis Cluster                    │
-    └──────────────────────┬───────────────────────┘
-                           ▼
-    ┌────────────────┐          ┌────────────────┐
-    │   PostgreSQL   │◀────────▶│  Read Replica  │
-    │    Primary     │          │                │
-    └────────────────┘          └────────────────┘
+
+```mermaid
+flowchart TB
+    ALB["ALB"]
+    
+    ALB --> I1["Instance 1"]
+    ALB --> I2["Instance 2"]
+    ALB --> I3["Instance 3"]
+    
+    I1 --> Redis["Redis Cluster"]
+    I2 --> Redis
+    I3 --> Redis
+    
+    Redis --> PG_Primary["PostgreSQL<br/>Primary"]
+    PG_Primary <--> PG_Replica["Read Replica"]
 ```
 
 ### Tier 4: Scale (100M URLs/month)
@@ -135,26 +145,18 @@ The system is designed to evolve through five distinct scaling tiers, each build
 | Cost | $10,000 - $50,000/month |
 
 **Architecture**:
-```
-                         ┌──────────────┐
-                         │  CloudFront  │
-                         │     CDN      │
-                         └──────┬───────┘
-                                │
-        ┌───────────────────────┼───────────────────────┐
-        ▼                       ▼                       ▼
-┌───────────────┐       ┌───────────────┐       ┌───────────────┐
-│   US-East-1   │       │   EU-West-1   │       │   AP-South-1  │
-│  EKS Cluster  │       │  EKS Cluster  │       │  EKS Cluster  │
-│  + Redis      │       │  + Redis      │       │  + Redis      │
-└───────┬───────┘       └───────┬───────┘       └───────┬───────┘
-        │                       │                       │
-        └───────────────────────┼───────────────────────┘
-                                ▼
-                    ┌───────────────────────┐
-                    │  DynamoDB Global      │
-                    │  Tables (Multi-Region)│
-                    └───────────────────────┘
+
+```mermaid
+flowchart TB
+    CF["CloudFront CDN"]
+    
+    CF --> US["US-East-1<br/>EKS Cluster<br/>+ Redis"]
+    CF --> EU["EU-West-1<br/>EKS Cluster<br/>+ Redis"]
+    CF --> AP["AP-South-1<br/>EKS Cluster<br/>+ Redis"]
+    
+    US --> DDB["DynamoDB Global<br/>Tables (Multi-Region)"]
+    EU --> DDB
+    AP --> DDB
 ```
 
 ### Tier 5: Global (500M URLs/month)
@@ -169,52 +171,46 @@ The system is designed to evolve through five distinct scaling tiers, each build
 | Cost | $100,000+/month |
 
 **Architecture**:
-```
-                    ┌────────────────────────────────────────┐
-                    │         CloudFront (200+ PoPs)         │
-                    │         + Lambda@Edge                  │
-                    │         + AWS WAF + Shield             │
-                    └───────────────────┬────────────────────┘
-                                        │
-    ┌───────────────────────────────────┼───────────────────────────────────┐
-    │                                   │                                   │
-    ▼                                   ▼                                   ▼
-┌─────────────────┐           ┌─────────────────┐           ┌─────────────────┐
-│    US-East-1    │           │    EU-West-1    │           │    AP-South-1   │
-│  ┌───────────┐  │           │  ┌───────────┐  │           │  ┌───────────┐  │
-│  │    ALB    │  │           │  │    ALB    │  │           │  │    ALB    │  │
-│  └─────┬─────┘  │           │  └─────┬─────┘  │           │  └─────┬─────┘  │
-│        ▼        │           │        ▼        │           │        ▼        │
-│  ┌───────────┐  │           │  ┌───────────┐  │           │  ┌───────────┐  │
-│  │    EKS    │  │           │  │    EKS    │  │           │  │    EKS    │  │
-│  │  Cluster  │  │           │  │  Cluster  │  │           │  │  Cluster  │  │
-│  └─────┬─────┘  │           │  └─────┬─────┘  │           │  └─────┬─────┘  │
-│        ▼        │           │        ▼        │           │        ▼        │
-│  ┌───────────┐  │           │  ┌───────────┐  │           │  ┌───────────┐  │
-│  │ElastiCache│  │           │  │ElastiCache│  │           │  │ElastiCache│  │
-│  │  Redis    │  │           │  │  Redis    │  │           │  │  Redis    │  │
-│  └───────────┘  │           │  └───────────┘  │           │  └───────────┘  │
-└────────┬────────┘           └────────┬────────┘           └────────┬────────┘
-         │                             │                             │
-         └─────────────────────────────┼─────────────────────────────┘
-                                       ▼
-              ┌────────────────────────────────────────────────────┐
-              │              DynamoDB Global Tables                 │
-              │         (Active-Active Multi-Region)                │
-              └────────────────────────┬───────────────────────────┘
-                                       │
-         ┌─────────────────────────────┼─────────────────────────────┐
-         ▼                             ▼                             ▼
-┌─────────────────┐         ┌─────────────────────┐        ┌─────────────────┐
-│ Kinesis Streams │────────▶│  Lambda Processors  │───────▶│   Timestream    │
-│ (Click Events)  │         │  (Real-time ETL)    │        │  (Analytics)    │
-└─────────────────┘         └─────────────────────┘        └─────────────────┘
-                                       │
-                                       ▼
-                            ┌─────────────────────┐
-                            │    S3 Audit Logs    │
-                            │   + Glacier Archive │
-                            └─────────────────────┘
+
+```mermaid
+flowchart TB
+    subgraph Edge["CloudFront (200+ PoPs) + Lambda@Edge + AWS WAF + Shield"]
+        CF["Edge Layer"]
+    end
+    
+    CF --> US_Region
+    CF --> EU_Region
+    CF --> AP_Region
+    
+    subgraph US_Region["US-East-1"]
+        US_ALB["ALB"]
+        US_EKS["EKS Cluster"]
+        US_Redis["ElastiCache Redis"]
+        US_ALB --> US_EKS --> US_Redis
+    end
+    
+    subgraph EU_Region["EU-West-1"]
+        EU_ALB["ALB"]
+        EU_EKS["EKS Cluster"]
+        EU_Redis["ElastiCache Redis"]
+        EU_ALB --> EU_EKS --> EU_Redis
+    end
+    
+    subgraph AP_Region["AP-South-1"]
+        AP_ALB["ALB"]
+        AP_EKS["EKS Cluster"]
+        AP_Redis["ElastiCache Redis"]
+        AP_ALB --> AP_EKS --> AP_Redis
+    end
+    
+    US_Redis --> DDB["DynamoDB Global Tables<br/>(Active-Active Multi-Region)"]
+    EU_Redis --> DDB
+    AP_Redis --> DDB
+    
+    DDB --> Kinesis["Kinesis Streams<br/>(Click Events)"]
+    Kinesis --> Lambda["Lambda Processors<br/>(Real-time ETL)"]
+    Lambda --> Timestream["Timestream<br/>(Analytics)"]
+    Lambda --> S3["S3 Audit Logs<br/>+ Glacier Archive"]
 ```
 
 ---
@@ -223,42 +219,35 @@ The system is designed to evolve through five distinct scaling tiers, each build
 
 ### Tier 5 Capacity Planning (500M URLs/month)
 
-```
-URLs Created:
-  - 500M new URLs/month
-  - ~16.7M URLs/day
-  - ~694K URLs/hour
-  - ~193 URLs/second (write)
-
-Redirect Traffic (assuming 100:1 read-to-write ratio):
-  - 50B redirects/month
-  - ~1.67B redirects/day
-  - ~69.4M redirects/hour
-  - ~19,300 redirects/second (read)
-
-Peak Traffic (3x average):
-  - ~580 URLs/second (write peak)
-  - ~58,000 redirects/second (read peak)
+```mermaid
+flowchart LR
+    subgraph Write["URL Creation"]
+        W1["500M new URLs/month"]
+        W2["~16.7M URLs/day"]
+        W3["~193 URLs/second"]
+    end
+    
+    subgraph Read["Redirect Traffic (100:1)"]
+        R1["50B redirects/month"]
+        R2["~1.67B redirects/day"]
+        R3["~19,300 redirects/second"]
+    end
+    
+    subgraph Peak["Peak Traffic (3x)"]
+        P1["~580 URLs/sec write"]
+        P2["~58,000 redirects/sec read"]
+    end
 ```
 
 ### Storage Calculations
 
-```
-Per URL Record:
-  - short_code: 7 bytes
-  - original_url: ~200 bytes (average)
-  - metadata: ~100 bytes
-  - Total: ~310 bytes per URL
-
-Monthly Storage:
-  - 500M URLs × 310 bytes = 155 GB/month
-  - Annual: 1.86 TB/year
-
-Analytics Events (per click):
-  - Event size: ~200 bytes
-  - 50B clicks × 200 bytes = 10 TB/month (before rollup)
-  - After daily rollup: ~100 GB/month
-```
+| Item | Calculation |
+|------|-------------|
+| Per URL Record | short_code (7B) + original_url (~200B) + metadata (~100B) = ~310 bytes |
+| Monthly Storage | 500M URLs × 310 bytes = **155 GB/month** |
+| Annual Storage | **1.86 TB/year** |
+| Analytics (per click) | ~200 bytes × 50B clicks = 10 TB/month (before rollup) |
+| After Daily Rollup | ~100 GB/month |
 
 ---
 
@@ -289,10 +278,13 @@ Using **Base62 encoding** with 7 characters:
 - 7 characters = 62^7 = **3.5 trillion** unique combinations
 - At 500M URLs/month, this lasts ~580 years
 
-```
-Example:
-  Counter: 1234567890
-  Base62:  1LY7VK
+```mermaid
+flowchart LR
+    Counter["Counter: 1234567890"]
+    Base62["Base62 Encode"]
+    Result["Result: 1LY7VK"]
+    
+    Counter --> Base62 --> Result
 ```
 
 ### 2. ID Generation Strategy
@@ -301,6 +293,19 @@ Example:
 - Each instance gets a range of IDs (e.g., 1M IDs at a time)
 - No coordination needed for most writes
 - DynamoDB atomic counter for range allocation
+
+```mermaid
+flowchart TB
+    DDB[("DynamoDB Counter")]
+    
+    Pod1["Pod 1<br/>Range: 0-1M"]
+    Pod2["Pod 2<br/>Range: 1M-2M"]
+    Pod3["Pod 3<br/>Range: 2M-3M"]
+    
+    DDB -->|"Allocate 1M"| Pod1
+    DDB -->|"Allocate 1M"| Pod2
+    DDB -->|"Allocate 1M"| Pod3
+```
 
 ### 3. Caching Strategy
 
