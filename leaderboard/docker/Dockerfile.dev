@@ -3,16 +3,14 @@ FROM eclipse-temurin:21-jdk-alpine
 
 WORKDIR /app
 
-# Install Maven
-RUN apk add --no-cache maven
+# Install Maven and curl (needed by mvnw)
+RUN apk add --no-cache maven curl
 
-# Copy Maven wrapper and pom.xml
-COPY mvnw .
-COPY .mvn .mvn
+# Copy pom.xml first for dependency caching
 COPY pom.xml .
 
-# Download dependencies
-RUN chmod +x ./mvnw && ./mvnw dependency:go-offline -B
+# Download dependencies using system Maven
+RUN mvn dependency:go-offline -B
 
 # Copy source code
 COPY src src
@@ -22,5 +20,5 @@ EXPOSE 8080
 EXPOSE 5005
 
 # Run with debug enabled
-ENTRYPOINT ["./mvnw", "spring-boot:run", \
+ENTRYPOINT ["mvn", "spring-boot:run", \
     "-Dspring-boot.run.jvmArguments=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"]

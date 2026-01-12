@@ -63,20 +63,169 @@ flowchart TB
 - Maven 3.9+
 - Docker & Docker Compose
 
-### Run with Docker Compose
+---
+
+## Step-by-Step Demo Guide
+
+Follow these steps to run a complete demo of the leaderboard system:
+
+### Step 1: Start Infrastructure
 
 ```bash
-# Start infrastructure (Redis, Kafka, PostgreSQL)
-docker-compose up -d redis kafka postgres
+cd leaderboard
 
-# Start the application
-./mvnw spring-boot:run
+# Start Redis, Kafka, Zookeeper, and PostgreSQL
+docker-compose up -d redis zookeeper kafka postgres
 
-# Or with Docker
-docker-compose --profile app up -d
+# Verify all services are running
+docker-compose ps
+
+# Expected output:
+# NAME                STATUS
+# leaderboard-redis   Up (healthy)
+# leaderboard-kafka   Up (healthy)
+# leaderboard-postgres Up (healthy)
+# leaderboard-zookeeper Up
 ```
 
-### Test the API
+**Wait for Kafka to be ready (~30 seconds)**:
+```bash
+# Check Kafka is ready
+docker-compose logs kafka | grep "started"
+```
+
+### Step 2: Start the Application
+
+**Option A: Run with Maven (Recommended for development)**
+```bash
+./mvnw spring-boot:run
+```
+
+**Option B: Run with Docker**
+```bash
+docker-compose --profile app up -d leaderboard
+docker-compose logs -f leaderboard
+```
+
+### Step 3: Verify Application is Running
+
+```bash
+# Health check
+curl http://localhost:8080/health
+# Expected: {"status":"ok","timestamp":"..."}
+
+# Readiness check
+curl http://localhost:8080/ready
+# Expected: {"status":"ready","components":{"redis":{"status":"healthy"...}}}
+```
+
+### Step 4: Load Demo Data
+
+```bash
+# Make script executable (first time only)
+chmod +x ./scripts/demo-data.sh
+
+# Generate 100 sample players + 10 elite players
+./scripts/demo-data.sh
+```
+
+**Expected output:**
+```
+╔════════════════════════════════════════════════════════════╗
+║       Real-Time Leaderboard - Demo Data Generator          ║
+╚════════════════════════════════════════════════════════════╝
+
+✓ Server is healthy
+✓ Created 100 players
+✓ Submitted 100 initial scores
+✓ Created elite player: ProGamer2024 (Score: 50000)
+...
+
+╔════╦════════════════════════╦════════════╗
+║ #  ║ Player                 ║ Score      ║
+╠════╬════════════════════════╬════════════╣
+║ 1  ║ ProGamer2024           ║      50000 ║
+║ 2  ║ ChampionX              ║      48500 ║
+...
+```
+
+### Step 5: Try the API Endpoints
+
+```bash
+# Get Top 10 Players
+curl -s "http://localhost:8080/api/v1/leaderboard/top?scope=GLOBAL&period=DAILY&limit=10" | jq
+
+# Get a Specific Player's Rank
+curl -s "http://localhost:8080/api/v1/leaderboard/rank/elite_progamer2024?scope=GLOBAL&period=DAILY" | jq
+
+# Get Surrounding Players (Relative Leaderboard)
+curl -s "http://localhost:8080/api/v1/leaderboard/around/player_00050?scope=GLOBAL&period=DAILY&range=5" | jq
+
+# Get Friend Leaderboard
+curl -s "http://localhost:8080/api/v1/leaderboard/friends/player_00001?period=DAILY" | jq
+
+# Submit a New Score
+curl -X POST "http://localhost:8080/api/v1/scores" \
+  -H "Content-Type: application/json" \
+  -d '{"playerId":"player_00001","score":5000,"region":"US-EAST","updateMode":"INCREMENT"}'
+
+# Check Updated Rank
+curl -s "http://localhost:8080/api/v1/leaderboard/rank/player_00001?scope=GLOBAL&period=DAILY" | jq
+```
+
+### Step 6: Simulate Real-Time Gameplay (Optional)
+
+Open a new terminal and run:
+```bash
+# Simulate 60 seconds of gameplay with score updates every second
+./scripts/simulate-gameplay.sh
+
+# Or customize duration
+DURATION=120 INTERVAL=0.5 ./scripts/simulate-gameplay.sh
+```
+
+### Step 7: View Metrics (Optional)
+
+```bash
+# Start monitoring stack
+docker-compose --profile monitoring up -d prometheus grafana
+
+# Access Prometheus: http://localhost:9090
+# Access Grafana: http://localhost:3000 (admin/admin)
+
+# View raw metrics
+curl http://localhost:8080/actuator/prometheus | grep leaderboard
+```
+
+### Step 8: Cleanup
+
+```bash
+# Stop all services
+docker-compose --profile app --profile monitoring down
+
+# Stop and remove volumes (clean slate)
+docker-compose down -v
+```
+
+---
+
+## Quick Commands Reference
+
+| Action | Command |
+|--------|---------|
+| Start infrastructure | `docker-compose up -d redis zookeeper kafka postgres` |
+| Start app (Maven) | `./mvnw spring-boot:run` |
+| Start app (Docker) | `docker-compose --profile app up -d` |
+| Load demo data | `./scripts/demo-data.sh` |
+| Simulate gameplay | `./scripts/simulate-gameplay.sh` |
+| Run load tests | `./scripts/load-test.sh` |
+| View logs | `docker-compose logs -f` |
+| Stop all | `docker-compose down` |
+| Clean everything | `docker-compose down -v` |
+
+---
+
+## Test the API
 
 ```bash
 # Health check
@@ -297,6 +446,25 @@ Total: ~125 GB → Redis Cluster with 6+ nodes
 - **Retries**: Exponential backoff for transient failures
 - **Graceful Degradation**: Empty responses when unavailable
 - **Health Checks**: Liveness and readiness probes
+
+## Demo Scripts
+
+| Script | Description |
+|--------|-------------|
+| `./scripts/demo-data.sh` | Generate sample players and scores for demo |
+| `./scripts/simulate-gameplay.sh` | Continuously generate score updates |
+| `./scripts/load-test.sh` | Run load tests with Apache Benchmark |
+
+```bash
+# Generate demo data (100 players + 10 elite players)
+./scripts/demo-data.sh
+
+# Simulate real-time gameplay (60 seconds of score updates)
+DURATION=60 ./scripts/simulate-gameplay.sh
+
+# Run load tests
+./scripts/load-test.sh
+```
 
 ## Documentation
 
