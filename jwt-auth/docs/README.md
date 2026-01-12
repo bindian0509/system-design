@@ -143,6 +143,128 @@ sequenceDiagram
 
 ---
 
+## Token Storage & Lifecycle
+
+### Who Keeps What?
+
+| Token | Stored By | Storage Location | Lifetime |
+|-------|-----------|------------------|----------|
+| **Access Token** | Client | Memory / localStorage | 15 minutes |
+| **Refresh Token** | Client + Server | Client: memory/cookie, Server: MySQL | 7 days |
+
+The **server stores refresh tokens in the database** so it can:
+- Verify the token is valid
+- Revoke tokens on logout
+- Invalidate all tokens if compromised
+
+### Complete Token Lifecycle
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Server
+    participant MySQL
+
+    Note over Client,MySQL: 1. USER LOGS IN
+    Client->>Server: POST /login (email, password)
+    Server->>MySQL: Validate credentials
+    MySQL-->>Server: User found
+    Server->>Server: Generate Access Token (JWT, 15min)
+    Server->>Server: Generate Refresh Token (UUID)
+    Server->>MySQL: Store refresh token
+    Server-->>Client: {accessToken, refreshToken}
+
+    Note over Client: Client stores both tokens
+
+    Note over Client,MySQL: 2. MAKING API REQUESTS
+    Client->>Server: GET /api/data + Authorization: Bearer {accessToken}
+    Server->>Server: Validate JWT signature & expiry
+    Server-->>Client: Data response
+
+    Note over Client,MySQL: 3. ACCESS TOKEN EXPIRES (after 15 min)
+    Client->>Server: GET /api/data + Authorization: Bearer {expiredToken}
+    Server-->>Client: 401 Unauthorized
+
+    Note over Client,MySQL: 4. CLIENT USES REFRESH TOKEN
+    Client->>Server: POST /refresh {refreshToken}
+    Server->>MySQL: Find token, check not revoked/expired
+    MySQL-->>Server: Token valid, return user
+    Server->>Server: Generate NEW Access Token
+    Server-->>Client: {newAccessToken, refreshToken}
+
+    Note over Client: Client updates access token
+
+    Note over Client,MySQL: 5. LOGOUT
+    Client->>Server: POST /logout {refreshToken}
+    Server->>MySQL: Mark refresh token as revoked
+    Server-->>Client: Success
+
+    Note over Client: Client deletes both tokens
+```
+
+### Why This Design?
+
+```mermaid
+flowchart LR
+    subgraph shortLived [Short-Lived Access Token]
+        A[JWT with user info]
+        B[15 min expiry]
+        C[Stateless - no DB lookup]
+    end
+
+    subgraph longLived [Long-Lived Refresh Token]
+        D[Random UUID]
+        E[7 day expiry]
+        F[Stored in DB - revocable]
+    end
+
+    shortLived -->|"If leaked, expires quickly"| Security1[Low Risk]
+    longLived -->|"Can revoke anytime"| Security2[Controllable]
+```
+
+| Concern | Solution |
+|---------|----------|
+| Access token leaked? | Expires in 15 min, limited damage |
+| Refresh token leaked? | Revoke it in database immediately |
+| User logs out? | Revoke refresh token, access token expires soon |
+| Change password? | Revoke all refresh tokens for user |
+| **Both tokens stolen?** | **Refresh token rotation (see below)** |
+
+### Refresh Token Rotation
+
+This implementation uses **refresh token rotation** to detect stolen tokens:
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Attacker
+    participant Server
+
+    Note over User,Attacker: Attacker steals refresh token RT1
+
+    Attacker->>Server: POST /refresh {RT1}
+    Server->>Server: Revoke RT1, Issue RT2
+    Server-->>Attacker: New tokens (RT2)
+
+    Note over Attacker: Attacker now has RT2
+
+    User->>Server: POST /refresh {RT1}
+    Server-->>User: ERROR: Token revoked!
+
+    Note over User: User knows account is compromised!
+    Note over User: User changes password, revokes all tokens
+```
+
+**How it works:**
+1. Each time you refresh, the old refresh token is **revoked**
+2. A **new refresh token** is issued
+3. If attacker uses stolen token first → legitimate user's token stops working
+4. User is alerted to compromise and can take action
+
+**Client must update stored refresh token after each refresh!**
+
+---
+
 ## Project Structure
 
 ```

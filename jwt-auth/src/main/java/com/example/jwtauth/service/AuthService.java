@@ -82,6 +82,12 @@ public class AuthService {
 
     /**
      * Refresh access token using refresh token
+     *
+     * SECURITY: Implements refresh token rotation
+     * - Old refresh token is revoked
+     * - New refresh token is issued
+     * - If attacker uses stolen token, legitimate user's next refresh fails
+     *   alerting them to the compromise
      */
     @Transactional
     public AuthResponse refreshToken(String refreshTokenStr) {
@@ -93,11 +99,17 @@ public class AuthService {
         }
 
         User user = refreshToken.getUser();
+
+        // Generate new access token
         String newAccessToken = jwtService.generateAccessToken(user);
+
+        // ROTATION: Revoke old refresh token and create new one
+        refreshTokenService.revokeRefreshToken(refreshTokenStr);
+        RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user);
 
         return AuthResponse.builder()
                 .accessToken(newAccessToken)
-                .refreshToken(refreshTokenStr)
+                .refreshToken(newRefreshToken.getToken())  // Return NEW refresh token
                 .tokenType("Bearer")
                 .build();
     }
