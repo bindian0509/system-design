@@ -302,6 +302,7 @@ Total: ~125 GB → Redis Cluster with 6+ nodes
 
 - [Architecture Design](docs/architecture.md)
 - [API Reference](docs/api-reference.md)
+- [Redis Deep Dive](docs/redis-deep-dive.md) - Detailed analysis of ZSET operations, queries, and replication
 - [Scaling Strategy](docs/scaling-strategy.md)
 - [Observability Guide](docs/observability.md)
 
