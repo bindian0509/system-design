@@ -1,37 +1,33 @@
-version: "3.9"
-
 services:
   scylla:
-    image: scylladb/scylla:5.4
+    image: cassandra:4.1
     container_name: scylla
-    command: ["--smp", "1", "--memory", "1G", "--overprovisioned", "1"]
+    environment:
+      - CASSANDRA_CLUSTER_NAME=products_cluster
+      - CASSANDRA_DC=datacenter1
+      - CASSANDRA_RACK=rack1
+      - MAX_HEAP_SIZE=512M
+      - HEAP_NEWSIZE=128M
     ports:
       - "9042:9042"
-    healthcheck:
-      test: ["CMD-SHELL", "cqlsh -e 'DESCRIBE CLUSTER' 127.0.0.1 9042"]
-      interval: 15s
-      timeout: 10s
-      retries: 10
-      start_period: 30s
     volumes:
-      - scylla-data:/var/lib/scylla
+      - scylla-data:/var/lib/cassandra
 
   scylla-init:
-    image: scylladb/scylla:5.4
+    image: cassandra:4.1
     depends_on:
-      scylla:
-        condition: service_healthy
+      - scylla
     volumes:
-      - ./cql:/cql
-    entrypoint: ["/bin/sh", "-c", "until cqlsh scylla 9042 -e \"DESCRIBE KEYSPACES\" >/dev/null 2>&1; do echo 'waiting for scylla'; sleep 2; done; cqlsh scylla 9042 -f /cql/init.cql"]
+      - ../cql:/cql
+    entrypoint: ["/bin/bash", "-c", "echo 'Waiting for Cassandra...' && until cqlsh scylla 9042 -e 'DESCRIBE CLUSTER' 2>/dev/null; do sleep 5; done && echo 'Running init script...' && cqlsh scylla 9042 -f /cql/init.cql && echo 'Init complete!'"]
+    restart: "no"
 
   products-api:
     build:
-      context: ./products-api
+      context: .
     image: products-api:latest
     depends_on:
-      scylla-init:
-        condition: service_completed_successfully
+      - scylla
     environment:
       - CASSANDRA_CONTACT_POINTS=scylla
       - CASSANDRA_PORT=9042
@@ -39,17 +35,7 @@ services:
       - CASSANDRA_DATACENTER=datacenter1
     ports:
       - "8080:8080"
-
-  cassandra-web:
-    image: ipushc/cassandra-web:0.5.0
-    depends_on:
-      scylla:
-        condition: service_healthy
-    environment:
-      - CASSANDRA_HOST=scylla
-      - CASSANDRA_PORT=9042
-    ports:
-      - "3000:3000"
+    restart: on-failure
 
 volumes:
   scylla-data:

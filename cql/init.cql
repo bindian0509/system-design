@@ -12,7 +12,11 @@ CREATE TABLE IF NOT EXISTS products (
     created_at timestamp
 );
 
-INSERT INTO products (id, name, description, price, stock, created_at) VALUES
- (uuid(), 'Laptop', 'Lightweight 14-inch laptop', 1099.99, 12, toTimestamp(now())),
- (uuid(), 'Wireless Mouse', 'Ergonomic Bluetooth mouse', 39.99, 120, toTimestamp(now())),
- (uuid(), 'Monitor', '27-inch 1440p IPS monitor', 329.00, 45, toTimestamp(now()));
+INSERT INTO products (id, name, description, price, stock, created_at)
+VALUES (uuid(), 'Laptop', 'Lightweight 14-inch laptop', 1099.99, 12, toTimestamp(now()));
+
+INSERT INTO products (id, name, description, price, stock, created_at)
+VALUES (uuid(), 'Wireless Mouse', 'Ergonomic Bluetooth mouse', 39.99, 120, toTimestamp(now()));
+
+INSERT INTO products (id, name, description, price, stock, created_at)
+VALUES (uuid(), 'Monitor', '27-inch 1440p IPS monitor', 329.00, 45, toTimestamp(now()));
