@@ -8,6 +8,7 @@ A comprehensive, in-depth guide for mastering system design interviews at scale.
 |---|-------|-------------|
 | 01 | [Interview Framework](01-interview-framework.md) | Step-by-step approach to ace any system design interview |
 | 02 | [Requirements & Estimation](02-requirements-estimation.md) | Back-of-envelope calculations and capacity planning |
+| 02a | [Back-of-Envelope: Detailed Guide](02a-back-of-envelope-detailed.md) | **Deep dive into quick calculation methods and mental math tricks** |
 | 03 | [Core Building Blocks](03-core-building-blocks.md) | Databases, caching, load balancers, and fundamental components |
 | 04 | [Scalability Patterns](04-scalability-patterns.md) | Horizontal/vertical scaling, sharding, replication |
 | 05 | [Distributed System Concepts](05-distributed-system-concepts.md) | CAP theorem, consistency models, consensus |

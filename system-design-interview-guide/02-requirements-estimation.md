@@ -2,6 +2,8 @@
 
 Capacity planning and estimation are crucial skills for system design interviews. This guide provides the formulas, common numbers, and templates you need to make quick, accurate calculations.
 
+> **📚 For a detailed deep-dive with step-by-step walkthroughs, mental math tricks, and practice problems, see [Back-of-Envelope: Detailed Guide](02a-back-of-envelope-detailed.md)**
+
 ## Why Estimation Matters
 
 ```mermaid

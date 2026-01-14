@@ -1,0 +1,15 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: products-api
+  cassandra:
+    contact-points: ${CASSANDRA_CONTACT_POINTS:scylla}
+    port: ${CASSANDRA_PORT:9042}
+    keyspace-name: ${CASSANDRA_KEYSPACE:products}
+    local-datacenter: ${CASSANDRA_DATACENTER:datacenter1}
+    schema-action: none
+    connection:
+      connect-timeout: 10s
+      init-query-timeout: 10s
