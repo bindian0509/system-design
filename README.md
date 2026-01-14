@@ -14,6 +14,7 @@ mindmap
       E-Commerce
       Food Delivery
       IoT & Streaming
+      Collaboration
     Patterns
       Communication
       Resilience
@@ -23,9 +24,12 @@ mindmap
     Implementations
       URL Shortener
       Rate Limiter
-      Codec Library
+      Leaderboard
+      JWT Auth
+      Products API
     Resources
-      Interview Prep
+      Interview Guide
+      Job Search HQ
       Workflow Tools
 ```
 
@@ -47,6 +51,7 @@ mindmap
 |-------|-------------|--------------|-------|
 | **Merchandise Browsing** | Large-scale product discovery for 1M+ DAU with real-time trending | Popularity scoring, Flink streaming, Personalization | [📘 Overview](./merchandise-listing/ecommerce-browsing-system-design.md) • [📊 Diagrams](./merchandise-listing/diagrams/architecture-diagrams.md) |
 | **Uber Cart System** | Multi-merchant cart with family accounts and offline-first behavior | CRDT sync, Multi-tenant, Event sourcing | [📘 Overview](./uber-cart-design/README.md) • [🏛️ Architecture](./uber-cart-design/architecture/system-overview.md) • [📱 API](./uber-cart-design/api-design/api-contracts.md) |
+| **Issue Tracking System** | Multi-tenant Jira-like platform for 50M DAU with 10B issues | Row-level security, Elasticsearch, Tenant isolation | [📘 Overview](./issue-tracking-system/README.md) • [🏛️ Architecture](./issue-tracking-system/01-high-level-architecture.md) • [🔍 Search](./issue-tracking-system/05-search-infrastructure.md) |
 
 ### Food Delivery & Logistics
 
@@ -54,7 +59,14 @@ mindmap
 |-------|-------------|--------------|-------|
 | **Uber Eats Feed** | Restaurant feed with H3 spatial indexing handling 10K+ views/sec | H3 hexagonal grid, Geo-sharding, ML ranking | [📘 Overview](./uber-eats-feed-design/README.md) • [🗺️ Spatial Indexing](./uber-eats-feed-design/spatial-indexing.md) • [📊 Ranking](./uber-eats-feed-design/ranking-system.md) |
 
-### IoT & Real-Time Systems
+### Real-Time & Collaboration
+
+| Topic | Description | Key Concepts | Links |
+|-------|-------------|--------------|-------|
+| **Collaborative Editor** | Google Docs-like editor with CRDTs for 100 concurrent editors | CRDT, WebSocket, Offline-first, Causal consistency | [📘 Overview](./collaborative-editor/README.md) • [🧬 CRDT Design](./collaborative-editor/docs/02-crdt-design.md) • [🔄 Sync Protocol](./collaborative-editor/docs/03-sync-protocol.md) |
+| **Real-Time Leaderboard** | Gaming leaderboard for 100M users with global/regional rankings | Redis Sorted Sets, Kafka, WebSocket push | [📘 Overview](./leaderboard/README.md) • [🏛️ Architecture](./leaderboard/docs/architecture.md) • [📊 Redis Deep Dive](./leaderboard/docs/redis-deep-dive.md) |
+
+### IoT & Streaming Systems
 
 | Topic | Description | Key Concepts | Links |
 |-------|-------------|--------------|-------|
@@ -150,12 +162,10 @@ mindmap
 
 | Resource | Link |
 |----------|------|
-| **Overview** | [📘 README](./url-shortener/README.md) |
+| **Rust Version** | [📘 README](./url-shortener/README.md) |
+| **Java Version** | [📘 README](./url-shortener-java/README.md) |
 | **Architecture** | [🏛️ Docs](./url-shortener/docs/03-architecture.md) |
-| **Database Design** | [💾 Schema](./url-shortener/docs/04-database-design.md) |
 | **Security & Compliance** | [🔒 GDPR/SOC2](./url-shortener/docs/05-security-compliance.md) |
-| **Deployment** | [☁️ AWS](./url-shortener/docs/07-deployment.md) |
-| **Java Version** | [☕ Alternative](./url-shortener-java/README.md) |
 
 ### Distributed Rate Limiter
 
@@ -171,6 +181,47 @@ mindmap
 | **Architecture** | [🏛️ Docs](./rate-limiter/docs/architecture.md) |
 | **Algorithms** | [🧮 Docs](./rate-limiter/docs/algorithms.md) |
 
+### Real-Time Leaderboard
+
+> Gaming leaderboard for 100M users with 50M DAU, supporting global/regional/friend rankings
+
+**Features:** O(log N) Redis Sorted Sets • WebSocket push notifications • Multiple time windows • Circuit breakers
+
+**Stack:** Java 21 (Spring Boot) • Redis Cluster • Kafka • PostgreSQL • WebSocket
+
+| Resource | Link |
+|----------|------|
+| **Overview** | [📘 README](./leaderboard/README.md) |
+| **Architecture** | [🏛️ Docs](./leaderboard/docs/architecture.md) |
+| **Redis Deep Dive** | [📊 Docs](./leaderboard/docs/redis-deep-dive.md) |
+| **Demo Scripts** | [🎮 Scripts](./leaderboard/scripts/) |
+
+### JWT Authentication
+
+> Complete JWT auth system with access/refresh tokens
+
+**Features:** Token rotation • Secure refresh flow • Spring Security integration
+
+**Stack:** Java (Spring Boot 3.2) • Spring Security • MySQL • jjwt
+
+| Resource | Link |
+|----------|------|
+| **Overview** | [📘 README](./jwt-auth/README.md) |
+| **Architecture** | [🏛️ Docs](./jwt-auth/docs/README.md) |
+| **Postman Collection** | [📬 Collection](./jwt-auth/postman/) |
+
+### Products API (Cassandra/ScyllaDB)
+
+> RESTful CRUD API demonstrating Cassandra/ScyllaDB patterns
+
+**Features:** CQL operations • Docker Compose setup • Seed data
+
+**Stack:** Java (Spring Boot) • Apache Cassandra 4.1 • Docker
+
+| Resource | Link |
+|----------|------|
+| **Overview** | [📘 README](./products-api/README.md) |
+
 ### Codec Library
 
 > MySQL column type codecs with zero-copy decoding (Go)
@@ -185,6 +236,26 @@ mindmap
 ---
 
 ## 🎓 Interview & Career Resources
+
+### System Design Interview Guide
+
+> **[📚 Complete Guide](./system-design-interview-guide/README.md)** — 12-part comprehensive preparation resource
+
+| # | Topic | Description |
+|---|-------|-------------|
+| 01 | [Interview Framework](./system-design-interview-guide/01-interview-framework.md) | Step-by-step approach for any interview |
+| 02 | [Requirements & Estimation](./system-design-interview-guide/02-requirements-estimation.md) | Capacity planning basics |
+| 02a | [Back-of-Envelope (Detailed)](./system-design-interview-guide/02a-back-of-envelope-detailed.md) | Mental math tricks & calculations |
+| 03 | [Core Building Blocks](./system-design-interview-guide/03-core-building-blocks.md) | DBs, caching, load balancers |
+| 04 | [Scalability Patterns](./system-design-interview-guide/04-scalability-patterns.md) | Sharding, replication, scaling |
+| 05 | [Distributed Concepts](./system-design-interview-guide/05-distributed-system-concepts.md) | CAP, consistency, consensus |
+| 06 | [Data Storage](./system-design-interview-guide/06-data-storage-strategies.md) | SQL vs NoSQL, partitioning |
+| 07 | [Caching Strategies](./system-design-interview-guide/07-caching-strategies.md) | Patterns, invalidation, CDNs |
+| 08 | [Messaging & Async](./system-design-interview-guide/08-messaging-async-patterns.md) | Queues, event-driven |
+| 09 | [API Design](./system-design-interview-guide/09-api-design-gateway.md) | REST, GraphQL, gRPC |
+| 10 | [Observability](./system-design-interview-guide/10-observability-reliability.md) | Monitoring, fault tolerance |
+| 11 | [Common Problems](./system-design-interview-guide/11-common-interview-problems.md) | URL shortener, chat, feed |
+| 12 | [Quick Reference](./system-design-interview-guide/12-quick-reference-cheatsheet.md) | One-page cheatsheet |
 
 ### Job Search HQ
 
@@ -235,42 +306,58 @@ mindmap
 
 ```mermaid
 flowchart LR
-    A[Patterns Reference] --> B[URL Shortener]
-    B --> C[Rate Limiter]
-    C --> D[Clearing House]
+    A[Interview Guide] --> B[Patterns Reference]
+    B --> C[URL Shortener]
+    C --> D[Rate Limiter]
+    D --> E[Leaderboard]
 ```
 
-1. **Start:** [Distributed Patterns](./distributed-system-architectural-patterns/README.md)
-2. **Build:** [URL Shortener](./url-shortener/README.md) (implements multiple patterns)
-3. **Scale:** [Rate Limiter](./rate-limiter/README.md) (resilience focus)
-4. **Finance:** [Clearing House](./financial-clearing-house/README.md) (transactions)
+1. **Foundation:** [System Design Interview Guide](./system-design-interview-guide/README.md)
+2. **Patterns:** [Distributed Patterns](./distributed-system-architectural-patterns/README.md)
+3. **Build:** [URL Shortener](./url-shortener/README.md)
+4. **Scale:** [Rate Limiter](./rate-limiter/README.md)
+5. **Real-time:** [Leaderboard](./leaderboard/README.md)
 
 ### Path 2: Real-Time Systems
 
 ```mermaid
 flowchart LR
-    A[Event-Driven Patterns] --> B[Uber Eats Feed]
-    B --> C[Crash Detection]
-    C --> D[Fintech Platform]
+    A[Event-Driven Patterns] --> B[Collaborative Editor]
+    B --> C[Uber Eats Feed]
+    C --> D[Crash Detection]
 ```
 
 1. **Foundation:** [Messaging Patterns](./distributed-system-architectural-patterns/05-messaging-patterns/)
-2. **Geo-Spatial:** [Uber Eats Feed](./uber-eats-feed-design/README.md)
-3. **IoT Streaming:** [Crash Detection](./trucking-crash-detection/README.md)
-4. **Data Platform:** [Fintech Data](./fintech-data-platform/fintech-data-architecture.md)
+2. **Collaboration:** [Collaborative Editor](./collaborative-editor/README.md)
+3. **Geo-Spatial:** [Uber Eats Feed](./uber-eats-feed-design/README.md)
+4. **IoT Streaming:** [Crash Detection](./trucking-crash-detection/README.md)
 
-### Path 3: Interview Preparation
+### Path 3: Multi-Tenant Systems
 
 ```mermaid
 flowchart LR
-    A[Quick Reference] --> B[Case Studies]
-    B --> C[Practice Problems]
-    C --> D[Mock Interviews]
+    A[Data Patterns] --> B[Issue Tracker]
+    B --> C[Seller Payments]
+    C --> D[Clearing House]
 ```
 
-1. **Reference:** [System Design Sheets](./job-search/system-design/quick-reference-sheets.md)
-2. **Study:** Any case study from above
-3. **Practice:** [LLD Problems](./job-search/lld/lld-problems-bank.md)
+1. **Patterns:** [Data Patterns](./distributed-system-architectural-patterns/04-data-patterns/)
+2. **Multi-Tenant:** [Issue Tracking System](./issue-tracking-system/README.md)
+3. **Payments:** [Seller Payment System](./seller-side-payment-system/README.md)
+4. **Finance:** [Clearing House](./financial-clearing-house/README.md)
+
+### Path 4: Interview Preparation
+
+```mermaid
+flowchart LR
+    A[Interview Guide] --> B[Quick Reference]
+    B --> C[Case Studies]
+    C --> D[Mock Practice]
+```
+
+1. **Guide:** [Interview Framework](./system-design-interview-guide/01-interview-framework.md)
+2. **Reference:** [Cheatsheet](./system-design-interview-guide/12-quick-reference-cheatsheet.md)
+3. **Study:** Any case study from above
 4. **Review:** [Interview Experiences](./interview_experiences/)
 
 ---
@@ -279,19 +366,31 @@ flowchart LR
 
 | Pattern | Used In |
 |---------|---------|
-| Event Sourcing / CDC | Fintech Data Platform, E-Commerce |
-| CQRS | E-Commerce, Uber Eats Feed |
+| Event Sourcing / CDC | Fintech Data Platform, E-Commerce, Collaborative Editor |
+| CQRS | E-Commerce, Uber Eats Feed, Issue Tracking |
 | Saga Pattern | Financial Clearing House, Seller Payments |
-| Exactly-Once Semantics | Clearing House, Seller Payments |
+| Exactly-Once Semantics | Clearing House, Seller Payments, Leaderboard |
+| CRDT | Collaborative Editor |
+| Redis Sorted Sets | Leaderboard, Rate Limiter |
 | Batch + Real-time (Lambda) | E-Commerce, Crash Detection |
-| Federated Queries | Fintech Data Platform |
 | H3 Spatial Indexing | Uber Eats Feed |
-| Circuit Breaker | Rate Limiter, Seller Payments |
+| Circuit Breaker | Rate Limiter, Seller Payments, Leaderboard |
+| Multi-Tenancy (RLS) | Issue Tracking System |
+| WebSocket | Collaborative Editor, Leaderboard |
 | Sharding / Partitioning | All case studies |
 
 ---
 
 ## 🚀 Quick Start
+
+### Run Leaderboard Demo
+
+```bash
+cd leaderboard
+docker-compose up -d redis zookeeper kafka postgres
+./mvnw spring-boot:run
+./scripts/demo-data.sh
+```
 
 ### Run Financial Clearing House Demo
 
@@ -316,6 +415,20 @@ cd url-shortener && docker-compose up -d
 
 ```bash
 cd rate-limiter && docker-compose up -d redis && ./mvnw spring-boot:run
+```
+
+### Run JWT Auth
+
+```bash
+cd jwt-auth && docker-compose up -d --build
+# API available at http://localhost:8080
+```
+
+### Run Products API (Cassandra)
+
+```bash
+cd products-api && docker-compose up -d --build
+# API available at http://localhost:8080
 ```
 
 ### Run Airflow Examples
