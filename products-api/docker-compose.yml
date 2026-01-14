@@ -18,7 +18,7 @@ services:
     depends_on:
       - scylla
     volumes:
-      - ../cql:/cql
+      - ./cql:/cql
     entrypoint: ["/bin/bash", "-c", "echo 'Waiting for Cassandra...' && until cqlsh scylla 9042 -e 'DESCRIBE CLUSTER' 2>/dev/null; do sleep 5; done && echo 'Running init script...' && cqlsh scylla 9042 -f /cql/init.cql && echo 'Init complete!'"]
     restart: "no"
 

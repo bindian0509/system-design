@@ -12,7 +12,7 @@
 ## Schema & seed
 - Keyspace: `products`
 - Table: `products(id uuid PRIMARY KEY, name text, description text, price decimal, stock int, created_at timestamp)`
-- Seed data is loaded from `../cql/init.cql` via the `scylla-init` job at startup.
+- Seed data is loaded from `./cql/init.cql` via the `scylla-init` job at startup.
 - The init container waits for Cassandra to be ready before running the script.
 
 ## GUI Database Tools (Recommended)
