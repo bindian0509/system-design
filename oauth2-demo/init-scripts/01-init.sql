@@ -142,7 +142,11 @@ SELECT u.id, r.id FROM users u, roles r
 WHERE u.username = 'admin' AND r.name = 'ADMIN'
 ON CONFLICT DO NOTHING;
 
-RAISE NOTICE 'Database initialized successfully!';
-RAISE NOTICE 'Demo users created:';
-RAISE NOTICE '  - user / password (USER role)';
-RAISE NOTICE '  - admin / password (USER + ADMIN roles)';
+-- Log initialization success
+DO $$
+BEGIN
+    RAISE NOTICE 'Database initialized successfully!';
+    RAISE NOTICE 'Demo users created:';
+    RAISE NOTICE '  - user / password (USER role)';
+    RAISE NOTICE '  - admin / password (USER + ADMIN roles)';
+END $$;

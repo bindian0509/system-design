@@ -17,3 +17,12 @@ logging:
     org.springframework.security: DEBUG
     org.springframework.security.oauth2: DEBUG
     com.oauth.resourceserver: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always

@@ -30,20 +30,46 @@ A complete OAuth 2.0 implementation featuring a **Spring Authorization Server** 
 - **JWT Access Tokens** - With custom claims (authorities, username)
 - **PostgreSQL Persistence** - Users, OAuth clients, and authorizations
 - **Role-Based Access Control** - USER and ADMIN roles
+- **Fully Dockerized** - One command to run everything
 
 ## Prerequisites
 
-- Java 21+
-- Maven 3.8+
 - Docker & Docker Compose
 
-## Quick Start
+## Quick Start (Docker - Recommended)
+
+Run everything with a single command:
+
+```bash
+./run.sh
+```
+
+This will:
+1. Build both Spring Boot applications
+2. Start PostgreSQL, Authorization Server, and Resource Server
+3. Wait for all services to be healthy
+4. Display connection info and test commands
+
+### Other Commands
+
+```bash
+./run.sh start    # Start all services (default)
+./run.sh stop     # Stop all services
+./run.sh restart  # Restart all services
+./run.sh logs     # View service logs
+./run.sh status   # Show service status
+./run.sh clean    # Stop and remove volumes
+./run.sh test     # Run OAuth flow tests
+```
+
+## Manual Start (Development)
+
+If you prefer to run without Docker:
 
 ### 1. Start PostgreSQL
 
 ```bash
-cd oauth2-demo
-docker-compose up -d
+docker-compose up -d postgres
 ```
 
 ### 2. Build the Project

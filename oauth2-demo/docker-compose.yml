@@ -15,9 +15,57 @@ services:
       - ./init-scripts:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U oauth2user -d oauth2db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - oauth2-network
+
+  authorization-server:
+    build:
+      context: .
+      dockerfile: authorization-server/Dockerfile
+    container_name: oauth2-auth-server
+    ports:
+      - "9000:9000"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/oauth2db
+      SPRING_DATASOURCE_USERNAME: oauth2user
+      SPRING_DATASOURCE_PASSWORD: oauth2pass
+      SERVER_PORT: 9000
+      OAUTH2_ISSUER_URI: http://localhost:9000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9000/actuator/health"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 30s
+    networks:
+      - oauth2-network
+
+  resource-server:
+    build:
+      context: .
+      dockerfile: resource-server/Dockerfile
+    container_name: oauth2-resource-server
+    ports:
+      - "8080:8080"
+    environment:
+      SERVER_PORT: 8080
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://authorization-server:9000
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://authorization-server:9000/oauth2/jwks
+    depends_on:
+      authorization-server:
+        condition: service_healthy
+    networks:
+      - oauth2-network
 
 volumes:
   postgres_data:
+
+networks:
+  oauth2-network:
+    driver: bridge

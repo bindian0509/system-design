@@ -37,6 +37,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateKey;
@@ -49,6 +51,9 @@ import java.util.stream.Collectors;
 @Configuration
 @EnableWebSecurity
 public class AuthorizationServerConfig {
+
+    @Value("${oauth2.issuer-uri:http://localhost:9000}")
+    private String issuerUri;
 
     @Bean
     @Order(1)
@@ -186,7 +191,7 @@ public class AuthorizationServerConfig {
     @Bean
     public AuthorizationServerSettings authorizationServerSettings() {
         return AuthorizationServerSettings.builder()
-                .issuer("http://localhost:9000")
+                .issuer(issuerUri)
                 .build();
     }
 
