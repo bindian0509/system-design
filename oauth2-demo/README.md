@@ -2,23 +2,197 @@
 
 A complete OAuth 2.0 implementation featuring a **Spring Authorization Server** and a **Resource Server**, supporting multiple grant types with PostgreSQL persistence.
 
-## Architecture
+## System Architecture
 
+```mermaid
+graph TB
+    subgraph Clients [OAuth Clients]
+        WebApp[Web Application]
+        SPA[Single Page App]
+        Service[Backend Service]
+    end
+
+    subgraph AuthServer [Authorization Server :9001]
+        AuthEndpoint["/oauth2/authorize"]
+        TokenEndpoint["/oauth2/token"]
+        JWKSEndpoint["/oauth2/jwks"]
+        LoginPage["/login"]
+    end
+
+    subgraph ResourceServer [Resource Server :8080]
+        PublicAPI["/api/public/**"]
+        ProtectedAPI["/api/protected"]
+        AdminAPI["/api/admin/**"]
+        JWTValidator[JWT Validator]
+    end
+
+    subgraph Database [PostgreSQL :5432]
+        Users[(Users)]
+        OAuthClients[(OAuth Clients)]
+        Authorizations[(Authorizations)]
+    end
+
+    WebApp -->|1. Auth Code Flow| AuthEndpoint
+    SPA -->|2. Auth Code + PKCE| AuthEndpoint
+    Service -->|3. Client Credentials| TokenEndpoint
+
+    AuthEndpoint -->|Login Required| LoginPage
+    LoginPage -->|Authenticated| AuthEndpoint
+    AuthEndpoint -->|Auth Code| WebApp
+    AuthEndpoint -->|Auth Code| SPA
+
+    WebApp -->|Exchange Code| TokenEndpoint
+    SPA -->|Exchange Code + Verifier| TokenEndpoint
+    TokenEndpoint -->|JWT Access Token| WebApp
+    TokenEndpoint -->|JWT Access Token| SPA
+    TokenEndpoint -->|JWT Access Token| Service
+
+    WebApp -->|Bearer Token| ProtectedAPI
+    SPA -->|Bearer Token| ProtectedAPI
+    Service -->|Bearer Token| AdminAPI
+
+    JWTValidator -->|Fetch Public Keys| JWKSEndpoint
+    ProtectedAPI --> JWTValidator
+    AdminAPI --> JWTValidator
+
+    AuthEndpoint --> Users
+    TokenEndpoint --> OAuthClients
+    TokenEndpoint --> Authorizations
 ```
-┌─────────────────────┐     ┌─────────────────────────────┐     ┌──────────────────────┐
-│    OAuth Clients    │────▶│   Authorization Server      │     │   Resource Server    │
-│  (Web, SPA, Service)│     │        (Port 9001)          │     │     (Port 8080)      │
-└─────────────────────┘     │                             │     │                      │
-                            │  /oauth2/authorize          │     │  /api/public/**      │
-                            │  /oauth2/token              │     │  /api/protected      │
-                            │  /oauth2/jwks               │     │  /api/user           │
-                            │  /userinfo                  │     │  /api/admin/**       │
-                            └──────────────┬──────────────┘     └──────────┬───────────┘
-                                           │                               │
-                                           │     ┌────────────────┐        │
-                                           └────▶│   PostgreSQL   │◀───────┘
-                                                 │   (Port 5432)  │  (JWKS validation)
-                                                 └────────────────┘
+
+## OAuth 2.0 Grant Types Explained
+
+### 1. Client Credentials Flow
+
+Best for: **Machine-to-machine** communication (backend services, scheduled jobs, microservices).
+
+```mermaid
+sequenceDiagram
+    participant Service as Backend Service
+    participant AuthServer as Authorization Server
+    participant ResourceServer as Resource Server
+
+    Note over Service,ResourceServer: No user involvement - service authenticates itself
+
+    Service->>AuthServer: POST /oauth2/token<br/>grant_type=client_credentials<br/>+ Basic Auth (client_id:secret)
+    AuthServer->>AuthServer: Validate client credentials
+    AuthServer-->>Service: Access Token (JWT)
+
+    Service->>ResourceServer: GET /api/data<br/>Authorization: Bearer {token}
+    ResourceServer->>ResourceServer: Validate JWT signature<br/>Check scopes
+    ResourceServer-->>Service: Protected Resource
+```
+
+### 2. Authorization Code Flow
+
+Best for: **Web applications** with a server-side backend that can securely store client secrets.
+
+```mermaid
+sequenceDiagram
+    participant User as User Browser
+    participant WebApp as Web Application
+    participant AuthServer as Authorization Server
+    participant ResourceServer as Resource Server
+
+    Note over User,ResourceServer: User grants permission to app
+
+    User->>WebApp: Click "Login"
+    WebApp->>User: Redirect to Authorization Server
+    User->>AuthServer: GET /oauth2/authorize<br/>?response_type=code<br/>&client_id=web-client<br/>&redirect_uri=callback<br/>&scope=read write
+
+    AuthServer->>User: Show Login Page
+    User->>AuthServer: Enter credentials
+    AuthServer->>AuthServer: Authenticate user
+    AuthServer->>User: Show Consent Screen
+    User->>AuthServer: Approve scopes
+
+    AuthServer->>User: Redirect to callback?code=ABC123
+    User->>WebApp: GET /callback?code=ABC123
+
+    WebApp->>AuthServer: POST /oauth2/token<br/>grant_type=authorization_code<br/>code=ABC123<br/>+ Basic Auth
+    AuthServer-->>WebApp: Access Token + Refresh Token
+
+    WebApp->>ResourceServer: GET /api/user<br/>Authorization: Bearer {token}
+    ResourceServer-->>WebApp: User Data
+    WebApp-->>User: Display Dashboard
+```
+
+### 3. Authorization Code + PKCE Flow
+
+Best for: **Public clients** (SPAs, mobile apps) that cannot securely store client secrets.
+
+```mermaid
+sequenceDiagram
+    participant User as User Browser
+    participant SPA as Single Page App
+    participant AuthServer as Authorization Server
+
+    Note over User,AuthServer: PKCE adds security without client secret
+
+    SPA->>SPA: Generate code_verifier (random string)
+    SPA->>SPA: Generate code_challenge = SHA256(verifier)
+
+    User->>SPA: Click "Login"
+    SPA->>User: Redirect to Authorization Server
+
+    User->>AuthServer: GET /oauth2/authorize<br/>?response_type=code<br/>&client_id=spa-client<br/>&code_challenge={challenge}<br/>&code_challenge_method=S256
+
+    AuthServer->>User: Login + Consent
+    User->>AuthServer: Approve
+
+    AuthServer->>User: Redirect with code
+    User->>SPA: GET /callback?code=XYZ789
+
+    SPA->>AuthServer: POST /oauth2/token<br/>grant_type=authorization_code<br/>code=XYZ789<br/>code_verifier={verifier}<br/>(NO client secret!)
+
+    AuthServer->>AuthServer: Verify: SHA256(verifier) == stored challenge
+    AuthServer-->>SPA: Access Token + Refresh Token
+```
+
+### 4. Refresh Token Flow
+
+Best for: **Renewing expired access tokens** without user re-authentication.
+
+```mermaid
+sequenceDiagram
+    participant App as Application
+    participant AuthServer as Authorization Server
+    participant ResourceServer as Resource Server
+
+    Note over App,ResourceServer: Access token expired, use refresh token
+
+    App->>ResourceServer: GET /api/data<br/>Authorization: Bearer {expired_token}
+    ResourceServer-->>App: 401 Unauthorized (token expired)
+
+    App->>AuthServer: POST /oauth2/token<br/>grant_type=refresh_token<br/>refresh_token={refresh_token}
+    AuthServer->>AuthServer: Validate refresh token
+    AuthServer-->>App: New Access Token + New Refresh Token
+
+    App->>ResourceServer: GET /api/data<br/>Authorization: Bearer {new_token}
+    ResourceServer-->>App: Protected Resource
+```
+
+## End-to-End Flow Example
+
+```mermaid
+graph LR
+    subgraph Step1 [Step 1: Get Token]
+        A[Client] -->|Authenticate| B[Auth Server]
+        B -->|JWT Token| A
+    end
+
+    subgraph Step2 [Step 2: Access Resource]
+        A -->|Bearer Token| C[Resource Server]
+        C -->|Validate JWT| D{Valid?}
+        D -->|Yes| E[Return Data]
+        D -->|No| F[401 Unauthorized]
+    end
+
+    subgraph Step3 [Step 3: JWT Validation]
+        C -->|Fetch JWKS| B
+        B -->|Public Keys| C
+        C -->|Verify Signature| C
+    end
 ```
 
 ## Features
@@ -36,7 +210,7 @@ A complete OAuth 2.0 implementation featuring a **Spring Authorization Server** 
 
 - Docker & Docker Compose
 
-## Quick Start (Docker - Recommended)
+## Quick Start
 
 Run everything with a single command:
 
@@ -50,212 +224,106 @@ This will:
 3. Wait for all services to be healthy
 4. Display connection info and test commands
 
-### Other Commands
+### Available Commands
 
-```bash
-./run.sh start    # Start all services (default)
-./run.sh stop     # Stop all services
-./run.sh restart  # Restart all services
-./run.sh logs     # View service logs
-./run.sh status   # Show service status
-./run.sh clean    # Stop and remove volumes
-./run.sh test     # Run OAuth flow tests
-```
-
-## Manual Start (Development)
-
-If you prefer to run without Docker:
-
-### 1. Start PostgreSQL
-
-```bash
-docker-compose up -d postgres
-```
-
-### 2. Build the Project
-
-```bash
-mvn clean install
-```
-
-### 3. Start Authorization Server (Port 9001)
-
-```bash
-cd authorization-server
-mvn spring-boot:run
-```
-
-### 4. Start Resource Server (Port 8080)
-
-In a new terminal:
-
-```bash
-cd resource-server
-mvn spring-boot:run
-```
+| Command | Description |
+|---------|-------------|
+| `./run.sh start` | Start all services (default) |
+| `./run.sh stop` | Stop all services |
+| `./run.sh restart` | Restart all services |
+| `./run.sh logs` | View service logs |
+| `./run.sh status` | Show service status |
+| `./run.sh clean` | Stop and remove volumes |
+| `./run.sh test` | Run OAuth flow tests |
 
 ## Demo Credentials
 
 ### Users
+
 | Username | Password | Roles |
 |----------|----------|-------|
 | user     | password | USER  |
 | admin    | password | USER, ADMIN |
 
 ### OAuth Clients
+
 | Client ID | Client Secret | Grant Types | Use Case |
 |-----------|---------------|-------------|----------|
 | web-client | secret | Authorization Code, Refresh Token | Web apps with backend |
 | spa-client | (none - public) | Authorization Code + PKCE, Refresh Token | SPAs, Mobile apps |
-| service-client | secret | Client Credentials | Service-to-service |
+| service-client | service-secret | Client Credentials | Service-to-service |
+
+## Postman Collection
+
+Import the Postman collection for easy API testing:
+
+```
+postman/OAuth2-Demo.postman_collection.json
+```
+
+The collection includes:
+1. **Health Checks** - Verify services are running
+2. **Client Credentials Flow** - Get token for service-to-service
+3. **Authorization Code Flow** - Web app authentication
+4. **Authorization Code + PKCE** - SPA/Mobile authentication
+5. **Refresh Token Flow** - Renew expired tokens
+6. **Protected Resources** - Access APIs with tokens
+7. **Token Management** - Introspect and revoke tokens
 
 ## Testing the OAuth Flows
 
-### 1. Client Credentials Flow (Machine-to-Machine)
-
-Get an access token using client credentials:
+### 1. Client Credentials Flow
 
 ```bash
-# Base64 encode "service-client:secret" = c2VydmljZS1jbGllbnQ6c2VjcmV0
 curl -X POST http://localhost:9001/oauth2/token \
   -H "Content-Type: application/x-www-form-urlencoded" \
-  -H "Authorization: Basic c2VydmljZS1jbGllbnQ6c2VjcmV0" \
-  -d "grant_type=client_credentials&scope=read write"
+  -u "service-client:service-secret" \
+  -d "grant_type=client_credentials&scope=read write admin"
 ```
 
-Response:
-```json
-{
-  "access_token": "eyJraWQiOi...",
-  "token_type": "Bearer",
-  "expires_in": 3600,
-  "scope": "read write"
-}
-```
+### 2. Authorization Code Flow
 
-### 2. Authorization Code Flow (Web Application)
-
-#### Step 1: Get Authorization Code
-
-Open in browser:
+**Step 1:** Open in browser:
 ```
 http://localhost:9001/oauth2/authorize?response_type=code&client_id=web-client&redirect_uri=http://localhost:3000/callback&scope=openid profile read write
 ```
 
-1. Login with `user` / `password`
-2. Approve the consent screen
-3. Copy the `code` from the redirect URL
-
-#### Step 2: Exchange Code for Tokens
-
+**Step 2:** Exchange code for token:
 ```bash
-# Replace CODE_HERE with the authorization code
-# Base64 encode "web-client:secret" = d2ViLWNsaWVudDpzZWNyZXQ=
 curl -X POST http://localhost:9001/oauth2/token \
   -H "Content-Type: application/x-www-form-urlencoded" \
-  -H "Authorization: Basic d2ViLWNsaWVudDpzZWNyZXQ=" \
+  -u "web-client:secret" \
   -d "grant_type=authorization_code&code=CODE_HERE&redirect_uri=http://localhost:3000/callback"
 ```
 
-### 3. Authorization Code + PKCE Flow (SPA/Mobile)
-
-#### Step 1: Generate PKCE Values
+### 3. Access Protected Resources
 
 ```bash
-# Generate code_verifier (43-128 chars, URL-safe)
-CODE_VERIFIER=$(openssl rand -base64 32 | tr -d '=' | tr '/+' '_-')
-echo "Code Verifier: $CODE_VERIFIER"
+TOKEN="your_access_token_here"
 
-# Generate code_challenge (SHA256 hash of verifier, base64url encoded)
-CODE_CHALLENGE=$(echo -n "$CODE_VERIFIER" | openssl dgst -sha256 -binary | base64 | tr -d '=' | tr '/+' '_-')
-echo "Code Challenge: $CODE_CHALLENGE"
-```
-
-#### Step 2: Get Authorization Code
-
-Open in browser (replace CODE_CHALLENGE):
-```
-http://localhost:9001/oauth2/authorize?response_type=code&client_id=spa-client&redirect_uri=http://localhost:4200/callback&scope=openid profile read&code_challenge=CODE_CHALLENGE&code_challenge_method=S256
-```
-
-#### Step 3: Exchange Code for Tokens (No client secret needed!)
-
-```bash
-curl -X POST http://localhost:9001/oauth2/token \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "grant_type=authorization_code&code=CODE_HERE&redirect_uri=http://localhost:4200/callback&client_id=spa-client&code_verifier=CODE_VERIFIER"
-```
-
-### 4. Refresh Token Flow
-
-```bash
-curl -X POST http://localhost:9001/oauth2/token \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  -H "Authorization: Basic d2ViLWNsaWVudDpzZWNyZXQ=" \
-  -d "grant_type=refresh_token&refresh_token=REFRESH_TOKEN_HERE"
-```
-
-## Testing Protected Resources
-
-### Access Public Endpoints (No Auth Required)
-
-```bash
-curl http://localhost:8080/api/public/health
-curl http://localhost:8080/api/public/info
-```
-
-### Access Protected Endpoints (Token Required)
-
-```bash
-# Use the access_token from any of the flows above
-TOKEN="eyJraWQiOi..."
-
-# Basic protected resource
+# Protected endpoint
 curl http://localhost:8080/api/protected \
   -H "Authorization: Bearer $TOKEN"
 
 # User info from JWT
 curl http://localhost:8080/api/user \
   -H "Authorization: Bearer $TOKEN"
-
-# Data endpoint (requires 'read' scope)
-curl http://localhost:8080/api/data \
-  -H "Authorization: Bearer $TOKEN"
-
-# Write access check (requires 'write' scope)
-curl http://localhost:8080/api/data/write-check \
-  -H "Authorization: Bearer $TOKEN"
 ```
 
-### Access Admin Endpoints (ADMIN Role Required)
+## API Endpoints
 
-Login as `admin` and get a token:
-
-```bash
-# Admin dashboard
-curl http://localhost:8080/api/admin/dashboard \
-  -H "Authorization: Bearer $ADMIN_TOKEN"
-
-# Admin settings (requires ADMIN role + admin scope)
-# Use service-client with admin scope for this
-curl http://localhost:8080/api/admin/settings \
-  -H "Authorization: Bearer $SERVICE_TOKEN_WITH_ADMIN_SCOPE"
-```
-
-## API Endpoints Reference
-
-### Authorization Server (Port 9000)
+### Authorization Server (Port 9001)
 
 | Endpoint | Description |
 |----------|-------------|
-| `/oauth2/authorize` | Authorization endpoint (interactive login) |
-| `/oauth2/token` | Token endpoint (get/refresh tokens) |
-| `/oauth2/jwks` | JSON Web Key Set for JWT validation |
-| `/oauth2/revoke` | Revoke tokens |
-| `/oauth2/introspect` | Token introspection |
-| `/userinfo` | OpenID Connect user info |
-| `/.well-known/openid-configuration` | OpenID Connect discovery |
-| `/login` | Login page |
+| `GET /oauth2/authorize` | Authorization endpoint (user login) |
+| `POST /oauth2/token` | Token endpoint (get/refresh tokens) |
+| `GET /oauth2/jwks` | JSON Web Key Set for JWT validation |
+| `POST /oauth2/revoke` | Revoke tokens |
+| `POST /oauth2/introspect` | Token introspection |
+| `GET /userinfo` | OpenID Connect user info |
+| `GET /.well-known/openid-configuration` | OIDC discovery |
+| `GET /login` | Login page |
 
 ### Resource Server (Port 8080)
 
@@ -274,98 +342,74 @@ curl http://localhost:8080/api/admin/settings \
 
 ```
 oauth2-demo/
-├── docker-compose.yml              # PostgreSQL setup
-├── pom.xml                         # Parent POM
-├── init-scripts/                   # Docker DB initialization
+├── docker-compose.yml              # Docker services configuration
+├── run.sh                          # One-command startup script
+├── pom.xml                         # Parent Maven POM
+├── postman/                        # Postman collection
+│   └── OAuth2-Demo.postman_collection.json
+├── init-scripts/                   # Database initialization
 │   └── 01-init.sql
 ├── authorization-server/           # OAuth 2.0 Authorization Server
+│   ├── Dockerfile
 │   ├── pom.xml
 │   └── src/main/
 │       ├── java/com/oauth/authserver/
-│       │   ├── AuthServerApplication.java
-│       │   ├── config/
-│       │   │   ├── AuthorizationServerConfig.java
-│       │   │   ├── SecurityConfig.java
-│       │   │   └── WebConfig.java
-│       │   ├── entity/
-│       │   │   ├── User.java
-│       │   │   └── Role.java
-│       │   ├── repository/
-│       │   │   └── UserRepository.java
-│       │   └── service/
-│       │       └── CustomUserDetailsService.java
+│       │   ├── config/             # Security & OAuth config
+│       │   ├── entity/             # JPA entities
+│       │   ├── repository/         # Data access
+│       │   └── service/            # Business logic
 │       └── resources/
 │           ├── application.yml
 │           ├── schema.sql
-│           ├── data.sql
-│           └── templates/
-│               └── login.html
+│           └── templates/login.html
 └── resource-server/                # OAuth 2.0 Resource Server
+    ├── Dockerfile
     ├── pom.xml
     └── src/main/
         ├── java/com/oauth/resourceserver/
-        │   ├── ResourceServerApplication.java
-        │   ├── config/
-        │   │   └── ResourceServerConfig.java
-        │   └── controller/
-        │       └── ProtectedResourceController.java
+        │   ├── config/             # JWT validation config
+        │   └── controller/         # Protected APIs
         └── resources/
             └── application.yml
 ```
 
-## Configuration
+## JWT Token Structure
 
-### Authorization Server (`authorization-server/src/main/resources/application.yml`)
+Access tokens are JWTs with the following claims:
 
-```yaml
-server:
-  port: 9000
-
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/oauth2db
-    username: oauth2user
-    password: oauth2pass
-```
-
-### Resource Server (`resource-server/src/main/resources/application.yml`)
-
-```yaml
-server:
-  port: 8080
-
-spring:
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost:9001
-          jwk-set-uri: http://localhost:9001/oauth2/jwks
+```json
+{
+  "sub": "user",
+  "aud": "web-client",
+  "scope": ["openid", "profile", "read"],
+  "iss": "http://localhost:9001",
+  "exp": 1768563600,
+  "iat": 1768559789,
+  "authorities": ["ROLE_USER"],
+  "username": "user"
+}
 ```
 
 ## Troubleshooting
 
-### Database Connection Issues
+### Services Not Starting
 ```bash
-# Check if PostgreSQL is running
-docker-compose ps
-
-# View PostgreSQL logs
-docker-compose logs postgres
-
-# Reset database
-docker-compose down -v
-docker-compose up -d
+./run.sh clean
+./run.sh start
 ```
 
-### JWT Validation Errors
+### Token Validation Errors
 - Ensure Authorization Server is running before Resource Server
-- Check that the issuer-uri matches the Authorization Server's configured issuer
-- Verify the token hasn't expired
+- Check that issuer-uri matches: `http://localhost:9001`
+- Verify token hasn't expired
 
-### CORS Issues
-- Check that your client's origin is in the allowed origins list
-- Resource Server allows: `localhost:3000`, `localhost:4200`
+### View Logs
+```bash
+./run.sh logs
+# Or specific service:
+docker logs oauth2-auth-server
+docker logs oauth2-resource-server
+```
 
 ## License
 

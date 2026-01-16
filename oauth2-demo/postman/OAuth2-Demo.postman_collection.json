@@ -1,0 +1,751 @@
+{
+  "info": {
+    "name": "OAuth 2.0 Demo",
+    "description": "Complete OAuth 2.0 flow testing collection for Spring Authorization Server demo.\n\n## Flows Included:\n1. **Client Credentials** - Machine-to-machine authentication\n2. **Authorization Code** - Web application authentication\n3. **Authorization Code + PKCE** - SPA/Mobile authentication\n4. **Refresh Token** - Token renewal\n5. **Resource Server** - Protected API access\n\n## Setup:\n1. Import this collection\n2. Import the environment file\n3. Run services with `./run.sh`\n4. Execute requests in order",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "auth_server_url",
+      "value": "http://localhost:9001"
+    },
+    {
+      "key": "resource_server_url",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "access_token",
+      "value": ""
+    },
+    {
+      "key": "refresh_token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Health Checks",
+      "item": [
+        {
+          "name": "Auth Server Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{auth_server_url}}/actuator/health",
+              "host": ["{{auth_server_url}}"],
+              "path": ["actuator", "health"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Resource Server Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{resource_server_url}}/api/public/health",
+              "host": ["{{resource_server_url}}"],
+              "path": ["api", "public", "health"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "OIDC Discovery",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{auth_server_url}}/.well-known/openid-configuration",
+              "host": ["{{auth_server_url}}"],
+              "path": [".well-known", "openid-configuration"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "JWKS (Public Keys)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{auth_server_url}}/oauth2/jwks",
+              "host": ["{{auth_server_url}}"],
+              "path": ["oauth2", "jwks"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Client Credentials Flow",
+      "description": "Machine-to-machine authentication. No user interaction required.\n\nUse case: Backend services, scheduled jobs, microservices communication.",
+      "item": [
+        {
+          "name": "Get Token (Client Credentials)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.access_token) {",
+                  "    pm.collectionVariables.set('access_token', jsonData.access_token);",
+                  "    console.log('Access token saved to collection variable');",
+                  "}",
+                  "",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has access_token', function () {",
+                  "    pm.expect(jsonData).to.have.property('access_token');",
+                  "});",
+                  "",
+                  "pm.test('Token type is Bearer', function () {",
+                  "    pm.expect(jsonData.token_type).to.eql('Bearer');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "service-client",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "service-secret",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "client_credentials",
+                  "type": "text"
+                },
+                {
+                  "key": "scope",
+                  "value": "read write admin",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{auth_server_url}}/oauth2/token",
+              "host": ["{{auth_server_url}}"],
+              "path": ["oauth2", "token"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Authorization Code Flow",
+      "description": "Web application authentication with user login.\n\nUse case: Traditional web apps with server-side backend.",
+      "item": [
+        {
+          "name": "Step 1: Authorize (Open in Browser)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{auth_server_url}}/oauth2/authorize?response_type=code&client_id=web-client&redirect_uri=http://localhost:3000/callback&scope=openid profile read write&state=abc123",
+              "host": ["{{auth_server_url}}"],
+              "path": ["oauth2", "authorize"],
+              "query": [
+                {
+                  "key": "response_type",
+                  "value": "code"
+                },
+                {
+                  "key": "client_id",
+                  "value": "web-client"
+                },
+                {
+                  "key": "redirect_uri",
+                  "value": "http://localhost:3000/callback"
+                },
+                {
+                  "key": "scope",
+                  "value": "openid profile read write"
+                },
+                {
+                  "key": "state",
+                  "value": "abc123"
+                }
+              ]
+            },
+            "description": "Open this URL in a browser to login. After login, you'll be redirected to the callback URL with a 'code' parameter."
+          },
+          "response": []
+        },
+        {
+          "name": "Step 2: Exchange Code for Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.access_token) {",
+                  "    pm.collectionVariables.set('access_token', jsonData.access_token);",
+                  "}",
+                  "if (jsonData.refresh_token) {",
+                  "    pm.collectionVariables.set('refresh_token', jsonData.refresh_token);",
+                  "}",
+                  "",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has access_token', function () {",
+                  "    pm.expect(jsonData).to.have.property('access_token');",
+                  "});",
+                  "",
+                  "pm.test('Response has refresh_token', function () {",
+                  "    pm.expect(jsonData).to.have.property('refresh_token');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "web-client",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "secret",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "authorization_code",
+                  "type": "text"
+                },
+                {
+                  "key": "code",
+                  "value": "PASTE_AUTHORIZATION_CODE_HERE",
+                  "type": "text"
+                },
+                {
+                  "key": "redirect_uri",
+                  "value": "http://localhost:3000/callback",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{auth_server_url}}/oauth2/token",
+              "host": ["{{auth_server_url}}"],
+              "path": ["oauth2", "token"]
+            },
+            "description": "Replace PASTE_AUTHORIZATION_CODE_HERE with the code from Step 1."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Authorization Code + PKCE Flow",
+      "description": "Secure authentication for public clients (SPAs, mobile apps).\n\nNo client secret required - uses PKCE challenge/verifier instead.",
+      "item": [
+        {
+          "name": "Step 1: Generate PKCE Values",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generate code_verifier (43-128 characters)",
+                  "function generateCodeVerifier() {",
+                  "    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';",
+                  "    let verifier = '';",
+                  "    for (let i = 0; i < 64; i++) {",
+                  "        verifier += charset.charAt(Math.floor(Math.random() * charset.length));",
+                  "    }",
+                  "    return verifier;",
+                  "}",
+                  "",
+                  "// Generate code_challenge (SHA-256 hash, base64url encoded)",
+                  "async function generateCodeChallenge(verifier) {",
+                  "    const encoder = new TextEncoder();",
+                  "    const data = encoder.encode(verifier);",
+                  "    const digest = await crypto.subtle.digest('SHA-256', data);",
+                  "    const base64 = btoa(String.fromCharCode(...new Uint8Array(digest)));",
+                  "    return base64.replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=/g, '');",
+                  "}",
+                  "",
+                  "const verifier = generateCodeVerifier();",
+                  "pm.collectionVariables.set('code_verifier', verifier);",
+                  "",
+                  "generateCodeChallenge(verifier).then(challenge => {",
+                  "    pm.collectionVariables.set('code_challenge', challenge);",
+                  "    console.log('PKCE Values Generated:');",
+                  "    console.log('code_verifier: ' + verifier);",
+                  "    console.log('code_challenge: ' + challenge);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{auth_server_url}}/oauth2/authorize?response_type=code&client_id=spa-client&redirect_uri=http://localhost:4200/callback&scope=openid profile read&code_challenge={{code_challenge}}&code_challenge_method=S256&state=xyz789",
+              "host": ["{{auth_server_url}}"],
+              "path": ["oauth2", "authorize"],
+              "query": [
+                {
+                  "key": "response_type",
+                  "value": "code"
+                },
+                {
+                  "key": "client_id",
+                  "value": "spa-client"
+                },
+                {
+                  "key": "redirect_uri",
+                  "value": "http://localhost:4200/callback"
+                },
+                {
+                  "key": "scope",
+                  "value": "openid profile read"
+                },
+                {
+                  "key": "code_challenge",
+                  "value": "{{code_challenge}}"
+                },
+                {
+                  "key": "code_challenge_method",
+                  "value": "S256"
+                },
+                {
+                  "key": "state",
+                  "value": "xyz789"
+                }
+              ]
+            },
+            "description": "Open this URL in browser. The pre-request script generates PKCE values automatically."
+          },
+          "response": []
+        },
+        {
+          "name": "Step 2: Exchange Code for Token (PKCE)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.access_token) {",
+                  "    pm.collectionVariables.set('access_token', jsonData.access_token);",
+                  "}",
+                  "if (jsonData.refresh_token) {",
+                  "    pm.collectionVariables.set('refresh_token', jsonData.refresh_token);",
+                  "}",
+                  "",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "authorization_code",
+                  "type": "text"
+                },
+                {
+                  "key": "code",
+                  "value": "PASTE_AUTHORIZATION_CODE_HERE",
+                  "type": "text"
+                },
+                {
+                  "key": "redirect_uri",
+                  "value": "http://localhost:4200/callback",
+                  "type": "text"
+                },
+                {
+                  "key": "client_id",
+                  "value": "spa-client",
+                  "type": "text"
+                },
+                {
+                  "key": "code_verifier",
+                  "value": "{{code_verifier}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{auth_server_url}}/oauth2/token",
+              "host": ["{{auth_server_url}}"],
+              "path": ["oauth2", "token"]
+            },
+            "description": "No client secret needed! The code_verifier proves possession."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. Refresh Token Flow",
+      "description": "Obtain new access token using refresh token.\n\nUse case: Renew expired access tokens without user re-authentication.",
+      "item": [
+        {
+          "name": "Refresh Access Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.access_token) {",
+                  "    pm.collectionVariables.set('access_token', jsonData.access_token);",
+                  "}",
+                  "if (jsonData.refresh_token) {",
+                  "    pm.collectionVariables.set('refresh_token', jsonData.refresh_token);",
+                  "}",
+                  "",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "web-client",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "secret",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "refresh_token",
+                  "type": "text"
+                },
+                {
+                  "key": "refresh_token",
+                  "value": "{{refresh_token}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{auth_server_url}}/oauth2/token",
+              "host": ["{{auth_server_url}}"],
+              "path": ["oauth2", "token"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "6. Access Protected Resources",
+      "description": "Use the access token to access protected APIs on the Resource Server.",
+      "item": [
+        {
+          "name": "Public - No Auth Required",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{resource_server_url}}/api/public/info",
+              "host": ["{{resource_server_url}}"],
+              "path": ["api", "public", "info"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Protected - Any Valid Token",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{resource_server_url}}/api/protected",
+              "host": ["{{resource_server_url}}"],
+              "path": ["api", "protected"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "User Info from Token",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{resource_server_url}}/api/user",
+              "host": ["{{resource_server_url}}"],
+              "path": ["api", "user"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Data - Requires 'read' Scope",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{resource_server_url}}/api/data",
+              "host": ["{{resource_server_url}}"],
+              "path": ["api", "data"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Write Check - Requires 'write' Scope",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{resource_server_url}}/api/data/write-check",
+              "host": ["{{resource_server_url}}"],
+              "path": ["api", "data", "write-check"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin Dashboard - Requires ADMIN Role",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{resource_server_url}}/api/admin/dashboard",
+              "host": ["{{resource_server_url}}"],
+              "path": ["api", "admin", "dashboard"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "7. Token Management",
+      "item": [
+        {
+          "name": "Introspect Token",
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "service-client",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "service-secret",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{auth_server_url}}/oauth2/introspect",
+              "host": ["{{auth_server_url}}"],
+              "path": ["oauth2", "introspect"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Revoke Token",
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "web-client",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "secret",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{auth_server_url}}/oauth2/revoke",
+              "host": ["{{auth_server_url}}"],
+              "path": ["oauth2", "revoke"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
