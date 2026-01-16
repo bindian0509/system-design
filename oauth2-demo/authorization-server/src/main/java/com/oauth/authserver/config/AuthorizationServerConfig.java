@@ -82,8 +82,24 @@ public class AuthorizationServerConfig {
     public RegisteredClientRepository registeredClientRepository(JdbcTemplate jdbcTemplate) {
         JdbcRegisteredClientRepository repository = new JdbcRegisteredClientRepository(jdbcTemplate);
 
+        // Only register clients if not already present
+        registerClientIfNotExists(repository, createWebClient());
+        registerClientIfNotExists(repository, createSpaClient());
+        registerClientIfNotExists(repository, createServiceClient());
+
+        return repository;
+    }
+
+    private void registerClientIfNotExists(JdbcRegisteredClientRepository repository, RegisteredClient client) {
+        if (repository.findByClientId(client.getClientId()) == null) {
+            repository.save(client);
+        }
+    }
+
+    private RegisteredClient createWebClient() {
         // Web Application Client (Authorization Code flow)
-        RegisteredClient webClient = RegisteredClient.withId(UUID.randomUUID().toString())
+        // Using fixed UUID for idempotent registration
+        return RegisteredClient.withId("web-client-id-001")
                 .clientId("web-client")
                 .clientSecret("{bcrypt}$2a$10$GRLdNijSQMUvl/au9ofL.eDwmoohzzS7.rmNSJZ.0FxO/BTk76klW") // secret
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
@@ -104,9 +120,11 @@ public class AuthorizationServerConfig {
                         .requireAuthorizationConsent(true)
                         .build())
                 .build();
+    }
 
+    private RegisteredClient createSpaClient() {
         // SPA Client (Authorization Code + PKCE flow - public client)
-        RegisteredClient spaClient = RegisteredClient.withId(UUID.randomUUID().toString())
+        return RegisteredClient.withId("spa-client-id-002")
                 .clientId("spa-client")
                 .clientAuthenticationMethod(ClientAuthenticationMethod.NONE) // Public client
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
@@ -126,11 +144,13 @@ public class AuthorizationServerConfig {
                         .requireAuthorizationConsent(false)
                         .build())
                 .build();
+    }
 
+    private RegisteredClient createServiceClient() {
         // Service Client (Client Credentials flow - machine-to-machine)
-        RegisteredClient serviceClient = RegisteredClient.withId(UUID.randomUUID().toString())
+        return RegisteredClient.withId("service-client-id-003")
                 .clientId("service-client")
-                .clientSecret("{bcrypt}$2a$10$GRLdNijSQMUvl/au9ofL.eDwmoohzzS7.rmNSJZ.0FxO/BTk76klW") // secret
+                .clientSecret("{noop}service-secret") // service-secret (plaintext for demo)
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
                 .scope("read")
@@ -140,19 +160,6 @@ public class AuthorizationServerConfig {
                         .accessTokenTimeToLive(Duration.ofHours(1))
                         .build())
                 .build();
-
-        // Save clients if they don't exist
-        if (repository.findByClientId("web-client") == null) {
-            repository.save(webClient);
-        }
-        if (repository.findByClientId("spa-client") == null) {
-            repository.save(spaClient);
-        }
-        if (repository.findByClientId("service-client") == null) {
-            repository.save(serviceClient);
-        }
-
-        return repository;
     }
 
     @Bean

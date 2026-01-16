@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# OAuth 2.0 Demo - Docker Runner Script
-# Usage: ./run.sh [command]
-# Commands: start, stop, restart, logs, status, clean, test
-
 set -e
 
 # Colors for output
@@ -13,99 +9,108 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Project directory
+# Script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 print_header() {
     echo -e "${BLUE}"
-    echo "╔══════════════════════════════════════════════════════════════╗"
-    echo "║           OAuth 2.0 Demo - Spring Boot                       ║"
-    echo "║   Authorization Server (9000) + Resource Server (8080)       ║"
-    echo "╚══════════════════════════════════════════════════════════════╝"
+    echo "╔═══════════════════════════════════════════════════════════╗"
+    echo "║           OAuth 2.0 Demo - Spring Boot                    ║"
+    echo "╚═══════════════════════════════════════════════════════════╝"
     echo -e "${NC}"
 }
 
-print_status() {
-    echo -e "${GREEN}[✓]${NC} $1"
-}
-
-print_info() {
-    echo -e "${BLUE}[i]${NC} $1"
-}
-
-print_warning() {
-    echo -e "${YELLOW}[!]${NC} $1"
+print_success() {
+    echo -e "${GREEN}✔ $1${NC}"
 }
 
 print_error() {
-    echo -e "${RED}[✗]${NC} $1"
+    echo -e "${RED}✖ $1${NC}"
+}
+
+print_info() {
+    echo -e "${YELLOW}➜ $1${NC}"
 }
 
 wait_for_service() {
     local service_name=$1
     local url=$2
-    local max_attempts=60
+    local max_attempts=${3:-30}
     local attempt=1
 
-    echo -n "    Waiting for $service_name"
+    print_info "Waiting for $service_name to be ready..."
+
     while [ $attempt -le $max_attempts ]; do
-        if curl -s "$url" > /dev/null 2>&1; then
-            echo -e " ${GREEN}Ready!${NC}"
+        local http_code=$(curl -s -o /dev/null -w "%{http_code}" "$url" 2>/dev/null || echo "000")
+        if [ "$http_code" = "200" ]; then
+            print_success "$service_name is ready!"
             return 0
         fi
         echo -n "."
         sleep 2
         attempt=$((attempt + 1))
     done
-    echo -e " ${RED}Failed!${NC}"
+
+    echo ""
+    print_error "$service_name failed to start within timeout"
+    return 1
+}
+
+wait_for_postgres() {
+    local max_attempts=${1:-20}
+    local attempt=1
+
+    print_info "Waiting for PostgreSQL to be ready..."
+
+    while [ $attempt -le $max_attempts ]; do
+        if docker exec oauth2-postgres pg_isready -U oauth2user -d oauth2db > /dev/null 2>&1; then
+            print_success "PostgreSQL is ready!"
+            return 0
+        fi
+        echo -n "."
+        sleep 2
+        attempt=$((attempt + 1))
+    done
+
+    echo ""
+    print_error "PostgreSQL failed to start within timeout"
     return 1
 }
 
 start_services() {
     print_header
-    print_info "Starting OAuth 2.0 Demo services..."
-    echo ""
 
-    # Build and start all services
-    print_info "Building Docker images (this may take a few minutes on first run)..."
-    docker-compose build --parallel
-
-    print_info "Starting services..."
-    docker-compose up -d
+    print_info "Building and starting all services..."
+    docker-compose up -d --build
 
     echo ""
     print_info "Waiting for services to be healthy..."
 
     # Wait for PostgreSQL
-    echo -n "    Waiting for PostgreSQL"
-    until docker-compose exec -T postgres pg_isready -U oauth2user -d oauth2db > /dev/null 2>&1; do
-        echo -n "."
-        sleep 1
-    done
-    echo -e " ${GREEN}Ready!${NC}"
+    wait_for_postgres 20
 
     # Wait for Authorization Server
-    wait_for_service "Authorization Server" "http://localhost:9000/actuator/health"
+    wait_for_service "Authorization Server" "http://localhost:9001/actuator/health" 60
 
     # Wait for Resource Server
-    wait_for_service "Resource Server" "http://localhost:8080/actuator/health"
+    wait_for_service "Resource Server" "http://localhost:8080/actuator/health" 60
 
     echo ""
-    print_status "All services are up and running!"
+    print_success "All services are up and running!"
     echo ""
-    print_connection_info
+    show_info
 }
 
 stop_services() {
     print_info "Stopping all services..."
     docker-compose down
-    print_status "All services stopped."
+    print_success "All services stopped"
 }
 
 restart_services() {
-    print_info "Restarting all services..."
-    docker-compose down
+    stop_services
+    echo ""
     start_services
 }
 
@@ -114,155 +119,110 @@ show_logs() {
 }
 
 show_status() {
-    print_header
-    echo -e "${BLUE}Service Status:${NC}"
+    echo ""
+    print_info "Service Status:"
     echo ""
     docker-compose ps
     echo ""
 
-    # Check health endpoints
+    # Health checks
     echo -e "${BLUE}Health Checks:${NC}"
-    echo ""
 
-    # PostgreSQL
-    if docker-compose exec -T postgres pg_isready -U oauth2user -d oauth2db > /dev/null 2>&1; then
-        print_status "PostgreSQL:          http://localhost:5432 (healthy)"
+    if curl -s http://localhost:9001/actuator/health > /dev/null 2>&1; then
+        print_success "Authorization Server (http://localhost:9001) - Healthy"
     else
-        print_error "PostgreSQL:          http://localhost:5432 (unhealthy)"
+        print_error "Authorization Server (http://localhost:9001) - Not responding"
     fi
 
-    # Authorization Server
-    if curl -s http://localhost:9000/actuator/health | grep -q '"status":"UP"' 2>/dev/null; then
-        print_status "Authorization Server: http://localhost:9000 (healthy)"
+    if curl -s http://localhost:8080/actuator/health > /dev/null 2>&1; then
+        print_success "Resource Server (http://localhost:8080) - Healthy"
     else
-        print_error "Authorization Server: http://localhost:9000 (unhealthy)"
-    fi
-
-    # Resource Server
-    if curl -s http://localhost:8080/actuator/health | grep -q '"status":"UP"' 2>/dev/null; then
-        print_status "Resource Server:      http://localhost:8080 (healthy)"
-    else
-        print_error "Resource Server:      http://localhost:8080 (unhealthy)"
+        print_error "Resource Server (http://localhost:8080) - Not responding"
     fi
 }
 
 clean_all() {
-    print_warning "This will stop all services and remove all data (including database)."
-    read -p "Are you sure? (y/N) " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        print_info "Stopping services and cleaning up..."
-        docker-compose down -v --remove-orphans
-        docker-compose rm -f
-        print_status "Cleanup complete."
-    else
-        print_info "Cleanup cancelled."
-    fi
+    print_info "Stopping services and removing volumes..."
+    docker-compose down -v --remove-orphans
+    print_success "Cleanup complete"
 }
 
-print_connection_info() {
-    echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
-    echo -e "${BLUE}Connection Information:${NC}"
-    echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
+show_info() {
+    echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
+    echo -e "${GREEN}Services:${NC}"
+    echo "  • Authorization Server: http://localhost:9001"
+    echo "  • Resource Server:      http://localhost:8080"
+    echo "  • PostgreSQL:           localhost:5432"
     echo ""
-    echo "  Authorization Server: http://localhost:9000"
-    echo "  Resource Server:      http://localhost:8080"
-    echo "  PostgreSQL:           localhost:5432"
+    echo -e "${GREEN}Demo Credentials:${NC}"
+    echo "  • User:  user / password  (USER role)"
+    echo "  • Admin: admin / password (USER + ADMIN roles)"
     echo ""
-    echo -e "${BLUE}Demo Users:${NC}"
-    echo "  user  / password  (USER role)"
-    echo "  admin / password  (USER + ADMIN roles)"
+    echo -e "${GREEN}OAuth Clients:${NC}"
+    echo "  • web-client     (secret: secret) - Authorization Code"
+    echo "  • spa-client     (public)         - Authorization Code + PKCE"
+    echo "  • service-client (secret: service-secret) - Client Credentials"
     echo ""
-    echo -e "${BLUE}OAuth Clients:${NC}"
-    echo "  web-client     / secret  (Authorization Code)"
-    echo "  spa-client     / (none)  (Authorization Code + PKCE)"
-    echo "  service-client / secret  (Client Credentials)"
-    echo ""
-    echo -e "${BLUE}Quick Test Commands:${NC}"
-    echo ""
-    echo "  # Test public endpoint (no auth)"
-    echo "  curl http://localhost:8080/api/public/info"
-    echo ""
-    echo "  # Get token via Client Credentials"
-    echo "  curl -X POST http://localhost:9000/oauth2/token \\"
-    echo "    -H 'Content-Type: application/x-www-form-urlencoded' \\"
-    echo "    -H 'Authorization: Basic c2VydmljZS1jbGllbnQ6c2VjcmV0' \\"
-    echo "    -d 'grant_type=client_credentials&scope=read'"
-    echo ""
-    echo "  # Access protected resource (replace TOKEN)"
-    echo "  curl http://localhost:8080/api/protected \\"
-    echo "    -H 'Authorization: Bearer TOKEN'"
-    echo ""
-    echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
+    echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
 }
 
 run_tests() {
-    print_header
-    print_info "Running OAuth 2.0 flow tests..."
+    echo ""
+    print_info "Running OAuth 2.0 Flow Tests..."
     echo ""
 
     # Test 1: Public endpoint
-    echo -e "${BLUE}Test 1: Public endpoint (no auth required)${NC}"
-    response=$(curl -s http://localhost:8080/api/public/info)
-    if echo "$response" | grep -q "OAuth 2.0 Resource Server"; then
-        print_status "Public endpoint working"
-        echo "  Response: $(echo $response | head -c 100)..."
-    else
-        print_error "Public endpoint failed"
-    fi
+    echo -e "${YELLOW}Test 1: Public Endpoint${NC}"
+    curl -s http://localhost:8080/api/public/health | jq . 2>/dev/null || curl -s http://localhost:8080/api/public/health
     echo ""
 
-    # Test 2: Client Credentials flow
-    echo -e "${BLUE}Test 2: Client Credentials flow${NC}"
-    token_response=$(curl -s -X POST http://localhost:9000/oauth2/token \
+    # Test 2: Client Credentials Flow
+    echo -e "${YELLOW}Test 2: Client Credentials Flow${NC}"
+    TOKEN_RESPONSE=$(curl -s -X POST http://localhost:9001/oauth2/token \
         -H "Content-Type: application/x-www-form-urlencoded" \
-        -H "Authorization: Basic c2VydmljZS1jbGllbnQ6c2VjcmV0" \
-        -d "grant_type=client_credentials&scope=read")
+        -H "Authorization: Basic c2VydmljZS1jbGllbnQ6c2VydmljZS1zZWNyZXQ=" \
+        -d "grant_type=client_credentials&scope=read write")
 
-    if echo "$token_response" | grep -q "access_token"; then
-        print_status "Token obtained successfully"
-        access_token=$(echo "$token_response" | grep -o '"access_token":"[^"]*"' | cut -d'"' -f4)
-        echo "  Token: ${access_token:0:50}..."
+    echo "$TOKEN_RESPONSE" | jq . 2>/dev/null || echo "$TOKEN_RESPONSE"
 
-        # Test 3: Protected resource with token
+    ACCESS_TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.access_token' 2>/dev/null)
+
+    if [ "$ACCESS_TOKEN" != "null" ] && [ -n "$ACCESS_TOKEN" ]; then
         echo ""
-        echo -e "${BLUE}Test 3: Protected resource with token${NC}"
-        protected_response=$(curl -s http://localhost:8080/api/protected \
-            -H "Authorization: Bearer $access_token")
-
-        if echo "$protected_response" | grep -q "successfully accessed"; then
-            print_status "Protected resource accessible with token"
-            echo "  Response: $(echo $protected_response | head -c 100)..."
-        else
-            print_error "Protected resource access failed"
-            echo "  Response: $protected_response"
-        fi
+        echo -e "${YELLOW}Test 3: Access Protected Resource with Token${NC}"
+        curl -s http://localhost:8080/api/protected \
+            -H "Authorization: Bearer $ACCESS_TOKEN" | jq . 2>/dev/null || \
+        curl -s http://localhost:8080/api/protected \
+            -H "Authorization: Bearer $ACCESS_TOKEN"
+        echo ""
+        print_success "All tests passed!"
     else
-        print_error "Failed to obtain token"
-        echo "  Response: $token_response"
+        print_error "Failed to get access token"
     fi
 
     echo ""
-    print_status "Tests completed!"
+    echo -e "${YELLOW}Interactive Authorization Code Flow:${NC}"
+    echo "Open in browser: http://localhost:9001/oauth2/authorize?response_type=code&client_id=web-client&redirect_uri=http://localhost:3000/callback&scope=openid%20profile%20read"
+    echo ""
 }
 
 show_help() {
-    print_header
-    echo "Usage: ./run.sh [command]"
+    echo "Usage: $0 [command]"
     echo ""
     echo "Commands:"
-    echo "  start     Start all services (default)"
-    echo "  stop      Stop all services"
-    echo "  restart   Restart all services"
-    echo "  logs      Show service logs (follow mode)"
-    echo "  status    Show service status and health"
-    echo "  clean     Stop services and remove all data"
-    echo "  test      Run OAuth flow tests"
-    echo "  help      Show this help message"
+    echo "  start   - Build and start all services (default)"
+    echo "  stop    - Stop all services"
+    echo "  restart - Restart all services"
+    echo "  logs    - Show service logs"
+    echo "  status  - Show service status"
+    echo "  clean   - Stop services and remove volumes"
+    echo "  test    - Run OAuth flow tests"
+    echo "  info    - Show connection info"
+    echo "  help    - Show this help message"
     echo ""
 }
 
-# Main command handler
+# Main
 case "${1:-start}" in
     start)
         start_services
@@ -284,6 +244,9 @@ case "${1:-start}" in
         ;;
     test)
         run_tests
+        ;;
+    info)
+        show_info
         ;;
     help|--help|-h)
         show_help

@@ -7,7 +7,7 @@ A complete OAuth 2.0 implementation featuring a **Spring Authorization Server** 
 ```
 ┌─────────────────────┐     ┌─────────────────────────────┐     ┌──────────────────────┐
 │    OAuth Clients    │────▶│   Authorization Server      │     │   Resource Server    │
-│  (Web, SPA, Service)│     │        (Port 9000)          │     │     (Port 8080)      │
+│  (Web, SPA, Service)│     │        (Port 9001)          │     │     (Port 8080)      │
 └─────────────────────┘     │                             │     │                      │
                             │  /oauth2/authorize          │     │  /api/public/**      │
                             │  /oauth2/token              │     │  /api/protected      │
@@ -78,7 +78,7 @@ docker-compose up -d postgres
 mvn clean install
 ```
 
-### 3. Start Authorization Server (Port 9000)
+### 3. Start Authorization Server (Port 9001)
 
 ```bash
 cd authorization-server
@@ -117,7 +117,7 @@ Get an access token using client credentials:
 
 ```bash
 # Base64 encode "service-client:secret" = c2VydmljZS1jbGllbnQ6c2VjcmV0
-curl -X POST http://localhost:9000/oauth2/token \
+curl -X POST http://localhost:9001/oauth2/token \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -H "Authorization: Basic c2VydmljZS1jbGllbnQ6c2VjcmV0" \
   -d "grant_type=client_credentials&scope=read write"
@@ -139,7 +139,7 @@ Response:
 
 Open in browser:
 ```
-http://localhost:9000/oauth2/authorize?response_type=code&client_id=web-client&redirect_uri=http://localhost:3000/callback&scope=openid profile read write
+http://localhost:9001/oauth2/authorize?response_type=code&client_id=web-client&redirect_uri=http://localhost:3000/callback&scope=openid profile read write
 ```
 
 1. Login with `user` / `password`
@@ -151,7 +151,7 @@ http://localhost:9000/oauth2/authorize?response_type=code&client_id=web-client&r
 ```bash
 # Replace CODE_HERE with the authorization code
 # Base64 encode "web-client:secret" = d2ViLWNsaWVudDpzZWNyZXQ=
-curl -X POST http://localhost:9000/oauth2/token \
+curl -X POST http://localhost:9001/oauth2/token \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -H "Authorization: Basic d2ViLWNsaWVudDpzZWNyZXQ=" \
   -d "grant_type=authorization_code&code=CODE_HERE&redirect_uri=http://localhost:3000/callback"
@@ -175,13 +175,13 @@ echo "Code Challenge: $CODE_CHALLENGE"
 
 Open in browser (replace CODE_CHALLENGE):
 ```
-http://localhost:9000/oauth2/authorize?response_type=code&client_id=spa-client&redirect_uri=http://localhost:4200/callback&scope=openid profile read&code_challenge=CODE_CHALLENGE&code_challenge_method=S256
+http://localhost:9001/oauth2/authorize?response_type=code&client_id=spa-client&redirect_uri=http://localhost:4200/callback&scope=openid profile read&code_challenge=CODE_CHALLENGE&code_challenge_method=S256
 ```
 
 #### Step 3: Exchange Code for Tokens (No client secret needed!)
 
 ```bash
-curl -X POST http://localhost:9000/oauth2/token \
+curl -X POST http://localhost:9001/oauth2/token \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "grant_type=authorization_code&code=CODE_HERE&redirect_uri=http://localhost:4200/callback&client_id=spa-client&code_verifier=CODE_VERIFIER"
 ```
@@ -189,7 +189,7 @@ curl -X POST http://localhost:9000/oauth2/token \
 ### 4. Refresh Token Flow
 
 ```bash
-curl -X POST http://localhost:9000/oauth2/token \
+curl -X POST http://localhost:9001/oauth2/token \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -H "Authorization: Basic d2ViLWNsaWVudDpzZWNyZXQ=" \
   -d "grant_type=refresh_token&refresh_token=REFRESH_TOKEN_HERE"
@@ -339,8 +339,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:9000
-          jwk-set-uri: http://localhost:9000/oauth2/jwks
+          issuer-uri: http://localhost:9001
+          jwk-set-uri: http://localhost:9001/oauth2/jwks
 ```
 
 ## Troubleshooting
