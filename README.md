@@ -25,10 +25,12 @@ mindmap
       URL Shortener
       Rate Limiter
       Leaderboard
+      OAuth 2.0
       JWT Auth
       Products API
     Resources
       Interview Guide
+      Compliance Guide
       Job Search HQ
       Workflow Tools
 ```
@@ -196,9 +198,22 @@ mindmap
 | **Redis Deep Dive** | [📊 Docs](./leaderboard/docs/redis-deep-dive.md) |
 | **Demo Scripts** | [🎮 Scripts](./leaderboard/scripts/) |
 
+### OAuth 2.0 Demo
+
+> Complete OAuth 2.0 implementation with Authorization Server and Resource Server
+
+**Features:** Authorization Code + PKCE • Client Credentials • Refresh Tokens • JWT with custom claims • PostgreSQL persistence
+
+**Stack:** Java (Spring Boot 3.2) • Spring Authorization Server • Spring Security • PostgreSQL
+
+| Resource | Link |
+|----------|------|
+| **Overview** | [📘 README](./oauth2-demo/README.md) |
+| **Postman Collection** | [📬 Collection](./oauth2-demo/postman/) |
+
 ### JWT Authentication
 
-> Complete JWT auth system with access/refresh tokens
+> Simple JWT auth system with access/refresh tokens
 
 **Features:** Token rotation • Secure refresh flow • Spring Security integration
 
@@ -283,6 +298,26 @@ mindmap
 
 ---
 
+## 📋 Compliance & Regulations
+
+### Global Financial Compliance Guide
+
+> **[📚 Complete Guide](./compliances/FINANCIAL_COMPLIANCE_GUIDE.md)** — 42 compliance frameworks across 6 regions
+
+Comprehensive reference covering:
+
+| Region | Key Regulations |
+|--------|-----------------|
+| **Global** | Basel III/IV, FATF, PCI DSS, ISO 27001 |
+| **North America** | SOX, GLBA, BSA/AML, Dodd-Frank, CCPA, NYDFS |
+| **Europe** | GDPR, PSD2/PSD3, MiFID II, DORA, AMLD 5/6 |
+| **Asia Pacific** | RBI Master Directions, DPDP Act, PIPL, MAS TRM, CPS 234 |
+| **Middle East** | CBUAE, SAMA Cybersecurity, PDPL |
+| **Latin America** | LGPD, BCB Resolution 4893 |
+| **Africa** | POPIA, SARB, NDPR |
+
+---
+
 ## 🛠️ Tools & Workflow
 
 ### Apache Airflow
@@ -318,7 +353,21 @@ flowchart LR
 4. **Scale:** [Rate Limiter](./rate-limiter/README.md)
 5. **Real-time:** [Leaderboard](./leaderboard/README.md)
 
-### Path 2: Real-Time Systems
+### Path 2: Authentication & Security
+
+```mermaid
+flowchart LR
+    A[JWT Auth] --> B[OAuth 2.0]
+    B --> C[Compliance Guide]
+    C --> D[Seller Payments]
+```
+
+1. **Basics:** [JWT Authentication](./jwt-auth/README.md)
+2. **OAuth:** [OAuth 2.0 Demo](./oauth2-demo/README.md)
+3. **Compliance:** [Financial Compliance Guide](./compliances/FINANCIAL_COMPLIANCE_GUIDE.md)
+4. **Apply:** [Seller Payment System](./seller-side-payment-system/README.md)
+
+### Path 3: Real-Time Systems
 
 ```mermaid
 flowchart LR
@@ -332,7 +381,7 @@ flowchart LR
 3. **Geo-Spatial:** [Uber Eats Feed](./uber-eats-feed-design/README.md)
 4. **IoT Streaming:** [Crash Detection](./trucking-crash-detection/README.md)
 
-### Path 3: Multi-Tenant Systems
+### Path 4: Multi-Tenant Systems
 
 ```mermaid
 flowchart LR
@@ -346,7 +395,7 @@ flowchart LR
 3. **Payments:** [Seller Payment System](./seller-side-payment-system/README.md)
 4. **Finance:** [Clearing House](./financial-clearing-house/README.md)
 
-### Path 4: Interview Preparation
+### Path 5: Interview Preparation
 
 ```mermaid
 flowchart LR
@@ -377,11 +426,20 @@ flowchart LR
 | Circuit Breaker | Rate Limiter, Seller Payments, Leaderboard |
 | Multi-Tenancy (RLS) | Issue Tracking System |
 | WebSocket | Collaborative Editor, Leaderboard |
+| OAuth 2.0 / JWT | OAuth 2.0 Demo, JWT Auth |
 | Sharding / Partitioning | All case studies |
 
 ---
 
 ## 🚀 Quick Start
+
+### Run OAuth 2.0 Demo
+
+```bash
+cd oauth2-demo && ./run.sh
+# Auth Server: http://localhost:9001
+# Resource Server: http://localhost:8080
+```
 
 ### Run Leaderboard Demo
 
