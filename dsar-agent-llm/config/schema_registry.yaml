@@ -1,0 +1,68 @@
+# Schema Registry for DSAR Query Generator
+# Defines which tables and columns can be accessed in generated queries
+
+tables:
+  users:
+    description: "User profile information"
+    allowed_columns:
+      - id
+      - email
+      - name
+      - phone
+      - created_at
+    excluded_columns:
+      - password_hash
+      - internal_flags
+      - mfa_secret
+
+  trips:
+    description: "Trip history"
+    allowed_columns:
+      - id
+      - user_id
+      - origin
+      - destination
+      - fare
+      - started_at
+      - ended_at
+      - status
+    excluded_columns:
+      - internal_score
+      - fraud_flags
+      - driver_internal_notes
+
+  payments:
+    description: "Payment transaction records"
+    allowed_columns:
+      - id
+      - user_id
+      - amount
+      - currency
+      - created_at
+      - payment_method_type
+      - status
+    excluded_columns:
+      - payment_token
+      - card_fingerprint
+      - fraud_score
+
+  ratings:
+    description: "User ratings and reviews"
+    allowed_columns:
+      - id
+      - user_id
+      - trip_id
+      - score
+      - comment
+      - created_at
+    excluded_columns:
+      - internal_review_flags
+      - moderation_status
+
+blocked_tables:
+  - audit_logs
+  - security_events
+  - employee_data
+  - internal_analytics
+  - fraud_investigations
+  - access_tokens
