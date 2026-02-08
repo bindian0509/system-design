@@ -126,7 +126,6 @@ Each day enters the deque once and leaves at most once (either from the front wh
 ## How to Run
 
 ```bash
-cd untitled
 javac src/Main.java -d out
 java -cp out Main
 ```
