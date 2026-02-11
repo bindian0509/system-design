@@ -140,20 +140,20 @@ A 3600-second query window spans **at most 2 daily partitions** (when it crosses
 ### Retention Management
 
 ```mermaid
-flowchart LR
-    subgraph "Daily Cron Job"
-        A[Check oldest partition] --> B{Age > 180 days?}
-        B -->|Yes| C["ALTER TABLE logs<br/>DROP PARTITION p20240101"]
-        B -->|No| D[Skip]
-        C --> E["Add tomorrow's partition<br/>ALTER TABLE logs<br/>ADD PARTITION p20241201..."]
-    end
+flowchart TD
+    A[Check oldest partition] --> B{Age > 180 days?}
+    B -->|No| D[Skip]
+    B -->|Yes| C["ALTER TABLE logs\nDROP PARTITION p20240101"]
+    C --> E["ALTER TABLE logs\nADD PARTITION p20241201..."]
+    C --- F
 
-    subgraph "Performance Impact"
-        C -->|O(1)| F["Instant.<br/>Drops the .ibd file.<br/>No row-by-row delete.<br/>No undo log generation.<br/>No table lock."]
+    subgraph Performance["Performance: O(1) Operation"]
+        F["Instant — drops the .ibd file\nNo row-by-row delete\nNo undo log generation\nNo table lock"]
     end
 
     style C fill:#50c878,color:#000
     style F fill:#50c878,color:#000
+    style Performance fill:#e8f5e9,stroke:#50c878
 ```
 
 **`DROP PARTITION` vs `DELETE FROM`:**
