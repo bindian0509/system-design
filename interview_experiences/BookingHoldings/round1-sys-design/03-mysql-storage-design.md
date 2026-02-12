@@ -143,12 +143,12 @@ A 3600-second query window spans **at most 2 daily partitions** (when it crosses
 flowchart TD
     A[Check oldest partition] --> B{Age > 180 days?}
     B -->|No| D[Skip]
-    B -->|Yes| C["ALTER TABLE logs\nDROP PARTITION p20240101"]
-    C --> E["ALTER TABLE logs\nADD PARTITION p20241201..."]
+    B -->|Yes| C["ALTER TABLE logs<br/>DROP PARTITION p20240101"]
+    C --> E["ALTER TABLE logs<br/>ADD PARTITION p20241201..."]
     C --- F
 
     subgraph Performance["Performance: O(1) Operation"]
-        F["Instant — drops the .ibd file\nNo row-by-row delete\nNo undo log generation\nNo table lock"]
+        F["Instant — drops the .ibd file<br/>No row-by-row delete<br/>No undo log generation<br/>No table lock"]
     end
 
     style C fill:#50c878,color:#000
