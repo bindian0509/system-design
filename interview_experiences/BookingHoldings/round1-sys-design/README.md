@@ -167,3 +167,4 @@ sequenceDiagram
 | [07 — Log Transport Alternatives](./07-log-transport-alternatives.md) | HTTP POST vs Sidecar Agent vs Direct Kafka vs gRPC Streaming — pros, cons, decision matrix |
 | [08 — Client-Side Resilience Patterns](./08-client-side-resilience.md) | Ring Buffer, Disk WAL, Circuit Breaker, Dual-Path Failover — layered resilience for smart clients |
 | [09 — MySQL Read Replica Tuning](./09-mysql-read-replica-tuning.md) | Replica machine config, durability stripping, buffer pool sizing, isolation relaxation, partition-affinity replicas |
+| [10 — SLI / SLO / SLA / Error Budget & Alerting](./10-sli-slo-sla-error-budget.md) | Service level definitions, error budget calculations, multi-window burn-rate alerting, Prometheus rules |
