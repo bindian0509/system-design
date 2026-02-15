@@ -164,3 +164,4 @@ sequenceDiagram
 | [04 — Read Path & Query Routing](./04-read-path.md) | Scatter-gather, partition pruning, response assembly |
 | [05 — Resource Estimation (6 Months)](./05-resource-estimation.md) | Hardware sizing, instance counts, cost analysis |
 | [06 — Failure Modes & Trade-offs](./06-failure-modes.md) | Failure scenarios, top 3 critical metrics, data loss analysis, trade-off summary |
+| [07 — Log Transport Alternatives](./07-log-transport-alternatives.md) | HTTP POST vs Sidecar Agent vs Direct Kafka vs gRPC Streaming — pros, cons, decision matrix |
