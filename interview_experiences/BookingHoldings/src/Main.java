@@ -30,6 +30,7 @@ public class Main {
     public static void main(String[] args) {
         Map<String, Map<String, Integer>> result = getCheapestFlights(3, 3, 8);
         System.out.println("Result:");
+        //System.out.println(result);
         for (Map.Entry<String, Map<String, Integer>> e : result.entrySet()) {
             System.out.println("  " + e.getKey() + ": " + e.getValue());
         }

@@ -163,4 +163,4 @@ sequenceDiagram
 | [03 — MySQL Storage Design](./03-mysql-storage-design.md) | Sharding, partitioning, schema, indexing, retention |
 | [04 — Read Path & Query Routing](./04-read-path.md) | Scatter-gather, partition pruning, response assembly |
 | [05 — Resource Estimation (6 Months)](./05-resource-estimation.md) | Hardware sizing, instance counts, cost analysis |
-| [06 — Failure Modes & Trade-offs](./06-failure-modes.md) | Failure scenarios, data loss analysis, trade-off summary |
+| [06 — Failure Modes & Trade-offs](./06-failure-modes.md) | Failure scenarios, top 3 critical metrics, data loss analysis, trade-off summary |

@@ -228,6 +228,97 @@ graph TB
 
 ---
 
+## Top 3 Critical Metrics
+
+Ranked by how fast they escalate from "degraded" to "permanent damage."
+
+### #1 — Kafka Consumer Lag (messages behind)
+
+The single most critical metric. It is the **countdown timer to data loss**.
+
+Kafka retention is 72 hours. If consumer lag grows and the oldest unconsumed message ages past 72 hours, those logs are **permanently gone** — no recovery possible. Every other failure in the pipeline (MySQL slowdown, writer crashes, traffic spikes) manifests as growing consumer lag first. It is a composite health signal for the entire write path.
+
+```mermaid
+graph LR
+    subgraph "Consumer Lag Severity"
+        S["< 500K msgs<br/>~2 sec of traffic"]
+        W["> 5M msgs<br/>~20 sec"]
+        C["> 50M msgs<br/>~3.3 min"]
+        F["Approaching 72h<br/>~64.8B msgs"]
+    end
+
+    S -->|Growing| W
+    W -->|Growing| C
+    C -->|Growing| F
+
+    style S fill:#50c878,color:#000
+    style W fill:#f5a623,color:#000
+    style C fill:#ff6b6b,color:#fff
+    style F fill:#8b0000,color:#fff
+```
+
+**Why #1:** It is the only metric where crossing the threshold causes **irreversible** data loss. Everything else is recoverable.
+
+### #2 — MySQL Disk Usage per Shard (%)
+
+When a shard hits 100% disk, InnoDB flips to **read-only mode** or crashes outright. Unlike other failures, this one compounds — the daily retention cron (`DROP PARTITION`) may itself fail if there is no space for metadata operations, so you cannot free space to fix the problem. It is a deadlock.
+
+```mermaid
+graph LR
+    subgraph "Disk Usage Severity"
+        S["< 75%"]
+        W["> 80%<br/>Alert, plan capacity"]
+        C["> 90%<br/>Auto-pause writer"]
+        F["100%<br/>Shard read-only"]
+    end
+
+    S -->|Filling| W
+    W -->|Filling| C
+    C -->|Filling| F
+
+    style S fill:#50c878,color:#000
+    style W fill:#f5a623,color:#000
+    style C fill:#ff6b6b,color:#fff
+    style F fill:#8b0000,color:#fff
+```
+
+**Why #2:** It is **predictable but catastrophic**. Storage grows linearly at ~540 GB/day/shard. A missed alert gives you days of warning, but if ignored, recovery requires manual intervention on a downed shard while Kafka buffers are draining.
+
+### #3 — End-to-End Ingestion Delay (POST accepted to queryable in GET)
+
+The **user-facing SLA metric**. Measures the delta between when a log gets a 202 response and when it appears in GET query results. It rolls up the health of every component: Kafka produce latency + consumer lag + MySQL bulk insert latency + replication lag to the read replica.
+
+```mermaid
+graph LR
+    subgraph "E2E Delay Severity"
+        S["< 5 sec<br/>Healthy"]
+        W["5-30 sec<br/>Degraded"]
+        C["> 60 sec<br/>Critical"]
+    end
+
+    S -->|Increasing| W
+    W -->|Increasing| C
+
+    style S fill:#50c878,color:#000
+    style W fill:#f5a623,color:#000
+    style C fill:#ff6b6b,color:#fff
+```
+
+**Why #3:** Metrics #1 and #2 are infrastructure-facing. This metric tells you whether the system is **fulfilling its purpose** — making logs queryable. An engineer debugging a production incident does not care about consumer lag; they care that the log they are looking for shows up when they query for it.
+
+### Why These Three?
+
+| Metric you might expect | Why it is not top 3 |
+|---|---|
+| API error rate (5xx) | Self-healing — LB reroutes, clients retry. No permanent damage. |
+| MySQL replication lag | Subsumed by metric #3 (end-to-end delay). Replication lag is one contributor, not the whole picture. |
+| Query latency (P99) | Multi-second P99 was already accepted as a constraint. Comfort metric, not criticality. |
+| Writer batch latency | Leading indicator for #1 (consumer lag). Monitor it, but consumer lag is what actually kills you. |
+
+> **Mental model: #1 protects durability, #2 protects availability, #3 protects utility.**
+
+---
+
 ## Monitoring & Alerting Checklist
 
 | Metric | Alert Threshold | Action |
