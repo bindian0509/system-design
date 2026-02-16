@@ -334,42 +334,90 @@ Every mutating endpoint accepts an `Idempotency-Key` header.
 
 ### Entity Relationship
 
-```
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│  Operator    │────<│  ParkingLot  │────<│ ParkingLevel │
-│              │     │              │     │              │
-│ id           │     │ id           │     │ id           │
-│ name         │     │ operator_id  │     │ lot_id       │
-│ email        │     │ name         │     │ level_number │
-│ plan_tier    │     │ address      │     │ total_spots  │
-└──────────────┘     │ timezone     │     └──────┬───────┘
-                     │ status       │            │
-                     │ config (JSON)│            │
-                     └──────────────┘     ┌──────┴───────┐
-                                          │ ParkingSpot  │
-┌──────────────┐     ┌──────────────┐     │              │
-│  Reservation │     │   Session    │────>│ id           │
-│              │     │              │     │ level_id     │
-│ id           │     │ id           │     │ spot_number  │
-│ lot_id       │     │ lot_id       │     │ spot_type    │
-│ spot_type    │     │ spot_id      │     │ status       │
-│ spot_id      │     │ vehicle_id   │     │ sensor_id    │
-│ vehicle_id   │     │ entry_time   │     │ has_charger  │
-│ start_time   │     │ exit_time    │     └──────────────┘
-│ end_time     │     │ status       │
-│ status       │     │ pricing_snap │     ┌──────────────┐
-│ pre_auth_id  │     │ total_amount │     │   Payment    │
-└──────────────┘     │ currency     │     │              │
-                     └──────┬───────┘     │ id           │
-                            │             │ session_id   │
-                            └────────────>│ amount       │
-                                          │ currency     │
-                                          │ status       │
-                                          │ psp_ref      │
-                                          │ method       │
-                                          │ pre_auth_id  │
-                                          │ captured_at  │
-                                          └──────────────┘
+```mermaid
+erDiagram
+    Operator ||--o{ ParkingLot : owns
+    ParkingLot ||--o{ ParkingLevel : contains
+    ParkingLevel ||--o{ ParkingSpot : contains
+    ParkingLot ||--o{ Session : hosts
+    ParkingLot ||--o{ Reservation : accepts
+    ParkingSpot ||--o{ Session : used_in
+    ParkingSpot ||--o{ Reservation : reserved_as
+    Session ||--o{ Payment : billed_via
+
+    Operator {
+        UUID id PK
+        string name
+        string email
+        string plan_tier
+    }
+
+    ParkingLot {
+        UUID id PK
+        UUID operator_id FK
+        string name
+        jsonb address
+        string timezone
+        string status
+        jsonb config
+    }
+
+    ParkingLevel {
+        UUID id PK
+        UUID lot_id FK
+        int level_number
+        int total_spots
+    }
+
+    ParkingSpot {
+        UUID id PK
+        UUID lot_id FK
+        UUID level_id FK
+        string spot_number
+        string spot_type
+        string status
+        string sensor_id
+        boolean has_charger
+    }
+
+    Session {
+        UUID id PK
+        UUID lot_id FK
+        UUID spot_id FK
+        string vehicle_id
+        timestamptz entry_time
+        timestamptz exit_time
+        string status
+        jsonb pricing_snapshot
+        int total_amount
+        string currency
+    }
+
+    Payment {
+        UUID id PK
+        UUID session_id FK
+        int amount
+        string currency
+        string status
+        string psp_provider
+        string psp_reference
+        string payment_method
+        string pre_auth_id
+        timestamptz captured_at
+    }
+
+    Reservation {
+        UUID id PK
+        UUID lot_id FK
+        UUID spot_id FK
+        string spot_type
+        string vehicle_id
+        UUID customer_id
+        timestamptz start_time
+        timestamptz end_time
+        string status
+        string pre_auth_id
+    }
 ```
 
 ### Schema Details
@@ -468,67 +516,66 @@ CREATE TABLE reservations (
 
 ## 7. High-Level Architecture
 
-```
-                                    ┌─────────────────────┐
-                                    │   CDN / CloudFront  │
-                                    └──────────┬──────────┘
-                                               │
-┌──────────────┐    ┌──────────────┐    ┌──────┴──────────┐
-│  Mobile App  │───>│              │    │                  │
-│  (Customer)  │    │   API        │    │   Load Balancer  │
-└──────────────┘    │   Gateway    │<───│   (ALB)          │
-┌──────────────┐    │              │    │                  │
-│  Operator    │───>│  - Auth      │    └──────────────────┘
-│  Dashboard   │    │  - Rate Limit│
-└──────────────┘    │  - Routing   │
-┌──────────────┐    │  - Throttle  │
-│  IoT Devices │───>│              │
-│  (Gates,     │    └──────┬───────┘
-│   Sensors)   │           │
-└──────────────┘           │
-                    ┌──────┴───────────────────────────────────────────┐
-                    │                                                   │
-          ┌────────┴────────┐   ┌───────────────┐   ┌────────────────┐
-          │  Entry/Exit     │   │  Availability │   │  Reservation   │
-          │  Service        │   │  Service      │   │  Service       │
-          │                 │   │               │   │                │
-          │ - Spot alloc    │   │ - Cache reads │   │ - Booking      │
-          │ - Session mgmt  │   │ - Aggregation │   │ - Conflict res │
-          │ - Gate control  │   │               │   │ - Reminders    │
-          └───────┬─────────┘   └───────┬───────┘   └────────┬───────┘
-                  │                     │                     │
-          ┌───────┴─────────┐   ┌───────┴───────┐           │
-          │  Pricing        │   │  Analytics    │           │
-          │  Engine         │   │  Service      │           │
-          │                 │   │               │           │
-          │ - Rate calc     │   │ - Occupancy   │           │
-          │ - Surge pricing │   │ - Revenue     │           │
-          │ - Tax           │   │ - Trends      │           │
-          └───────┬─────────┘   └───────────────┘           │
-                  │                                          │
-          ┌───────┴─────────┐                               │
-          │  Payment        │                               │
-          │  Service        │<──────────────────────────────┘
-          │                 │
-          │ - Pre-auth      │    ┌───────────────┐
-          │ - Capture       │───>│  PSP          │
-          │ - Refund        │    │  Orchestrator │──> Stripe / Adyen / Braintree
-          │ - Webhooks      │    └───────────────┘
-          └─────────────────┘
-                  │
-    ┌─────────────┼──────────────────┐
-    │             │                  │
-┌───┴────┐  ┌────┴─────┐   ┌───────┴──────┐
-│ Postgres│  │  Redis   │   │  Kafka /     │
-│ (Primary│  │ Cluster  │   │  Event Bus   │
-│  + Read │  │          │   │              │
-│  Replicas) │ - Avail  │   │ - Session    │
-│         │  │   cache  │   │   events     │
-│ - Spots │  │ - Idemp  │   │ - Payment    │
-│ - Sess  │  │   keys   │   │   events     │
-│ - Pay   │  │ - Rate   │   │ - Analytics  │
-│ - Res   │  │   limits │   │   pipeline   │
-└─────────┘  └──────────┘   └──────────────┘
+```mermaid
+graph TB
+    subgraph Clients
+        MA[Mobile App<br/>Customer]
+        OD[Operator<br/>Dashboard]
+        IOT[IoT Devices<br/>Gates, Sensors]
+    end
+
+    subgraph Edge["API Layer"]
+        CDN[CDN / CloudFront]
+        ALB[Load Balancer / ALB]
+        GW[API Gateway<br/>Auth, Rate Limit,<br/>Routing, Throttle]
+    end
+
+    subgraph Services["Application Services"]
+        EES[Entry/Exit Service<br/>Spot alloc, Session mgmt,<br/>Gate control]
+        AVS[Availability Service<br/>Cache reads,<br/>Aggregation]
+        RES[Reservation Service<br/>Booking, Conflict res,<br/>Reminders]
+        PE[Pricing Engine<br/>Rate calc, Surge pricing,<br/>Tax]
+        ANS[Analytics Service<br/>Occupancy, Revenue,<br/>Trends]
+        PS[Payment Service<br/>Pre-auth, Capture,<br/>Refund, Webhooks]
+    end
+
+    subgraph PSP["PSP Layer"]
+        PSPO[PSP Orchestrator]
+        STR[Stripe]
+        ADY[Adyen]
+        BRT[Braintree]
+    end
+
+    subgraph Data["Data Layer"]
+        PG[(PostgreSQL<br/>Primary + Read Replicas<br/>Spots, Sessions,<br/>Payments, Reservations)]
+        RD[(Redis Cluster<br/>Avail cache, Idemp keys,<br/>Rate limits)]
+        KF[(Kafka / Event Bus<br/>Session events,<br/>Payment events,<br/>Analytics pipeline)]
+    end
+
+    MA --> CDN --> ALB --> GW
+    OD --> ALB
+    IOT --> GW
+
+    GW --> EES
+    GW --> AVS
+    GW --> RES
+
+    EES --> PE
+    EES --> PS
+    RES --> PS
+
+    PS --> PSPO
+    PSPO --> STR
+    PSPO --> ADY
+    PSPO --> BRT
+
+    EES --> PG
+    EES --> KF
+    AVS --> RD
+    RES --> PG
+    PS --> PG
+    ANS --> KF
+    PE --> PG
 ```
 
 ### Service Responsibilities
@@ -599,6 +646,26 @@ FUNCTION allocateSpot(lotId, vehicleType, preferredLevel):
     RETURN session
 ```
 
+#### Spot Allocation Flow
+
+```mermaid
+flowchart TD
+    A[Vehicle arrives at gate] --> B{Identify vehicle<br/>LPR / Ticket / QR}
+    B --> C[Determine vehicle type]
+    C --> D[Query available spots<br/>FOR UPDATE SKIP LOCKED]
+    D --> E{Spot found?}
+    E -->|Yes| F[Update spot status<br/>to OCCUPIED]
+    E -->|No| G{Try upsize?<br/>compact→regular}
+    G -->|Yes| D
+    G -->|No more types| H[Return LOT FULL]
+    F --> I[Create session record]
+    I --> J[Pre-authorize payment]
+    J --> K{Pre-auth success?}
+    K -->|Yes| L[Open gate]
+    K -->|No| M[Release spot<br/>Display error on kiosk]
+    L --> N[Publish spot.allocated event]
+```
+
 #### Why `FOR UPDATE SKIP LOCKED`?
 
 | Approach | Pros | Cons |
@@ -612,12 +679,22 @@ FUNCTION allocateSpot(lotId, vehicleType, preferredLevel):
 
 #### Concurrency: Two Cars, One Spot Left
 
-```
-Car A:  SELECT ... FOR UPDATE SKIP LOCKED → gets spot_42 → UPDATE → success
-Car B:  SELECT ... FOR UPDATE SKIP LOCKED → spot_42 is locked, skip → no rows → LOT FULL
-```
+```mermaid
+sequenceDiagram
+    participant CarA as Car A
+    participant CarB as Car B
+    participant DB as PostgreSQL
 
-No race condition. No retry storm. Car B gets immediate "lot full" response.
+    CarA->>DB: SELECT ... FOR UPDATE SKIP LOCKED
+    Note over DB: spot_42 locked by Car A
+    CarB->>DB: SELECT ... FOR UPDATE SKIP LOCKED
+    Note over DB: spot_42 locked, SKIP
+    DB-->>CarA: Returns spot_42
+    DB-->>CarB: Returns empty (no rows)
+    CarA->>DB: UPDATE spot_42 → OCCUPIED
+    CarB-->>CarB: Immediate LOT FULL response
+    Note over CarA,CarB: No race condition. No retry storm.
+```
 
 ---
 
@@ -625,26 +702,30 @@ No race condition. No retry storm. Car B gets immediate "lot full" response.
 
 #### Architecture
 
-```
-┌─────────────────────────────────────────┐
-│              Pricing Engine             │
-│                                         │
-│  Input:                                 │
-│    - entry_time, exit_time              │
-│    - spot_type                          │
-│    - lot_id (to load rules)             │
-│    - membership_id (optional)           │
-│                                         │
-│  Pipeline:                              │
-│    1. Load pricing rules for lot        │
-│    2. Calculate base duration charge     │
-│    3. Apply spot type multiplier        │
-│    4. Apply time-of-day surge           │
-│    5. Apply membership discount         │
-│    6. Apply max daily cap               │
-│    7. Calculate tax                     │
-│    8. Return itemized breakdown         │
-└─────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    subgraph Input
+        ET[entry_time, exit_time]
+        ST[spot_type]
+        LI[lot_id]
+        MI[membership_id]
+    end
+
+    subgraph Pipeline["Pricing Pipeline"]
+        direction TB
+        S1["1. Load pricing rules for lot"]
+        S2["2. Calculate base duration charge"]
+        S3["3. Apply spot type multiplier"]
+        S4["4. Apply time-of-day surge"]
+        S5["5. Apply membership discount"]
+        S6["6. Apply max daily cap"]
+        S7["7. Calculate tax"]
+        S8["8. Return itemized breakdown"]
+        S1 --> S2 --> S3 --> S4 --> S5 --> S6 --> S7 --> S8
+    end
+
+    Input --> S1
+    S8 --> OUT[Itemized Breakdown<br/>subtotal + tax + total]
 ```
 
 #### Pricing Rules Schema (stored as JSONB in lot config)
@@ -680,13 +761,11 @@ No race condition. No retry storm. Car B gets immediate "lot full" response.
 
 When a vehicle enters, the current pricing rules are snapshotted into the session record. This prevents retroactive price changes from affecting in-progress sessions.
 
-```
-Why snapshot?
+**Why snapshot?**
 - Operator changes price from $5/hr to $8/hr at 2 PM
 - Car that entered at 9 AM should NOT pay $8/hr for hours before 2 PM
 - Snapshot guarantees price at time of entry
 - Also serves as audit trail for disputes
-```
 
 #### Algorithm
 
@@ -734,18 +813,31 @@ FUNCTION calculatePrice(session):
 
 This is the most interview-relevant section for the Playlist Director of Engineering role.
 
-```
-Timeline:
-─────────────────────────────────────────────────────────────────
-│ ENTRY                                              EXIT       │
-│                                                               │
-│ 1. Vehicle arrives                    5. Vehicle at exit gate  │
-│ 2. Pre-authorize $50                  6. Calculate actual: $23 │
-│    (hold on card, no charge)          7. Capture $23           │
-│ 3. Open gate                             (release remaining   │
-│ 4. Assign spot                            $27 hold)           │
-│                                       8. Open gate            │
-─────────────────────────────────────────────────────────────────
+#### Payment Timeline
+
+```mermaid
+graph LR
+    subgraph ENTRY["ENTRY"]
+        E1["1. Vehicle arrives"]
+        E2["2. Pre-authorize $50<br/>(hold on card, no charge)"]
+        E3["3. Open gate"]
+        E4["4. Assign spot"]
+        E1 --> E2 --> E3 --> E4
+    end
+
+    subgraph PARKING["... PARKING DURATION ..."]
+        P1[" "]
+    end
+
+    subgraph EXIT["EXIT"]
+        X1["5. Vehicle at exit gate"]
+        X2["6. Calculate actual: $23"]
+        X3["7. Capture $23<br/>(release remaining $27 hold)"]
+        X4["8. Open gate"]
+        X1 --> X2 --> X3 --> X4
+    end
+
+    ENTRY --> PARKING --> EXIT
 ```
 
 #### Why Auth/Capture (not Charge on Exit)?
@@ -760,56 +852,74 @@ Timeline:
 
 #### Payment Service Flow
 
-```
-ENTRY:
-  1. Entry Service → Payment Service: preAuthorize(amount=$50, paymentMethod)
-  2. Payment Service → PSP Orchestrator: route to best PSP
-  3. PSP Orchestrator → Stripe: POST /payment_intents (amount=5000, capture_method=manual)
-  4. Stripe → PSP Orchestrator: { id: pi_xxx, status: requires_capture }
-  5. Payment Service → Entry Service: { preAuthId: pa_xxx, status: AUTHORIZED }
-  6. Entry Service → Gate: OPEN
+```mermaid
+sequenceDiagram
+    participant ES as Entry Service
+    participant PS as Payment Service
+    participant PO as PSP Orchestrator
+    participant PSP as Stripe
+    participant Gate as Gate Controller
 
-EXIT:
-  1. Exit Service → Pricing Engine: calculatePrice(session)
-  2. Pricing Engine → Exit Service: { total: 2300 }
-  3. Exit Service → Payment Service: capture(preAuthId=pa_xxx, amount=2300)
-  4. Payment Service → PSP Orchestrator: capture
-  5. PSP Orchestrator → Stripe: POST /payment_intents/pi_xxx/capture (amount=2300)
-  6. Stripe → PSP Orchestrator: { status: succeeded }
-  7. Payment Service → Exit Service: { status: CAPTURED }
-  8. Exit Service → Gate: OPEN
-  9. Payment Service → Notification Service: sendReceipt(session)
+    rect rgb(220, 240, 255)
+        Note over ES,Gate: ENTRY FLOW
+        ES->>PS: preAuthorize($50, paymentMethod)
+        PS->>PO: route to best PSP
+        PO->>PSP: POST /payment_intents<br/>(amount=5000, capture_method=manual)
+        PSP-->>PO: {id: pi_xxx, status: requires_capture}
+        PO-->>PS: authorized
+        PS-->>ES: {preAuthId: pa_xxx, status: AUTHORIZED}
+        ES->>Gate: OPEN
+    end
+
+    Note over ES,Gate: ... vehicle is parked ...
+
+    rect rgb(255, 240, 220)
+        Note over ES,Gate: EXIT FLOW
+        ES->>ES: calculatePrice(session) → $23
+        ES->>PS: capture(preAuthId=pa_xxx, amount=2300)
+        PS->>PO: capture
+        PO->>PSP: POST /payment_intents/pi_xxx/capture<br/>(amount=2300)
+        PSP-->>PO: {status: succeeded}
+        PO-->>PS: captured
+        PS-->>ES: {status: CAPTURED}
+        ES->>Gate: OPEN
+        PS->>PS: sendReceipt(session)
+    end
 ```
 
 #### PSP Orchestration Layer
 
-```
-┌───────────────────────────────────────────────┐
-│              PSP Orchestrator                  │
-│                                                │
-│  Routing Decision:                             │
-│    1. Check merchant's PSP preferences         │
-│    2. Check PSP health (circuit breaker state) │
-│    3. Check cost per transaction by PSP        │
-│    4. Check success rate by PSP (last 1 hour)  │
-│    5. Route to optimal PSP                     │
-│                                                │
-│  Failover:                                     │
-│    - PSP returns 5xx → try next PSP            │
-│    - PSP timeout (>3s) → try next PSP          │
-│    - Circuit open → skip PSP                   │
-│                                                │
-│  Idempotency:                                  │
-│    - Same idempotency key across retries       │
-│    - Store PSP-specific reference for each key │
-│    - Prevent duplicate charges on retry        │
-│                                                │
-│  PSP Adapter Interface:                        │
-│    authorize(amount, currency, paymentMethod)   │
-│    capture(authReference, amount)               │
-│    refund(captureReference, amount)             │
-│    void(authReference)                          │
-└───────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Orchestrator["PSP Orchestrator"]
+        direction TB
+        R1["1. Check merchant PSP preferences"]
+        R2["2. Check PSP health (circuit breaker state)"]
+        R3["3. Check cost per transaction by PSP"]
+        R4["4. Check success rate by PSP (last 1 hour)"]
+        R5["5. Route to optimal PSP"]
+        R1 --> R2 --> R3 --> R4 --> R5
+    end
+
+    subgraph Failover["Failover Logic"]
+        F1["PSP returns 5xx → try next PSP"]
+        F2["PSP timeout >3s → try next PSP"]
+        F3["Circuit open → skip PSP"]
+    end
+
+    subgraph Adapters["PSP Adapter Interface"]
+        A1["authorize(amount, currency, paymentMethod)"]
+        A2["capture(authReference, amount)"]
+        A3["refund(captureReference, amount)"]
+        A4["void(authReference)"]
+    end
+
+    R5 --> Failover
+    Failover --> Adapters
+
+    Adapters --> Stripe
+    Adapters --> Adyen
+    Adapters --> Braintree
 ```
 
 #### Edge Cases
@@ -831,14 +941,18 @@ EXIT:
 
 Reservations add a time dimension. A spot is not just "available or not" — it's "available during this time window."
 
-```
-Spot 42 Timeline:
-──────────────────────────────────────────────────
-  6 AM    8 AM    10 AM    12 PM    2 PM    4 PM
-  │       │       │        │        │       │
-  │  RES  │ AVAIL │  RES   │ AVAIL  │  RES  │
-  │ (Bob) │       │ (Alice)│        │(Carol)│
-──────────────────────────────────────────────────
+```mermaid
+gantt
+    title Spot 42 — Reservation Timeline
+    dateFormat HH:mm
+    axisFormat %H:%M
+
+    section Spot 42
+    Reserved (Bob)       :active, bob, 06:00, 08:00
+    Available            :avail1, 08:00, 10:00
+    Reserved (Alice)     :active, alice, 10:00, 12:00
+    Available            :avail2, 12:00, 14:00
+    Reserved (Carol)     :active, carol, 14:00, 16:00
 ```
 
 #### Preventing Overlaps
@@ -883,21 +997,16 @@ The 30-minute buffer prevents assigning a walk-in to a spot that's reserved soon
 
 #### No-Show Handling
 
-```
-Cron job every 5 minutes:
-    UPDATE reservations
-    SET status = 'NO_SHOW'
-    WHERE status = 'CONFIRMED'
-      AND start_time + grace_period < NOW();
-
-    -- Release the spot
-    UPDATE parking_spots
-    SET status = 'AVAILABLE'
-    WHERE id IN (SELECT spot_id FROM reservations WHERE status = 'NO_SHOW' AND ...);
-
-    -- Charge no-show fee (capture pre-auth for penalty amount)
-    FOR EACH no_show_reservation:
-        Payment.capture(no_show.pre_auth_id, NO_SHOW_FEE);
+```mermaid
+flowchart TD
+    A["Cron job runs every 5 min"] --> B{"Reservation past<br/>start_time + grace?"}
+    B -->|No| Z[Skip]
+    B -->|Yes, no check-in| C["Mark as NO_SHOW"]
+    C --> D["Release spot<br/>SET status = AVAILABLE"]
+    D --> E["Capture pre-auth<br/>for no-show fee"]
+    E --> F{"Capture success?"}
+    F -->|Yes| G["Send no-show receipt"]
+    F -->|No| H["Flag for operator"]
 ```
 
 ---
@@ -912,16 +1021,19 @@ Cron job every 5 minutes:
 
 #### Architecture
 
-```
-                          Write Path                    Read Path
-                             │                             │
-  Entry/Exit Service ───> Kafka ───> Availability ───> Redis Cache
-                          (event)     Consumer          (per lot)
-                                        │                  │
-                                        │                  ▼
-                                     Postgres         API Gateway
-                                     (source           (serves
-                                      of truth)         from cache)
+```mermaid
+flowchart LR
+    subgraph WritePath["Write Path"]
+        EES[Entry/Exit<br/>Service] -->|event| KF[Kafka]
+        KF --> AC[Availability<br/>Consumer]
+        AC --> PG[(PostgreSQL<br/>Source of Truth)]
+        AC --> RD[(Redis Cache<br/>Per Lot)]
+    end
+
+    subgraph ReadPath["Read Path"]
+        APP[Mobile App /<br/>Signage] --> GW[API Gateway]
+        GW -->|serves from| RD
+    end
 ```
 
 #### Cache Structure (Redis)
@@ -978,17 +1090,32 @@ If Redis is down, the Availability Service falls back to a direct DB query with 
 
 #### Architecture
 
-```
-Physical Layer:
-  Ultrasonic sensor → detects vehicle presence in spot
-  Camera (LPR)     → reads license plate at entry/exit
-  Gate controller   → receives OPEN/CLOSE commands
-  LED display       → shows available spots count
+```mermaid
+flowchart TB
+    subgraph PhysicalLayer["Physical Layer (Parking Lot)"]
+        US[Ultrasonic Sensor<br/>Detects vehicle in spot]
+        CAM[Camera / LPR<br/>Reads license plate]
+        GATE[Gate Controller<br/>OPEN / CLOSE]
+        LED[LED Display<br/>Available spots count]
+    end
 
-Communication:
-  Sensors → MQTT broker → IoT Gateway → Entry/Exit Service
-  Gate ← gRPC (low-latency) ← Gate Control Service
-  Display ← WebSocket ← Availability Service
+    subgraph Communication["Communication Protocols"]
+        MQTT[MQTT Broker<br/>Lightweight, pub/sub]
+        GRPC[gRPC<br/>Low-latency, reliable]
+        WS[WebSocket<br/>Browser-friendly]
+    end
+
+    subgraph Cloud["Cloud Services"]
+        IOTGW[IoT Gateway]
+        EES[Entry/Exit Service]
+        AVS[Availability Service]
+        GCS[Gate Control Service]
+    end
+
+    US -->|MQTT| MQTT --> IOTGW --> EES
+    CAM -->|MQTT| MQTT
+    GCS -->|gRPC| GRPC --> GATE
+    AVS -->|WebSocket| WS --> LED
 ```
 
 #### Why MQTT for Sensors?
@@ -1004,41 +1131,41 @@ Communication:
 
 #### Sensor Data Flow
 
-```
-Sensor detects car in spot_42 →
-  MQTT publish: parking/{lotId}/spots/spot_42/status = "OCCUPIED"
+```mermaid
+sequenceDiagram
+    participant S as Ultrasonic Sensor
+    participant MQTT as MQTT Broker
+    participant IoT as IoT Gateway
+    participant K as Kafka
+    participant EES as Entry/Exit Service
+    participant PG as PostgreSQL
+    participant AC as Availability Consumer
+    participant R as Redis Cache
 
-IoT Gateway receives →
-  Validates message
-  Publishes to Kafka: spot.status_changed { spotId, status, timestamp }
-
-Entry/Exit Service consumes →
-  Updates PostgreSQL: parking_spots SET status = 'OCCUPIED'
-  Publishes: spot.allocated event
-
-Availability Consumer →
-  Updates Redis cache
+    S->>MQTT: parking/{lotId}/spots/spot_42/status = "OCCUPIED"
+    MQTT->>IoT: Forward message
+    IoT->>IoT: Validate message
+    IoT->>K: Publish: spot.status_changed<br/>{spotId, status, timestamp}
+    K->>EES: Consume event
+    EES->>PG: UPDATE parking_spots<br/>SET status = 'OCCUPIED'
+    EES->>K: Publish: spot.allocated
+    K->>AC: Consume event
+    AC->>R: HINCRBY available_total -1
 ```
 
 #### Reconciliation
 
 Sensor data can drift from DB state (sensor failure, network issue). Run reconciliation every 5 minutes:
 
-```
-FOR EACH lot:
-    sensor_state = getSensorStates(lot.sensors)     // from IoT platform
-    db_state = getSpotStatuses(lot.id)              // from PostgreSQL
-
-    FOR EACH spot WHERE sensor_state != db_state:
-        IF sensor says OCCUPIED and DB says AVAILABLE:
-            // Someone parked without going through entry flow
-            log.warn("Unregistered vehicle in spot", spotId)
-            createAnonymousSession(spotId)
-
-        IF sensor says EMPTY and DB says OCCUPIED:
-            // Vehicle left without going through exit flow
-            log.warn("Vehicle departed without exit", spotId)
-            triggerAbandonedVehicleFlow(spotId)
+```mermaid
+flowchart TD
+    A["Reconciliation Cron<br/>(every 5 min)"] --> B["Fetch sensor states<br/>from IoT platform"]
+    B --> C["Fetch spot statuses<br/>from PostgreSQL"]
+    C --> D{"Sensor state<br/>== DB state?"}
+    D -->|Match| E[OK — skip]
+    D -->|Mismatch| F{"Which mismatch?"}
+    F -->|"Sensor: OCCUPIED<br/>DB: AVAILABLE"| G["Unregistered vehicle<br/>Create anonymous session"]
+    F -->|"Sensor: EMPTY<br/>DB: OCCUPIED"| H["Vehicle departed<br/>without exit flow<br/>Trigger abandoned<br/>vehicle flow"]
 ```
 
 ---
@@ -1102,57 +1229,27 @@ FUNCTION calculateSurgeMultiplier(lotId, currentTime):
     RETURN MIN(result, 2.0)
 ```
 
-```
-Occupancy vs. Surge Multiplier:
-
-Multiplier
- 2.0x │                              ╱
-      │                            ╱
- 1.5x │                      ╱───╱
-      │                    ╱
- 1.2x │              ╱───╱
-      │            ╱
- 1.0x │────────────
-      └────────────────────────────────
-      0%    50%    75%   90%   100%
-                Occupancy Rate
+```mermaid
+xychart-beta
+    title "Occupancy vs. Surge Multiplier"
+    x-axis "Occupancy Rate (%)" [0, 10, 20, 30, 40, 50, 60, 70, 75, 80, 85, 90, 95, 100]
+    y-axis "Surge Multiplier" 0.8 --> 2.2
+    line [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.04, 1.08, 1.2, 1.3, 1.4, 1.5, 1.75, 2.0]
 ```
 
 ### 9.3 Abandoned Vehicle Detection
 
-```
-FUNCTION detectAbandonedVehicles():
-    // Run hourly via cron
-
-    threshold = 72 hours   // configurable per lot
-
-    suspects = SELECT s.*, p.spot_number
-               FROM sessions s
-               JOIN parking_spots p ON s.spot_id = p.id
-               WHERE s.status = 'ACTIVE'
-                 AND s.entry_time < NOW() - threshold
-                 AND s.id NOT IN (
-                     SELECT session_id FROM long_term_passes
-                     WHERE status = 'ACTIVE'
-                 );
-
-    FOR EACH suspect:
-        IF suspect.duration > threshold:
-            // Step 1: Check sensor — is car still there?
-            IF sensor.isOccupied(suspect.spot_id):
-                // Step 2: Attempt to charge (capture pre-auth or new charge)
-                payment = attemptCharge(suspect, calculatePrice(suspect))
-
-                IF payment.failed:
-                    // Step 3: Flag for operator
-                    createAlert(suspect, "ABANDONED_VEHICLE", priority=HIGH)
-                    notifyOperator(suspect.lot_id, suspect)
-                ELSE:
-                    // Extend session, try again next cycle
-                    extendPreAuth(suspect)
-            ELSE:
-                // Sensor says empty — close session
-                closeSession(suspect, exit_time=NOW())
+```mermaid
+flowchart TD
+    A["Cron: detectAbandonedVehicles()<br/>Runs hourly"] --> B["Query active sessions<br/>older than 72 hours<br/>excluding long-term passes"]
+    B --> C{"Any suspects?"}
+    C -->|No| Z[Done]
+    C -->|Yes| D{"Check sensor:<br/>car still there?"}
+    D -->|"Sensor: OCCUPIED"| E["Attempt charge<br/>(capture pre-auth or new charge)"]
+    E --> F{"Payment success?"}
+    F -->|Yes| G["Extend session<br/>Try again next cycle"]
+    F -->|No| H["Flag as ABANDONED_VEHICLE<br/>Priority: HIGH<br/>Notify operator"]
+    D -->|"Sensor: EMPTY"| I["Close session<br/>exit_time = NOW()"]
 ```
 
 ---
@@ -1274,30 +1371,55 @@ Payment processing cost per session (passed to merchant):
 | **Session data consistency** | 100% | Any mismatch | Sensor vs. DB reconciliation |
 | **Spot allocation latency (p99)** | < 100ms | > 80ms | Part of gate-open critical path |
 
-### Dashboard Layout
+### Operations Dashboard
 
-```
-┌─────────────────────────────────────────────────────┐
-│  PARKING LOT SYSTEM — OPERATIONS DASHBOARD          │
-├──────────────────────┬──────────────────────────────┤
-│  Active Sessions     │  Gate Open Latency (p50/p99) │
-│  ████████░░ 3.2M     │  p50: 120ms  p99: 340ms     │
-│                      │  ▁▂▃▂▁▂▃▄▃▂▁▂▃▂▁           │
-├──────────────────────┼──────────────────────────────┤
-│  Payment Success     │  Availability Cache Hit Rate │
-│  Pre-auth: 99.7%     │  99.4% ████████████████░     │
-│  Capture:  99.95%    │                              │
-├──────────────────────┼──────────────────────────────┤
-│  PSP Health          │  Error Rate by Service       │
-│  Stripe:  ✅ 99.9%   │  Entry:    0.02%             │
-│  Adyen:   ✅ 99.8%   │  Payment:  0.05%             │
-│  Braintree: ⚠️ 98.1% │  Avail:    0.01%             │
-├──────────────────────┼──────────────────────────────┤
-│  Kafka Consumer Lag  │  DB Connections / Replication │
-│  entry-events: 12    │  Primary: 82/200 connections  │
-│  payment-events: 3   │  Replica lag: 45ms           │
-│  analytics: 1,204    │                              │
-└──────────────────────┴──────────────────────────────┘
+```mermaid
+block-beta
+    columns 2
+
+    block:row1a:1
+        columns 1
+        A1["Active Sessions"]
+        A2["3.2M / 5M"]
+    end
+    block:row1b:1
+        columns 1
+        B1["Gate Open Latency"]
+        B2["p50: 120ms  p99: 340ms"]
+    end
+
+    block:row2a:1
+        columns 1
+        C1["Payment Success"]
+        C2["Pre-auth: 99.7%  Capture: 99.95%"]
+    end
+    block:row2b:1
+        columns 1
+        D1["Availability Cache Hit Rate"]
+        D2["99.4%"]
+    end
+
+    block:row3a:1
+        columns 1
+        E1["PSP Health"]
+        E2["Stripe: 99.9%  Adyen: 99.8%  Braintree: 98.1%"]
+    end
+    block:row3b:1
+        columns 1
+        F1["Error Rate by Service"]
+        F2["Entry: 0.02%  Payment: 0.05%  Avail: 0.01%"]
+    end
+
+    block:row4a:1
+        columns 1
+        G1["Kafka Consumer Lag"]
+        G2["entry: 12  payment: 3  analytics: 1204"]
+    end
+    block:row4b:1
+        columns 1
+        H1["DB Connections / Replication"]
+        H2["Primary: 82/200  Replica lag: 45ms"]
+    end
 ```
 
 ### Alerting Rules
@@ -1339,14 +1461,32 @@ alerts:
 
 Every request gets a trace ID propagated across services:
 
-```
-Gate sensor → IoT Gateway → Entry Service → Spot Allocator → Payment Service → PSP → Gate Controller
-   │              │              │               │                │            │         │
-   t=0ms        t=5ms         t=15ms          t=45ms           t=60ms      t=280ms   t=320ms
-                                                                              │
-                                                                    Trace shows PSP call
-                                                                    took 220ms — 69% of
-                                                                    total latency
+```mermaid
+sequenceDiagram
+    participant GS as Gate Sensor
+    participant IG as IoT Gateway
+    participant ES as Entry Service
+    participant SA as Spot Allocator
+    participant PS as Payment Service
+    participant PSP as PSP (Stripe)
+    participant GC as Gate Controller
+
+    Note over GS: t=0ms
+    GS->>IG: sensor event
+    Note over IG: t=5ms
+    IG->>ES: entry request
+    Note over ES: t=15ms
+    ES->>SA: allocate spot
+    Note over SA: t=45ms
+    SA-->>ES: spot assigned
+    ES->>PS: pre-authorize
+    Note over PS: t=60ms
+    PS->>PSP: payment intent
+    Note over PSP: t=280ms (220ms in PSP = 69% of total)
+    PSP-->>PS: authorized
+    PS-->>ES: auth confirmed
+    ES->>GC: OPEN gate
+    Note over GC: t=320ms
 ```
 
 Use OpenTelemetry for instrumentation, Jaeger or Datadog APM for visualization.
@@ -1370,27 +1510,31 @@ Use OpenTelemetry for instrumentation, Jaeger or Datadog APM for visualization.
 
 ### Edge Computing for Offline Resilience
 
-```
-┌──────────────────────────────────────┐
-│          Parking Lot (Edge)          │
-│                                      │
-│  ┌────────────┐    ┌──────────────┐  │
-│  │ LPR Camera │───>│ Edge Gateway │  │
-│  │            │    │ (Greengrass) │  │
-│  └────────────┘    │              │  │
-│  ┌────────────┐    │ - Local DB   │  │
-│  │ Sensors    │───>│ - Gate logic │  │
-│  │            │    │ - Offline Q  │  │
-│  └────────────┘    │              │  │
-│  ┌────────────┐    │              │  │
-│  │ Gate       │<───│              │  │
-│  └────────────┘    └──────┬───────┘  │
-│                           │          │
-└───────────────────────────┼──────────┘
-                            │
-                     When online:
-                     sync queued events
-                     to cloud services
+```mermaid
+flowchart TB
+    subgraph ParkingLot["Parking Lot (Edge)"]
+        CAM[LPR Camera]
+        SENS[Sensors]
+        GATE[Gate]
+        subgraph EdgeGW["Edge Gateway (Greengrass)"]
+            LDB[(Local SQLite DB)]
+            GL[Gate Logic]
+            OQ[Offline Queue]
+        end
+        CAM --> EdgeGW
+        SENS --> EdgeGW
+        GL --> GATE
+    end
+
+    subgraph Cloud["Cloud Services"]
+        EES[Entry/Exit Service]
+        PS[Payment Service]
+        PG[(PostgreSQL)]
+    end
+
+    EdgeGW -->|"When online:<br/>sync queued events"| Cloud
+
+    style EdgeGW fill:#f9f,stroke:#333
 ```
 
 During internet outage:
@@ -1402,24 +1546,33 @@ During internet outage:
 
 ### Circuit Breaker Pattern (PSP calls)
 
-```
-States: CLOSED → OPEN → HALF_OPEN → CLOSED
+```mermaid
+stateDiagram-v2
+    [*] --> CLOSED
 
-CLOSED (normal):
-  - All requests go through
-  - Track failure rate over sliding window (30 seconds)
-  - If failure rate > 50% for 10+ requests → transition to OPEN
+    CLOSED --> OPEN : Failure rate > 50%<br/>for 10+ requests
+    OPEN --> HALF_OPEN : 30 second timer expires
+    HALF_OPEN --> CLOSED : 3 probe requests succeed
+    HALF_OPEN --> OPEN : Any probe fails
 
-OPEN (failing):
-  - All requests immediately fail (return cached decline reason)
-  - Start timer (30 seconds)
-  - Route to next PSP in priority list
-  - After timer expires → transition to HALF_OPEN
+    state CLOSED {
+        [*] --> Normal
+        Normal : All requests go through
+        Normal : Track failure rate (30s window)
+    }
 
-HALF_OPEN (testing):
-  - Allow 3 probe requests through
-  - If all 3 succeed → transition to CLOSED
-  - If any fail → transition back to OPEN
+    state OPEN {
+        [*] --> Failing
+        Failing : Requests fail immediately
+        Failing : Route to next PSP
+        Failing : 30 second cooldown timer
+    }
+
+    state HALF_OPEN {
+        [*] --> Testing
+        Testing : Allow 3 probe requests
+        Testing : Monitor success/failure
+    }
 ```
 
 ---
@@ -1428,62 +1581,66 @@ HALF_OPEN (testing):
 
 ### EV Charging Integration
 
-```
-Additional data:
-  - Charger status: AVAILABLE | CHARGING | FAULTED
-  - Charging session: kWh delivered, charging rate, estimated completion
-  - Billing: parking time + energy consumed
+```mermaid
+flowchart LR
+    subgraph EVFlow["EV Charging Flow"]
+        A[Vehicle parks<br/>in EV spot] --> B[Start charging<br/>session]
+        B --> C[Monitor kWh<br/>delivered]
+        C --> D[Stop charging<br/>on exit or full]
+        D --> E[Calculate bill:<br/>parking + energy + tax]
+    end
 
-New endpoints:
-  POST /sessions/{id}/charging/start
-  POST /sessions/{id}/charging/stop
-  GET  /sessions/{id}/charging/status
-
-Pricing addition:
-  total = parkingCharge + (kWhDelivered * ratePerKwh) + tax
+    subgraph Endpoints["New API Endpoints"]
+        E1["POST /sessions/{id}/charging/start"]
+        E2["POST /sessions/{id}/charging/stop"]
+        E3["GET /sessions/{id}/charging/status"]
+    end
 ```
 
 ### Multi-Currency (International Expansion)
 
-```
-Considerations:
-  - Store amounts in smallest unit of local currency (cents, paise, yen)
-  - Pricing rules per lot in local currency
-  - Settlement in merchant's preferred currency
-  - FX conversion at capture time (not pre-auth time) to minimize exposure
-  - Display currency based on lot locale, not user locale
-```
+**Considerations:**
+- Store amounts in smallest unit of local currency (cents, paise, yen)
+- Pricing rules per lot in local currency
+- Settlement in merchant's preferred currency
+- FX conversion at capture time (not pre-auth time) to minimize exposure
+- Display currency based on lot locale, not user locale
 
 ### Valet Parking
 
-```
-Additional entities:
-  - ValetAttendant: { id, name, lot_id, status }
-  - ValetRequest: { id, session_id, attendant_id, request_type, status }
+```mermaid
+sequenceDiagram
+    participant C as Customer
+    participant V as Valet Attendant
+    participant S as System
+    participant KL as Key Locker (RFID)
 
-Flow:
-  Customer arrives → valet takes car → parks in spot → session created
-  Customer returns → requests car → valet retrieves → session closed
-
-Additional tracking:
-  - Key management (key locker with RFID)
-  - Attendant assignment algorithm (round-robin or proximity-based)
-  - Damage inspection photos (before and after)
+    C->>V: Arrives, hands over car
+    V->>S: Create valet request
+    V->>KL: Store key (RFID tagged)
+    V->>S: Park car, assign spot, create session
+    Note over C,S: ... time passes ...
+    C->>S: Request car retrieval (app/kiosk)
+    S->>V: Assign retrieval task
+    V->>KL: Retrieve key (RFID)
+    V->>C: Deliver car
+    S->>S: Close session, capture payment
 ```
 
 ### License Plate Recognition (LPR) Flow
 
-```
-Camera captures plate → OCR service extracts text → Lookup in DB:
-  1. Match to reservation → check in, assign reserved spot
-  2. Match to subscription → validate pass, assign spot
-  3. No match → create walk-in session, prompt for payment method at kiosk
+```mermaid
+flowchart TD
+    A[Camera captures plate] --> B[OCR service<br/>extracts text]
+    B --> C{"Confidence<br/>> 85%?"}
+    C -->|No| D[Fallback to<br/>ticket/QR at kiosk]
+    C -->|Yes| E[Lookup in DB]
+    E --> F{"Match found?"}
+    F -->|Reservation| G[Check in<br/>Assign reserved spot]
+    F -->|Subscription| H[Validate pass<br/>Assign spot]
+    F -->|No match| I[Create walk-in session<br/>Prompt payment at kiosk]
 
-Accuracy handling:
-  - OCR confidence score threshold: 85%
-  - Below threshold: fallback to ticket/QR at kiosk
-  - Store raw image for dispute resolution
-  - Fuzzy matching for plates (handle O vs 0, I vs 1)
+    B --> J[Store raw image<br/>for dispute resolution]
 ```
 
 ---
