@@ -168,3 +168,4 @@ sequenceDiagram
 | [08 — Client-Side Resilience Patterns](./08-client-side-resilience.md) | Ring Buffer, Disk WAL, Circuit Breaker, Dual-Path Failover — layered resilience for smart clients |
 | [09 — MySQL Read Replica Tuning](./09-mysql-read-replica-tuning.md) | Replica machine config, durability stripping, buffer pool sizing, isolation relaxation, partition-affinity replicas |
 | [10 — SLI / SLO / SLA / Error Budget & Alerting](./10-sli-slo-sla-error-budget.md) | Service level definitions, error budget calculations, multi-window burn-rate alerting, Prometheus rules |
+| [11 — Pre-Aggregation Strategies](./11-pre-aggregation-strategies.md) | Log level sampling, template dedup, rate limiting, edge aggregation — 88% volume reduction |
