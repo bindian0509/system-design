@@ -65,7 +65,7 @@ flowchart TB
 sequenceDiagram
     participant Client
     participant Server
-    participant DB[(Database)]
+    participant DB as Database
 
     Client->>Server: POST /payments (charge $50)
     Server->>DB: INSERT payment
@@ -100,8 +100,8 @@ The most widely used approach to make non-idempotent operations idempotent. The 
 sequenceDiagram
     participant Client
     participant Server
-    participant IdemStore[(Idempotency<br/>Key Store)]
-    participant DB[(Database)]
+    participant IdemStore as Idempotency Key Store
+    participant DB as Database
 
     Note over Client: Generate UUID:<br/>idem_key = "abc-123"
 
@@ -124,7 +124,7 @@ sequenceDiagram
 sequenceDiagram
     participant Client
     participant Server
-    participant IdemStore[(Idempotency<br/>Key Store)]
+    participant IdemStore as Idempotency Key Store
 
     Client->>Server: POST /payments<br/>Idempotency-Key: abc-123<br/>Body: {amount: 50}
 
@@ -229,7 +229,7 @@ Message brokers deliver at-least-once. Your consumer **will** see duplicates.
 sequenceDiagram
     participant Broker as Message Broker
     participant Consumer
-    participant DB[(Database)]
+    participant DB as Database
 
     Broker->>Consumer: Message: {order_id: 42, event: "PaymentReceived"}
     Consumer->>DB: Process payment for order 42
@@ -305,7 +305,7 @@ sequenceDiagram
     participant Client
     participant OrderSvc as Order Service
     participant PaymentSvc as Payment Service
-    participant Gateway as Payment Gateway<br/>(Stripe)
+    participant Gateway as Payment Gateway - Stripe
 
     Client->>OrderSvc: POST /orders<br/>Idempotency-Key: client-key-1
 
@@ -382,7 +382,7 @@ For operations that modify existing state, use version-based conditional writes.
 sequenceDiagram
     participant Client
     participant Server
-    participant DB[(Database)]
+    participant DB as Database
 
     Client->>Server: PUT /accounts/123<br/>If-Match: "version-7"<br/>Body: {balance: 950}
 
@@ -405,8 +405,8 @@ For operations where you must guarantee exactly-once against an external non-ide
 sequenceDiagram
     participant Client
     participant Server
-    participant TokenStore[(Token Store)]
-    participant External[External System<br/>(non-idempotent)]
+    participant TokenStore as Token Store
+    participant External as External System
 
     Client->>Server: Request + token "T1"
 
@@ -462,7 +462,7 @@ flowchart TB
     end
 
     subgraph dedup_table [Processed Events Table]
-        T[event_id PK | processed_at | result]
+        T["event_id PK · processed_at · result"]
     end
 
     RECORD --> T
@@ -531,8 +531,8 @@ flowchart LR
 ```mermaid
 sequenceDiagram
     participant Server
-    participant IdemStore[(Idem Store)]
-    participant DB[(Business DB)]
+    participant IdemStore as Idem Store
+    participant DB as Business DB
 
     Server->>IdemStore: INSERT key "abc-123" → IN_PROGRESS
     IdemStore-->>Server: OK
