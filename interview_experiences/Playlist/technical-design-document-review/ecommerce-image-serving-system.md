@@ -91,28 +91,338 @@ product_id/
 
 ---
 
-### 2. Image Upload Pipeline
+### 2. Image Ingestion Pipeline
 
-Sellers upload arbitrary images that vary in quality, dimensions, and format. An async pipeline validates and normalizes them before they become available.
+Sellers upload arbitrary images that vary in quality, dimensions, and format. The ingestion pipeline validates, compresses, and normalizes them before they become available.
+
+#### End-to-End Ingestion Flow
 
 ```mermaid
-flowchart LR
-    A[Seller Upload] --> B{Validation}
-    B -->|Pass| C[Virus Scan]
-    B -->|Fail| R[Reject with Error]
-    C --> D[Normalize & Strip EXIF]
-    D --> E[Store Original in Object Store]
-    E --> F[Generate Primary Thumbnail]
-    F --> G[Warm CDN Cache]
-    G --> H[Update Product Catalog]
+flowchart TD
+    Upload([Seller Upload]) --> Chunk[Chunked Upload via Resumable Protocol]
+    Chunk --> Reassemble[Reassemble Chunks]
+    Reassemble --> Validate{Validation}
+
+    Validate -->|Fail| Reject[Reject with Error]
+    Validate -->|Pass| Scan[Virus / Malware Scan]
+
+    Scan --> Classify[Content-Type Classification]
+    Classify --> Dedupe{Perceptual Deduplication}
+
+    Dedupe -->|Duplicate Found| Link[Link to Existing Image, Skip Storage]
+    Dedupe -->|Unique| Compress[Compression Pipeline]
+
+    Compress --> StripMeta[Strip EXIF / Metadata]
+    StripMeta --> StoreOriginal[Store Optimized Original in Object Store]
+    StoreOriginal --> GenThumb[Generate Primary Thumbnail]
+    GenThumb --> Warm[Pre-warm CDN for Thumbnail]
+    Warm --> Catalog[Update Product Catalog]
+    Link --> Catalog
 ```
 
 **Validation rules:**
 - Max file size: 20MB
-- Allowed formats: JPEG, PNG, WebP
+- Allowed formats: JPEG, PNG, WebP, HEIC
 - Minimum dimensions: 500x500 pixels
 - Aspect ratio constraints (product category specific)
 - Strip EXIF metadata (privacy and size reduction)
+
+#### Chunked / Resumable Uploads
+
+Sellers may upload from unreliable networks. Large images (especially high-res product photography) should not fail and restart from scratch.
+
+```mermaid
+sequenceDiagram
+    participant Seller
+    participant UploadAPI as Upload API
+    participant TempStore as Temporary Storage
+
+    Seller->>UploadAPI: POST /uploads/init (file size, mime type)
+    UploadAPI-->>Seller: upload_id, chunk_size, total_chunks
+
+    loop For each chunk
+        Seller->>UploadAPI: PUT /uploads/{upload_id}/chunk/{n}
+        UploadAPI->>TempStore: Store chunk
+        UploadAPI-->>Seller: Chunk {n} acknowledged
+    end
+
+    Note over Seller: Network failure at chunk 7 of 10
+
+    Seller->>UploadAPI: GET /uploads/{upload_id}/status
+    UploadAPI-->>Seller: Chunks 1-7 received, resume from 8
+
+    loop Resume remaining
+        Seller->>UploadAPI: PUT /uploads/{upload_id}/chunk/{8..10}
+        UploadAPI->>TempStore: Store chunk
+    end
+
+    Seller->>UploadAPI: POST /uploads/{upload_id}/complete
+    UploadAPI->>UploadAPI: Reassemble chunks → Full image
+    UploadAPI-->>Seller: Upload complete, processing started
+```
+
+#### Content-Type Classification
+
+Different image types benefit from different compression strategies. The pipeline auto-classifies the content before choosing an algorithm.
+
+| Content Type | Characteristics | Best Compression Approach |
+|---|---|---|
+| **Product photograph** | Natural colors, gradients, textures | Lossy (JPEG/WebP lossy) — high quality |
+| **Product on white background** | Large uniform areas + subject | Lossy with high quality on edges, aggressive on background |
+| **Infographic / chart** | Sharp edges, text, flat colors | Lossless (PNG/WebP lossless) — lossy destroys text |
+| **Logo / icon** | Few colors, transparency | Lossless PNG or SVG if vector |
+| **Transparent background** | Alpha channel required | WebP lossless or PNG — JPEG does not support transparency |
+
+```mermaid
+flowchart TD
+    Image[Incoming Image] --> Analyze[Analyze Image Properties]
+
+    Analyze --> Alpha{Has Alpha Channel?}
+    Alpha -->|Yes| TransparentPath[WebP Lossless / PNG]
+
+    Alpha -->|No| ColorCount{Unique Color Count}
+    ColorCount -->|< 256 colors| FlatPath[PNG-8 or WebP Lossless]
+    ColorCount -->|> 256 colors| EdgeDetect{Edge / Text Density}
+
+    EdgeDetect -->|High: text, diagrams| LosslessPath[WebP Lossless / PNG]
+    EdgeDetect -->|Low: natural photo| LossyPath[Lossy Compression Pipeline]
+
+    LossyPath --> QualityTune[Quality Tuning via SSIM Target]
+```
+
+---
+
+### 3. Compression Algorithms — Storage & Transmission
+
+Choosing the right compression algorithm is critical for both storage cost and transmission speed. Below are the top algorithms used in image-heavy systems, grouped by approach.
+
+#### Lossy Compression Algorithms
+
+Lossy algorithms discard imperceptible visual information to achieve smaller file sizes. Ideal for product photographs.
+
+**a) JPEG (DCT-based)**
+
+The baseline standard. Uses Discrete Cosine Transform (DCT) to convert spatial pixel data into frequency components, then quantizes high-frequency (less visible) detail.
+
+```mermaid
+flowchart LR
+    Input[RGB Image] --> ColorSpace[Convert RGB → YCbCr]
+    ColorSpace --> Downsample[Chroma Subsampling 4:2:0]
+    Downsample --> Block[Split into 8×8 blocks]
+    Block --> DCT[Apply DCT per block]
+    DCT --> Quantize[Quantization — discard high-frequency data]
+    Quantize --> Entropy[Huffman Encoding]
+    Entropy --> Output[Compressed JPEG]
+```
+
+| Property | Detail |
+|----------|--------|
+| Compression ratio | 10:1 to 20:1 typical |
+| Quality sweet spot | q=75–85 for e-commerce |
+| Strength | Universal support, fast encode/decode |
+| Weakness | Block artifacts at low quality, no transparency |
+
+**b) WebP Lossy (VP8-based)**
+
+Developed by Google. Uses VP8 video codec's intra-frame prediction instead of fixed 8×8 DCT blocks, achieving better compression at equivalent visual quality.
+
+```mermaid
+flowchart LR
+    Input[RGB Image] --> Predict[Intra-frame Prediction — predict pixel blocks from neighbors]
+    Predict --> Residual[Encode Residuals — difference from prediction]
+    Residual --> Transform[WHT / DCT on 4×4 blocks]
+    Transform --> Quantize[Adaptive Quantization]
+    Quantize --> Entropy[Arithmetic Coding — more efficient than Huffman]
+    Entropy --> Output[Compressed WebP]
+```
+
+| Property | Detail |
+|----------|--------|
+| Compression ratio | 25–35% smaller than JPEG at same SSIM |
+| Quality sweet spot | q=75–85 |
+| Strength | Better than JPEG at same quality, supports transparency |
+| Weakness | Slower encode than JPEG, older browser fallback needed |
+
+**c) AVIF (AV1-based)**
+
+Uses the AV1 video codec's intra-frame encoding. The most advanced general-purpose image codec currently available.
+
+```mermaid
+flowchart LR
+    Input[RGB Image] --> Partition[Flexible Block Partitioning — 4×4 to 128×128]
+    Partition --> Predict[Multi-directional Intra Prediction — 56 modes vs JPEG's limited set]
+    Predict --> Transform[Multiple Transform Types — DCT, ADST, Identity]
+    Transform --> Quantize[Perceptual Quantization]
+    Quantize --> Entropy[Symbol-level Arithmetic Coding]
+    Entropy --> Film[Optional Film Grain Synthesis]
+    Film --> Output[Compressed AVIF]
+```
+
+| Property | Detail |
+|----------|--------|
+| Compression ratio | ~50% smaller than JPEG at same SSIM |
+| Quality sweet spot | q=60–75 (lower numbers needed due to efficiency) |
+| Strength | Best compression ratio, HDR support, film grain synthesis |
+| Weakness | Slow encoding (2–10x slower than JPEG), CPU intensive |
+
+**d) HEIF/HEIC (HEVC-based)**
+
+Uses the H.265 video codec. Common on Apple devices but limited web support due to patent licensing.
+
+| Property | Detail |
+|----------|--------|
+| Compression ratio | ~40% smaller than JPEG |
+| Strength | Native iOS support, good for accepting uploads |
+| Weakness | Patent-encumbered, poor browser support — convert to WebP/AVIF on ingestion |
+
+#### Lossless Compression Algorithms
+
+Lossless algorithms preserve every pixel exactly. Used for images with text, sharp edges, or transparency.
+
+**e) PNG (DEFLATE-based)**
+
+```mermaid
+flowchart LR
+    Input[RGB/RGBA Image] --> Filter[Row Filters — predict each pixel from neighbors]
+    Filter --> Deflate[DEFLATE Compression — LZ77 + Huffman]
+    Deflate --> Output[Compressed PNG]
+```
+
+| Property | Detail |
+|----------|--------|
+| Compression ratio | 2:1 to 5:1 typical |
+| Strength | Exact reproduction, transparency support, universal |
+| Weakness | Large files for photographs, not suitable for photos |
+
+**f) WebP Lossless**
+
+Uses LZ77, Huffman coding, and color cache combined with spatial prediction. Consistently 25–35% smaller than PNG.
+
+| Property | Detail |
+|----------|--------|
+| Compression ratio | 25–35% smaller than PNG |
+| Strength | Better than PNG in nearly all cases, transparency |
+| Weakness | Slightly slower decode than PNG |
+
+#### Algorithm Comparison Matrix
+
+| Algorithm | Type | Size vs JPEG | Encode Speed | Decode Speed | Transparency | Browser Support |
+|-----------|------|-------------|-------------|-------------|-------------|----------------|
+| **JPEG** | Lossy | Baseline | Very fast | Very fast | No | Universal |
+| **WebP Lossy** | Lossy | ~30% smaller | Fast | Fast | Yes | All modern |
+| **AVIF** | Lossy | ~50% smaller | Slow | Medium | Yes | Chrome, Firefox, Safari 16+ |
+| **HEIC** | Lossy | ~40% smaller | Medium | Medium | Yes | Safari only (web) |
+| **PNG** | Lossless | 5-10x larger | Fast | Fast | Yes | Universal |
+| **WebP Lossless** | Lossless | ~30% smaller than PNG | Medium | Fast | Yes | All modern |
+
+#### Quality Tuning — Perceptual Metrics
+
+Blindly setting `quality=80` is suboptimal. Different images reach "visually identical" at different quality levels. Use **perceptual quality metrics** to find the optimal quality per image.
+
+| Metric | What It Measures | Target for E-Commerce |
+|--------|-----------------|----------------------|
+| **SSIM** (Structural Similarity Index) | Perceived structural similarity | >= 0.95 (visually indistinguishable) |
+| **PSNR** (Peak Signal-to-Noise Ratio) | Pixel-level error in dB | >= 38 dB |
+| **VMAF** (Video Multi-method Assessment Fusion) | Netflix's perceptual metric, ML-based | >= 90 |
+| **Butteraugli** | Google's psychovisual distance metric | <= 1.0 (imperceptible difference) |
+
+```mermaid
+flowchart TD
+    Original[Original Image] --> Compress1[Compress at q=85]
+    Compress1 --> Measure1[Measure SSIM]
+
+    Measure1 --> Check1{SSIM >= 0.95?}
+    Check1 -->|Yes| Lower[Try lower quality: q=75]
+    Check1 -->|No| Higher[Try higher quality: q=90]
+
+    Lower --> Measure2[Measure SSIM]
+    Measure2 --> Check2{SSIM >= 0.95?}
+    Check2 -->|Yes| Lower2[Try q=65]
+    Check2 -->|No| Accept1[Accept q=85 — optimal]
+
+    Higher --> Measure3[Measure SSIM]
+    Measure3 --> Accept2[Accept q=90]
+
+    Lower2 --> Measure4[Measure SSIM]
+    Measure4 --> Check3{SSIM >= 0.95?}
+    Check3 -->|Yes| Accept3[Accept q=65 — best compression at target quality]
+    Check3 -->|No| Accept4[Accept q=75]
+
+    style Accept3 fill:#2d6,stroke:#333,color:#fff
+```
+
+This **binary search on quality** ensures each image is compressed to the smallest size that remains visually indistinguishable from the original, rather than using a fixed quality for all images.
+
+#### Compression Pipeline in the Ingestion Flow
+
+```mermaid
+flowchart TD
+    Input[Validated Image] --> Classify{Content Type?}
+
+    Classify -->|Photograph| PhotoPath
+    Classify -->|Text / Diagram| LosslessP
+    Classify -->|Transparent| TransPath
+
+    subgraph PhotoPath[Photograph Compression]
+        P1[Convert to sRGB color space] --> P2[Resize if > 4096px on longest side]
+        P2 --> P3[Encode as WebP lossy]
+        P3 --> P4[Binary search quality via SSIM target 0.95]
+        P4 --> P5[Store optimized original]
+    end
+
+    subgraph LosslessP[Lossless Compression]
+        L1[Optimize with WebP lossless] --> L2[Compare size with PNG]
+        L2 --> L3[Store whichever is smaller]
+    end
+
+    subgraph TransPath[Transparent Image Compression]
+        T1[Separate alpha channel] --> T2[Compress RGB with lossy, alpha with lossless]
+        T2 --> T3[Encode as WebP with alpha]
+        T3 --> T4[Store optimized original]
+    end
+
+    PhotoPath --> Dedupe[Perceptual Deduplication Check]
+    LosslessP --> Dedupe
+    TransPath --> Dedupe
+    Dedupe --> Store[(Object Store)]
+```
+
+#### Perceptual Deduplication
+
+With millions of products, sellers often upload the same image multiple times (across listings, re-uploads, stock photos). Storing duplicates wastes space.
+
+**Approach:** Use a **perceptual hash** (pHash) rather than a cryptographic hash. Perceptual hashes produce similar values for visually similar images, even if the files differ at the byte level (different compression, slight crop, etc.).
+
+```mermaid
+flowchart LR
+    Image[New Image] --> Hash[Compute Perceptual Hash — pHash / dHash]
+    Hash --> Lookup[Lookup in Hash Index]
+    Lookup --> Distance{Hamming Distance < Threshold?}
+
+    Distance -->|Yes: Duplicate| Link[Link to existing stored image]
+    Distance -->|No: Unique| Store[Store new image, index hash]
+```
+
+| Hash Type | How It Works | Collision Resistance |
+|-----------|-------------|---------------------|
+| **pHash** | DCT of downscaled grayscale → binary hash from median | Good — tolerates recompression, minor crops |
+| **dHash** | Compare adjacent pixel gradients → binary hash | Fast, good for near-exact duplicates |
+| **aHash** | Average pixel value → binary hash | Simple but more false positives |
+
+**Hamming distance threshold:** Typically 5–10 bits (out of 64-bit hash) to consider images as duplicates.
+
+#### Transmission Optimization
+
+Beyond storage compression, how the image bytes are transmitted to the client matters.
+
+| Technique | How It Works | Benefit |
+|-----------|-------------|---------|
+| **HTTP/2 multiplexing** | Multiple image requests over a single TCP connection | Eliminates per-request connection overhead |
+| **Brotli / gzip on metadata** | Compress HTTP headers and non-image payloads | Smaller overall transfer |
+| **Progressive encoding** | JPEG/AVIF: send low-res pass first, refine | Faster perceived load |
+| **Range requests** | Client requests specific byte ranges of large images | Resume interrupted downloads |
+| **HTTP/3 (QUIC)** | UDP-based transport, no head-of-line blocking | Better on lossy mobile networks |
+| **Early hints (103)** | Server hints image URLs before full response | Browser starts fetching images sooner |
 
 ---
 
