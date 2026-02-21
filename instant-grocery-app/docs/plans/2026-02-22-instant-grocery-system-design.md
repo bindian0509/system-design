@@ -44,18 +44,83 @@
 
 ## 2. High-Level Architecture & Service Decomposition
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        API Gateway / BFF                         │
-│          (rate limiting, auth, routing, mobile vs web)           │
-└──────┬──────────┬──────────┬──────────┬──────────┬─────────────┘
-       │          │          │          │          │
-   Order      Catalog    Inventory  Dispatch    ETA
-   Service    Service    Service    Service     Service
-       │          │          │          │          │
-  PostgreSQL  Elasticsearch  Redis +   PostgreSQL  Redis +
-  (orders)   + S3 (images)  PostgreSQL (dispatch)  ML model
-                            (inventory)
+```mermaid
+flowchart TD
+    Client(["Client\n(Mobile / Web)"])
+
+    subgraph GW["API Gateway / BFF"]
+        AG["API Gateway\n(Rate Limiting · Auth · Routing)"]
+    end
+
+    subgraph SVC["Services"]
+        OS["Order Service"]
+        CS["Catalog Service"]
+        IS["Inventory Service"]
+        DS["Dispatch Service"]
+        ES["ETA Service"]
+        NS["Notification Service"]
+        US["User Service"]
+        PAY["Payment Service\n(External)"]
+    end
+
+    subgraph STORES["Data Stores"]
+        OS_DB[("PostgreSQL\n(Orders)")]
+        CS_DB[("PostgreSQL\n(Catalog)")]
+        CS_ES[("Elasticsearch")]
+        CS_S3[("S3 / CDN")]
+        IS_REDIS[("Redis\n(Hot Layer)")]
+        IS_DB[("PostgreSQL\n(Cold Layer)")]
+        DS_DB[("PostgreSQL + PostGIS\n(Dispatch)")]
+        ETA_REDIS[("Redis GEO\n(ETA)")]
+        US_DB[("PostgreSQL\n(Users)")]
+    end
+
+    subgraph KAFKA["Kafka Event Bus"]
+        K_OP["order.placed"]
+        K_IR["inventory.reserved"]
+        K_IF["inventory.failed"]
+        K_RA["rider.assigned"]
+        K_PK["order.packed"]
+        K_OD["order.delivered"]
+    end
+
+    Client --> AG
+
+    AG -->|REST| OS
+    AG -->|REST| CS
+    AG -->|REST| US
+    AG -->|REST| DS
+    AG -->|REST| ES
+
+    OS --- OS_DB
+    CS --- CS_DB
+    CS --- CS_ES
+    CS --- CS_S3
+    IS --- IS_REDIS
+    IS --- IS_DB
+    DS --- DS_DB
+    ES --- ETA_REDIS
+    US --- US_DB
+
+    OS -->|"gRPC reserve"| IS
+    OS -->|"sync charge"| PAY
+
+    OS -->|"publishes"| K_OP
+    IS -->|"publishes"| K_IR
+    IS -->|"publishes"| K_IF
+    DS -->|"publishes"| K_RA
+    DS -->|"publishes"| K_PK
+    DS -->|"publishes"| K_OD
+
+    K_OP -->|"consumes"| IS
+    K_OP -->|"consumes"| DS
+    K_OP -->|"consumes"| NS
+    K_IR -->|"consumes"| OS
+    K_IF -->|"consumes"| OS
+    K_RA -->|"consumes"| ES
+    K_RA -->|"consumes"| NS
+    K_PK -->|"consumes"| DS
+    K_OD -->|"consumes"| IS
 ```
 
 ### Service Responsibilities
@@ -89,17 +154,83 @@ order.delivered       → Inventory Service (finalize deduction)
                       → Analytics pipeline
 ```
 
+```mermaid
+flowchart LR
+    subgraph PUB["Publishers"]
+        OS_P["Order Service"]
+        IS_P["Inventory Service"]
+        DS_P["Dispatch Service"]
+    end
+
+    subgraph TOPICS["Kafka Topics"]
+        K_OP["order.placed"]
+        K_IR["inventory.reserved"]
+        K_IF["inventory.failed"]
+        K_RA["rider.assigned"]
+        K_PK["order.packed"]
+        K_OD["order.delivered"]
+    end
+
+    subgraph CON["Consumers"]
+        IS_C["Inventory Service"]
+        DS_C["Dispatch Service"]
+        NS_C["Notification Service"]
+        OS_C["Order Service"]
+        ES_C["ETA Service"]
+        AN_C["Analytics"]
+    end
+
+    OS_P -->|"publishes"| K_OP
+    IS_P -->|"publishes"| K_IR
+    IS_P -->|"publishes"| K_IF
+    DS_P -->|"publishes"| K_RA
+    DS_P -->|"publishes"| K_PK
+    DS_P -->|"publishes"| K_OD
+
+    K_OP -->|"consumes"| IS_C
+    K_OP -->|"consumes"| DS_C
+    K_OP -->|"consumes"| NS_C
+
+    K_IR -->|"consumes"| OS_C
+    K_IF -->|"consumes"| OS_C
+
+    K_RA -->|"consumes"| ES_C
+    K_RA -->|"consumes"| NS_C
+
+    K_PK -->|"consumes"| DS_C
+
+    K_OD -->|"consumes"| IS_C
+    K_OD -->|"consumes"| AN_C
+```
+
 ---
 
 ## 3. Order Lifecycle & Dispatch
 
 ### Order State Machine
 
-```
-CART_LOCKED → PAYMENT_PENDING → PAYMENT_CONFIRMED
-    → INVENTORY_RESERVED → PICKING → PACKED
-    → RIDER_ASSIGNED → OUT_FOR_DELIVERY → DELIVERED
-                                        → FAILED / CANCELLED
+```mermaid
+stateDiagram-v2
+    [*] --> CART_LOCKED
+
+    CART_LOCKED --> PAYMENT_PENDING
+    PAYMENT_PENDING --> PAYMENT_CONFIRMED
+    PAYMENT_PENDING --> FAILED : payment declined
+
+    PAYMENT_CONFIRMED --> INVENTORY_RESERVED
+    INVENTORY_RESERVED --> PICKING
+    INVENTORY_RESERVED --> CANCELLED : item OOS after reservation
+
+    PICKING --> PACKED
+    PICKING --> CANCELLED : customer cancels
+
+    PACKED --> RIDER_ASSIGNED
+    RIDER_ASSIGNED --> OUT_FOR_DELIVERY
+    OUT_FOR_DELIVERY --> DELIVERED
+    OUT_FOR_DELIVERY --> FAILED : delivery failed
+
+    DELIVERED --> [*]
+    FAILED --> [*]
 ```
 
 ### Critical Path — Order Placement (synchronous, < 500ms)
@@ -116,6 +247,60 @@ CART_LOCKED → PAYMENT_PENDING → PAYMENT_CONFIRMED
 6. Return order_id + ETA to customer
 ```
 
+```mermaid
+sequenceDiagram
+    participant C as Customer
+    participant AG as API Gateway
+    participant OS as Order Service
+    participant IS as Inventory Service
+    participant R as Redis
+    participant PS as Payment Service
+    participant DB as PostgreSQL
+    participant K as Kafka
+
+    C->>AG: POST /orders
+    AG->>OS: forward request
+
+    activate OS
+
+    OS->>IS: gRPC reserve_stock(items)
+    activate IS
+    IS->>R: Lua DECRBY qty_available
+    activate R
+    R-->>IS: OK
+    deactivate R
+
+    alt INSUFFICIENT_STOCK
+        IS-->>OS: INSUFFICIENT_STOCK
+        deactivate IS
+        OS-->>AG: 409 Conflict
+        deactivate OS
+        AG-->>C: 409 Conflict
+    else stock reserved
+        IS-->>OS: reserved
+        deactivate IS
+
+        OS->>PS: authorize_charge(amount, payment_method)
+        activate PS
+        PS-->>OS: authorized
+        deactivate PS
+
+        OS->>DB: INSERT order (status=PAYMENT_CONFIRMED)
+        activate DB
+        DB-->>OS: OK
+        deactivate DB
+
+        OS->>K: publish order.placed
+        activate K
+        K-->>OS: ack
+        deactivate K
+
+        OS-->>AG: {order_id, ETA}
+        deactivate OS
+        AG-->>C: 201 Created {order_id, ETA}
+    end
+```
+
 ### Dispatch — Rider Assignment (async, < 2s after order.placed)
 
 ```
@@ -127,6 +312,43 @@ Dispatch Service consumes order.placed:
 4. On acceptance: write rider_assignment, publish rider.assigned
 5. No acceptance in 30s → expand radius to 5km, retry
 6. 3 consecutive failures → circuit breaker opens → escalate to ops
+```
+
+```mermaid
+sequenceDiagram
+    participant K as Kafka
+    participant DS as Dispatch Service
+    participant PG as PostgreSQL (PostGIS)
+    participant NS as Notification Service
+    participant RA as Rider App
+    participant ES as ETA Service
+
+    K->>DS: consume order.placed
+
+    loop Retry up to 3 times
+        DS->>PG: ST_DWithin — find AVAILABLE riders within 3km of store
+        PG-->>DS: top candidates
+
+        Note over DS: Score riders: proximity + load + avg delivery time
+
+        DS->>NS: send push notification to top-3 riders
+        NS->>RA: push notification (offer order)
+
+        alt Rider accepts within 30s
+            RA-->>DS: accept (first-accept wins)
+            DS->>PG: UPDATE status=ON_DELIVERY WHERE status=AVAILABLE (optimistic lock)
+            PG-->>DS: success (only one winner)
+            DS->>K: publish rider.assigned
+            K->>ES: consume rider.assigned — begin live tracking
+        else No acceptance within 30s
+            DS->>DS: expand radius to 5km — retry
+        end
+    end
+
+    alt After 3 failures
+        DS->>DS: circuit breaker opens
+        DS-->>DS: escalate to ops
+    end
 ```
 
 ### Preventing Double Assignment
@@ -176,6 +398,33 @@ else
 end
 ```
 Lua scripts execute atomically — no WATCH/MULTI needed, no race conditions.
+
+```mermaid
+sequenceDiagram
+    participant OS as Order Service
+    participant IS as Inventory Service
+    participant R as Redis
+    participant K as Kafka
+    participant PG as PostgreSQL
+
+    OS->>IS: gRPC reserveStock(store_id, sku_id, qty)
+
+    Note over IS,R: Atomic Lua script — no race conditions
+
+    IS->>R: EVAL lua_script(HGET qty_available, compare, HDECRBY qty_available, HINCRBY qty_reserved)
+
+    alt Stock available
+        R-->>IS: 1 (success)
+        IS->>K: publish inventory.reserved
+        Note over K,PG: Async write-behind, ~5s lag
+        K-->>PG: consumer writes updated qty to PostgreSQL
+        IS-->>OS: reserved: true
+    else Insufficient stock
+        R-->>IS: 0 (failure)
+        IS-->>OS: reserved: false
+        OS-->>OS: return HTTP 409 to customer
+    end
+```
 
 ### Stock Update Flows
 
@@ -267,6 +516,39 @@ ETA Service:
 
 **Why Redis GEO:** 10,000 riders × 5s updates = 2,000 writes/sec. Rider location
 is ephemeral — durability not needed. GEODIST / GEORADIUS queries run in-memory.
+
+```mermaid
+flowchart TD
+    subgraph Lane1["Lane 1 — Pre-checkout"]
+        L1A[("Redis\nactive_orders / picker_count")] --> L1B["Congestion Multiplier"]
+        L1B --> L1C["T_pick Estimate"]
+    end
+
+    subgraph Lane2["Lane 2 — Post-order"]
+        L2A[("Redis GEO\nRider GPS Location")] --> L2B["Distance to Store"]
+        L2B --> L2C["T_wait Estimate"]
+    end
+
+    subgraph Lane3["Lane 3 — Live (every 5s)"]
+        L3A["Rider Location Updates"] --> L3B[["Kafka\nrider.location.updated"]]
+        L3B --> L3C["T_travel Recalculation"]
+    end
+
+    L1C --> ETA
+    L2C --> ETA
+    L3C --> ETA
+
+    ETA["ETA Service\nT_pick + T_wait + T_travel = Total ETA"]
+
+    ETA --> MAPS["Maps API Call"]
+    MAPS -->|Success| ETACALC["Precise T_travel"]
+    MAPS -->|"Failure — circuit breaker"| FALLBACK[("Redis Cache\nZone ETAs — TTL 5min")]
+    FALLBACK --> ETACALC
+
+    ETACALC --> COMPARE{"|new_ETA - shown_ETA| > 2 min?"}
+    COMPARE -->|Yes| PUSH["Push Update to Customer\nWebSocket / Push Notification"]
+    COMPARE -->|No| SUPPRESS["No Action\nSuppress Noise"]
+```
 
 ### Dark Store Load Signal
 
