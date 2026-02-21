@@ -272,13 +272,10 @@ sequenceDiagram
 
     alt INSUFFICIENT_STOCK
         IS-->>OS: INSUFFICIENT_STOCK
-        deactivate IS
         OS-->>AG: 409 Conflict
-        deactivate OS
         AG-->>C: 409 Conflict
     else stock reserved
         IS-->>OS: reserved
-        deactivate IS
 
         OS->>PS: authorize_charge(amount, payment_method)
         activate PS
@@ -296,9 +293,10 @@ sequenceDiagram
         deactivate K
 
         OS-->>AG: {order_id, ETA}
-        deactivate OS
         AG-->>C: 201 Created {order_id, ETA}
     end
+    deactivate IS
+    deactivate OS
 ```
 
 ### Dispatch — Rider Assignment (async, < 2s after order.placed)
@@ -318,7 +316,7 @@ Dispatch Service consumes order.placed:
 sequenceDiagram
     participant K as Kafka
     participant DS as Dispatch Service
-    participant PG as PostgreSQL (PostGIS)
+    participant PG as PostgreSQL PostGIS
     participant NS as Notification Service
     participant RA as Rider App
     participant ES as ETA Service
@@ -545,7 +543,7 @@ flowchart TD
     MAPS -->|"Failure — circuit breaker"| FALLBACK[("Redis Cache\nZone ETAs — TTL 5min")]
     FALLBACK --> ETACALC
 
-    ETACALC --> COMPARE{"|new_ETA - shown_ETA| > 2 min?"}
+    ETACALC --> COMPARE{"ETA delta > 2 min?"}
     COMPARE -->|Yes| PUSH["Push Update to Customer\nWebSocket / Push Notification"]
     COMPARE -->|No| SUPPRESS["No Action\nSuppress Noise"]
 ```
