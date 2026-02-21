@@ -40,9 +40,9 @@ Always frame complex projects across three dimensions:
 
 ```mermaid
 graph LR
-    A["Business Problem\n(What & Why)"] --> D["Your Story"]
-    B["Technical Challenge\n(How)"] --> D
-    C["Human Coordination\n(Who & When)"] --> D
+    A["Business Problem<br/>(What & Why)"] --> D["Your Story"]
+    B["Technical Challenge<br/>(How)"] --> D
+    C["Human Coordination<br/>(Who & When)"] --> D
 ```
 
 **Example:**
@@ -120,8 +120,8 @@ graph LR
         T2[Core Banking System]
     end
     subgraph Temporal
-        D1[Legal Sign-off\nWeek 3]
-        D2[Infra Provisioning\nWeek 1]
+        D1["Legal Sign-off<br/>Week 3"]
+        D2["Infra Provisioning<br/>Week 1"]
     end
 
     S2 -->|depends on| S1
@@ -176,10 +176,10 @@ flowchart TD
     S5[Scope creep without change request] --> A
 
     A --> B{Root Cause}
-    B --> C[Estimation problem\n→ Re-calibrate pointing]
-    B --> D[Team fatigue\n→ Reduce WIP, check workload]
-    B --> E[Technical debt blocker\n→ Spike + prioritize paydown]
-    B --> F[Unclear requirements\n→ Tighten Definition of Ready]
+    B --> C["Estimation problem<br/>→ Re-calibrate pointing"]
+    B --> D["Team fatigue<br/>→ Reduce WIP, check workload"]
+    B --> E["Technical debt blocker<br/>→ Spike + prioritize paydown"]
+    B --> F["Unclear requirements<br/>→ Tighten Definition of Ready"]
 ```
 
 ### 2g. Measuring Impact — Outcome Not Output
@@ -188,16 +188,16 @@ Always connect delivery to the OKR:
 
 ```mermaid
 graph LR
-    OKR["OKR: Reduce onboarding\ndrop-off by 15%"]
-    I1["Initiative 1\nSimplify KYC flow"]
-    I2["Initiative 2\nFaster payment method linking"]
-    I3["Initiative 3\nRecover abandoned sessions"]
+    OKR["OKR: Reduce onboarding<br/>drop-off by 15%"]
+    I1["Initiative 1<br/>Simplify KYC flow"]
+    I2["Initiative 2<br/>Faster payment method linking"]
+    I3["Initiative 3<br/>Recover abandoned sessions"]
 
-    L1["Leading Indicator\nStep completion rate"]
-    L2["Leading Indicator\nTime-to-first-payment"]
-    L3["Leading Indicator\nSession recovery rate"]
+    L1["Leading Indicator<br/>Step completion rate"]
+    L2["Leading Indicator<br/>Time-to-first-payment"]
+    L3["Leading Indicator<br/>Session recovery rate"]
 
-    LAG["Lagging Indicator\nOnboarding conversion %"]
+    LAG["Lagging Indicator<br/>Onboarding conversion %"]
 
     OKR --> I1 & I2 & I3
     I1 --> L1 --> LAG
@@ -249,13 +249,13 @@ quadrantChart
 ```mermaid
 flowchart TD
     P[Problem Identified]
-    P --> Q1{Can I resolve\nwith my authority?}
+    P --> Q1{"Can I resolve<br/>with my authority?"}
     Q1 -->|Yes| R1[Resolve & document]
-    Q1 -->|No| Q2{Timeline at risk\nor stakeholder blocked?}
-    Q2 -->|No| R2[Continue tracking,\nflag in next digest]
-    Q2 -->|Yes| Q3{Have I followed up\nat least twice?}
-    Q3 -->|No| R3[Follow up with\ndocumented trail]
-    Q3 -->|Yes| R4[Escalate to manager\nwith context + recommendation]
+    Q1 -->|No| Q2{"Timeline at risk<br/>or stakeholder blocked?"}
+    Q2 -->|No| R2["Continue tracking,<br/>flag in next digest"]
+    Q2 -->|Yes| Q3{"Have I followed up<br/>at least twice?"}
+    Q3 -->|No| R3["Follow up with<br/>documented trail"]
+    Q3 -->|Yes| R4["Escalate to manager<br/>with context + recommendation"]
 ```
 
 > Never say you never escalated. That signals you hide problems.
@@ -269,25 +269,25 @@ flowchart TD
 ```mermaid
 flowchart TD
     O[Observe declining performance]
-    O --> Q1{Is it Capability\nor Motivation?}
+    O --> Q1{"Is it Capability<br/>or Motivation?"}
 
-    Q1 -->|Capability| Q2{Is it systemic\nor individual?}
-    Q1 -->|Motivation| Q3{Clear expectations\nbeen set?}
+    Q1 -->|Capability| Q2{"Is it systemic<br/>or individual?"}
+    Q1 -->|Motivation| Q3{"Clear expectations<br/>been set?"}
 
-    Q2 -->|Systemic| R1[Fix process/tooling\nor reassign ownership]
-    Q2 -->|Individual| R2[Skill gap plan\n+ pairing + resources]
+    Q2 -->|Systemic| R1["Fix process/tooling<br/>or reassign ownership"]
+    Q2 -->|Individual| R2["Skill gap plan<br/>+ pairing + resources"]
 
-    Q3 -->|No| R3[Set explicit expectations\nwith measurable outcomes]
+    Q3 -->|No| R3["Set explicit expectations<br/>with measurable outcomes"]
     Q3 -->|Yes| Q4{Personal circumstances?}
-    Q4 -->|Yes| R4[Support plan\n+ temporary accommodation]
-    Q4 -->|No| R5[Structured PIP with\nclear milestones]
+    Q4 -->|Yes| R4["Support plan<br/>+ temporary accommodation"]
+    Q4 -->|No| R5["Structured PIP with<br/>clear milestones"]
 
-    R2 --> F[Check-in cadence\n+ document progress]
-    R3 --> F
-    R5 --> F
-    F --> D{Improving?}
-    D -->|Yes| G[Positive reinforcement\n+ close loop]
-    D -->|No| H[Decision point\n+ honest conversation]
+    R2 --> FF["Check-in cadence<br/>+ document progress"]
+    R3 --> FF
+    R5 --> FF
+    FF --> DEC{Improving?}
+    DEC -->|Yes| G["Positive reinforcement<br/>+ close loop"]
+    DEC -->|No| H["Decision point<br/>+ honest conversation"]
 ```
 
 ### High Performers — Growth, Not Just Output
@@ -307,11 +307,11 @@ flowchart TD
 graph TD
     A[Remote Team Effectiveness]
 
-    A --> B[Async First\nDecisions in writing, not Slack]
-    A --> C[Defined Overlap Hours\nFor real-time collaboration]
-    A --> D[Over-communicate Context\nWhy, not just what]
-    A --> E[Small Early Wins\nBuild trust with new members]
-    A --> F[Documentation as Artifact\nIf it's not written, it didn't happen]
+    A --> B["Async First<br/>Decisions in writing, not Slack"]
+    A --> C["Defined Overlap Hours<br/>For real-time collaboration"]
+    A --> D["Over-communicate Context<br/>Why, not just what"]
+    A --> E["Small Early Wins<br/>Build trust with new members"]
+    A --> F["Documentation as Artifact<br/>If it's not written, it didn't happen"]
 ```
 
 ---
@@ -323,15 +323,11 @@ graph TD
 **Skill alignment model:**
 
 ```mermaid
-vennDiagram
-```
-
-```mermaid
 graph TD
-    A["What the engineer\nis strong at"]
-    B["What the engineer\nwants to grow in"]
+    A["What the engineer<br/>is strong at"]
+    B["What the engineer<br/>wants to grow in"]
     C["What the team needs"]
-    M["Mentoring\nOpportunity"]
+    M["Mentoring<br/>Opportunity"]
 
     A --- M
     B --- M
@@ -351,11 +347,11 @@ graph TD
 ```mermaid
 flowchart LR
     C[Conflict Between Engineers]
-    C --> U1[Understand Party A's\nunderlying interest]
-    C --> U2[Understand Party B's\nunderlying interest]
-    U1 & U2 --> SF[Find shared ground\nteam/product goal]
-    SF --> S[Structure a conversation\nwith written proposals]
-    S --> O[Outcome: best of both\nor data-driven decision]
+    C --> U1["Understand Party A's<br/>underlying interest"]
+    C --> U2["Understand Party B's<br/>underlying interest"]
+    U1 & U2 --> SF["Find shared ground<br/>team/product goal"]
+    SF --> S["Structure a conversation<br/>with written proposals"]
+    S --> O["Outcome: best of both<br/>or data-driven decision"]
 ```
 
 **Concrete technique:**
@@ -367,13 +363,13 @@ flowchart LR
 
 ```mermaid
 graph LR
-    STAR["STAR + L\nSituation\nTask\nAction\nResult\nLearning"]
+    STAR["STAR + L<br/>Situation<br/>Task<br/>Action<br/>Result<br/>Learning"]
 
-    S1["Project Off-Track Recovery\n→ Risk management under pressure"]
-    S2["Saying No to a Stakeholder\n→ Scope control & communication"]
-    S3["Managing an Underperformer\n→ Empathy + performance management"]
-    S4["Cross-functional Conflict\n→ Stakeholder alignment"]
-    S5["A Technical Decision Gone Wrong\n→ Self-awareness & learning"]
+    S1["Project Off-Track Recovery<br/>→ Risk management under pressure"]
+    S2["Saying No to a Stakeholder<br/>→ Scope control & communication"]
+    S3["Managing an Underperformer<br/>→ Empathy + performance management"]
+    S4["Cross-functional Conflict<br/>→ Stakeholder alignment"]
+    S5["A Technical Decision Gone Wrong<br/>→ Self-awareness & learning"]
 
     STAR --> S1 & S2 & S3 & S4 & S5
 ```
