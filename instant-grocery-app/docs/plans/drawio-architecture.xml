@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- ROW 1: Client (y=60)                                           -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <mxCell id="2" value="Mobile / Web Client" vertex="1" parent="1"
+      style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=11;">
+      <mxGeometry x="677" y="40" width="200" height="70" as="geometry" />
+    </mxCell>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- ROW 2: API Gateway (y=180)                                     -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <mxCell id="3" value="API Gateway / BFF" vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=12;">
+      <mxGeometry x="577" y="170" width="400" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- ROW 3: Services (y=340)                                        -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+
+    <!-- Order Service: center x=100 => left=30 -->
+    <mxCell id="4" value="Order Service" vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;">
+      <mxGeometry x="30" y="320" width="140" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- Catalog Service: center x=280 => left=210 -->
+    <mxCell id="5" value="Catalog Service" vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;">
+      <mxGeometry x="210" y="320" width="140" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- Inventory Service: center x=460 => left=390 -->
+    <mxCell id="6" value="Inventory Service" vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;">
+      <mxGeometry x="390" y="320" width="140" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- Dispatch Service: center x=640 => left=570 -->
+    <mxCell id="7" value="Dispatch Service" vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;">
+      <mxGeometry x="570" y="320" width="140" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- ETA Service: center x=820 => left=750 -->
+    <mxCell id="8" value="ETA Service" vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;">
+      <mxGeometry x="750" y="320" width="140" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- Notification Service: center x=1000 => left=930 -->
+    <mxCell id="9" value="Notification Service" vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;">
+      <mxGeometry x="930" y="320" width="140" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- User Service: center x=1180 => left=1110 -->
+    <mxCell id="10" value="User Service" vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;">
+      <mxGeometry x="1110" y="320" width="140" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- Payment Service (External): center x=1400 => left=1330 -->
+    <mxCell id="11" value="Payment Service&#xa;(External)" vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;fontStyle=2;">
+      <mxGeometry x="1330" y="320" width="140" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- ROW 4: Kafka Event Bus container + topics (y=500)              -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+
+    <!-- Kafka container: x=80, y=500, width=1220 (80 to 1300), height=100 -->
+    <mxCell id="12" value="Kafka Event Bus" vertex="1" parent="1"
+      style="swimlane;startSize=30;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;">
+      <mxGeometry x="80" y="490" width="1220" height="110" as="geometry" />
+    </mxCell>
+
+    <!-- Topic: order.placed — inside Kafka container, relative coords -->
+    <!-- Spread 6 topics evenly: container width=1220, topic width=150, gap ~43 -->
+    <!-- x positions (relative to container): 10, 210, 410, 610, 810, 1010, 1050 -->
+
+    <!-- order.placed: relative x=10, y=35 -->
+    <mxCell id="13" value="order.placed" vertex="1" parent="12"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=9;">
+      <mxGeometry x="10" y="35" width="150" height="55" as="geometry" />
+    </mxCell>
+
+    <!-- inventory.reserved: relative x=210, y=35 -->
+    <mxCell id="14" value="inventory.reserved" vertex="1" parent="12"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=9;">
+      <mxGeometry x="210" y="35" width="150" height="55" as="geometry" />
+    </mxCell>
+
+    <!-- inventory.failed: relative x=410, y=35 -->
+    <mxCell id="15" value="inventory.failed" vertex="1" parent="12"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=9;">
+      <mxGeometry x="410" y="35" width="150" height="55" as="geometry" />
+    </mxCell>
+
+    <!-- rider.assigned: relative x=610, y=35 -->
+    <mxCell id="16" value="rider.assigned" vertex="1" parent="12"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=9;">
+      <mxGeometry x="610" y="35" width="150" height="55" as="geometry" />
+    </mxCell>
+
+    <!-- order.packed: relative x=810, y=35 -->
+    <mxCell id="17" value="order.packed" vertex="1" parent="12"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=9;">
+      <mxGeometry x="810" y="35" width="150" height="55" as="geometry" />
+    </mxCell>
+
+    <!-- order.delivered: relative x=1050, y=35 -->
+    <mxCell id="18" value="order.delivered" vertex="1" parent="12"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=9;">
+      <mxGeometry x="1050" y="35" width="150" height="55" as="geometry" />
+    </mxCell>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- ROW 5: Data Stores (y=680)                                     -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+
+    <!-- PostgreSQL (Orders) under Order Service: center x=100 => left=30 -->
+    <mxCell id="19" value="PostgreSQL&#xa;(Orders)" vertex="1" parent="1"
+      style="shape=mxgraph.flowchart.database;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;">
+      <mxGeometry x="30" y="660" width="140" height="80" as="geometry" />
+    </mxCell>
+
+    <!-- PostgreSQL + ES + S3 under Catalog Service: center x=280 => left=190 -->
+    <mxCell id="20" value="PostgreSQL + ES + S3&#xa;(Catalog)" vertex="1" parent="1"
+      style="shape=mxgraph.flowchart.database;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;">
+      <mxGeometry x="190" y="660" width="160" height="80" as="geometry" />
+    </mxCell>
+
+    <!-- Redis (Hot) + PostgreSQL (Cold) under Inventory Service: center x=460 => left=375 -->
+    <mxCell id="21" value="Redis (Hot) +&#xa;PostgreSQL (Cold)&#xa;(Inventory)" vertex="1" parent="1"
+      style="shape=mxgraph.flowchart.database;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;">
+      <mxGeometry x="375" y="660" width="160" height="80" as="geometry" />
+    </mxCell>
+
+    <!-- PostgreSQL + PostGIS under Dispatch Service: center x=640 => left=555 -->
+    <mxCell id="22" value="PostgreSQL + PostGIS&#xa;(Dispatch)" vertex="1" parent="1"
+      style="shape=mxgraph.flowchart.database;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;">
+      <mxGeometry x="555" y="660" width="160" height="80" as="geometry" />
+    </mxCell>
+
+    <!-- Redis GEO under ETA Service: center x=820 => left=745 -->
+    <mxCell id="23" value="Redis GEO&#xa;(ETA)" vertex="1" parent="1"
+      style="shape=mxgraph.flowchart.database;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;">
+      <mxGeometry x="745" y="660" width="150" height="80" as="geometry" />
+    </mxCell>
+
+    <!-- PostgreSQL (Users) under User Service: center x=1180 => left=1105 -->
+    <mxCell id="24" value="PostgreSQL&#xa;(Users)" vertex="1" parent="1"
+      style="shape=mxgraph.flowchart.database;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;">
+      <mxGeometry x="1105" y="660" width="150" height="80" as="geometry" />
+    </mxCell>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- EDGES: Synchronous calls                                        -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+
+    <!-- Client → API Gateway: REST -->
+    <mxCell id="30" value="REST" edge="1" source="2" target="3" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- API Gateway → Order Service: REST -->
+    <mxCell id="31" value="REST" edge="1" source="3" target="4" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- API Gateway → Catalog Service: REST -->
+    <mxCell id="32" value="REST" edge="1" source="3" target="5" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.1;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- API Gateway → Inventory Service: REST -->
+    <mxCell id="33" value="REST" edge="1" source="3" target="6" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- API Gateway → Dispatch Service: REST -->
+    <mxCell id="34" value="REST" edge="1" source="3" target="7" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.4;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- API Gateway → ETA Service: REST -->
+    <mxCell id="35" value="REST" edge="1" source="3" target="8" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.55;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- API Gateway → Notification Service: REST -->
+    <mxCell id="36" value="REST" edge="1" source="3" target="9" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.7;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- API Gateway → User Service: REST -->
+    <mxCell id="37" value="REST" edge="1" source="3" target="10" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.85;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- API Gateway → Payment Service (external): REST -->
+    <mxCell id="38" value="REST" edge="1" source="3" target="11" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Order Service → Inventory Service: gRPC reserve (red) -->
+    <mxCell id="39" value="gRPC reserve" edge="1" source="4" target="6" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#FF0000;fontColor=#FF0000;fontStyle=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Order Service → Payment Service: sync charge (red) -->
+    <mxCell id="40" value="sync charge" edge="1" source="4" target="11" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#FF0000;fontColor=#FF0000;fontStyle=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=1;entryDx=0;entryDy=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- EDGES: Kafka publish (service → topic, dashed)                 -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+
+    <!-- Order Service → order.placed topic (id=13 inside container id=12) -->
+    <mxCell id="41" value="publishes" edge="1" source="4" target="13" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Inventory Service → inventory.reserved topic (id=14) -->
+    <mxCell id="42" value="publishes" edge="1" source="6" target="14" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Inventory Service → inventory.failed topic (id=15) -->
+    <mxCell id="43" value="publishes" edge="1" source="6" target="15" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Dispatch Service → rider.assigned topic (id=16) -->
+    <mxCell id="44" value="publishes" edge="1" source="7" target="16" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Dispatch Service → order.packed topic (id=17) -->
+    <mxCell id="45" value="publishes" edge="1" source="7" target="17" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Dispatch Service → order.delivered topic (id=18) -->
+    <mxCell id="46" value="publishes" edge="1" source="7" target="18" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- EDGES: Kafka consume (topic → service, dashed)                 -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+
+    <!-- order.placed → Inventory Service -->
+    <mxCell id="47" value="consumes" edge="1" source="13" target="6" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- order.placed → Dispatch Service -->
+    <mxCell id="48" value="consumes" edge="1" source="13" target="7" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- order.placed → Notification Service -->
+    <mxCell id="49" value="consumes" edge="1" source="13" target="9" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- inventory.reserved → Order Service -->
+    <mxCell id="50" value="consumes" edge="1" source="14" target="4" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- inventory.failed → Order Service -->
+    <mxCell id="51" value="consumes" edge="1" source="15" target="4" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- rider.assigned → ETA Service -->
+    <mxCell id="52" value="consumes" edge="1" source="16" target="8" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- rider.assigned → Notification Service -->
+    <mxCell id="53" value="consumes" edge="1" source="16" target="9" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- order.packed → Dispatch Service -->
+    <mxCell id="54" value="consumes" edge="1" source="17" target="7" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- order.delivered → Inventory Service -->
+    <mxCell id="55" value="consumes" edge="1" source="18" target="6" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- EDGES: Database ownership (thin grey dashed, no arrowhead)     -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+
+    <!-- Order Service → PostgreSQL (Orders) -->
+    <mxCell id="60" value="" edge="1" source="4" target="19" parent="1"
+      style="edgeStyle=none;strokeColor=#999999;dashed=1;endArrow=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Catalog Service → PostgreSQL + ES + S3 -->
+    <mxCell id="61" value="" edge="1" source="5" target="20" parent="1"
+      style="edgeStyle=none;strokeColor=#999999;dashed=1;endArrow=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Inventory Service → Redis (Hot) + PostgreSQL (Cold) -->
+    <mxCell id="62" value="" edge="1" source="6" target="21" parent="1"
+      style="edgeStyle=none;strokeColor=#999999;dashed=1;endArrow=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Dispatch Service → PostgreSQL + PostGIS -->
+    <mxCell id="63" value="" edge="1" source="7" target="22" parent="1"
+      style="edgeStyle=none;strokeColor=#999999;dashed=1;endArrow=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ETA Service → Redis GEO -->
+    <mxCell id="64" value="" edge="1" source="8" target="23" parent="1"
+      style="edgeStyle=none;strokeColor=#999999;dashed=1;endArrow=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- User Service → PostgreSQL (Users) -->
+    <mxCell id="65" value="" edge="1" source="10" target="24" parent="1"
+      style="edgeStyle=none;strokeColor=#999999;dashed=1;endArrow=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+  </root>
+</mxGraphModel>

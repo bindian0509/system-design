@@ -1,0 +1,518 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+
+    <!-- ============================================================ -->
+    <!-- DIAGRAM 1: Inventory Reservation Flow (y=20 to y=360)        -->
+    <!-- ============================================================ -->
+
+    <!-- Title -->
+    <mxCell id="2" value="Inventory Reservation — Redis Atomic Lua Script" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="60" y="20" width="520" height="40" as="geometry" />
+    </mxCell>
+
+    <!-- Row 1 nodes (y=80) -->
+    <!-- Order Service -->
+    <mxCell id="3" value="Order Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="60" y="80" width="150" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- Inventory Service -->
+    <mxCell id="4" value="Inventory Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="270" y="80" width="150" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- Redis (Lua) -->
+    <mxCell id="5" value="Redis&#xa;(Atomic Lua Script)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="480" y="80" width="150" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- Kafka -->
+    <mxCell id="6" value="Kafka" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="690" y="80" width="150" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- PostgreSQL -->
+    <mxCell id="7" value="PostgreSQL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="900" y="80" width="150" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- Note box above Redis→Kafka area -->
+    <mxCell id="8" value="Atomic: no race conditions" style="text;html=1;strokeColor=#9673a6;fillColor=#e1d5e7;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=9;" vertex="1" parent="1">
+      <mxGeometry x="630" y="42" width="160" height="30" as="geometry" />
+    </mxCell>
+
+    <!-- Edge: Order Service → Inventory Service -->
+    <mxCell id="9" value="gRPC reserveStock()" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="3" target="4" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Edge: Inventory Service → Redis -->
+    <mxCell id="10" value="EVAL lua_script&#xa;HDECRBY qty_available" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="4" target="5" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Decision diamond: Stock Available? (x=480, y=200, w=160, h=60) -->
+    <mxCell id="11" value="Stock&#xa;Available?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+      <mxGeometry x="480" y="190" width="160" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- Edge: Redis → Diamond (vertical down) -->
+    <mxCell id="12" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="5" target="11" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Success path: Diamond → Kafka (YES, right branch) -->
+    <mxCell id="13" value="YES — publish&#xa;inventory.reserved" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" source="11" target="6" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="710" y="220" />
+          <mxPoint x="710" y="105" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Kafka → PostgreSQL (dashed, async write-behind) -->
+    <mxCell id="14" value="async write-behind&#xa;~5s lag" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;strokeColor=#9673a6;" edge="1" source="6" target="7" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Async write-behind note -->
+    <mxCell id="15" value="Async write-behind ~5s lag" style="text;html=1;strokeColor=#9673a6;fillColor=#e1d5e7;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=9;" vertex="1" parent="1">
+      <mxGeometry x="780" y="42" width="160" height="30" as="geometry" />
+    </mxCell>
+
+    <!-- Kafka → Inventory Service: reserved: true (back arrow up) -->
+    <mxCell id="16" value="reserved: true" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" source="6" target="4" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="680" y="140" />
+          <mxPoint x="430" y="140" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Inventory Service → Order Service: reserved: true -->
+    <mxCell id="17" value="reserved: true" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" source="4" target="3" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="260" y="155" />
+          <mxPoint x="220" y="155" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Failure path: Diamond → failure box (down branch) -->
+    <mxCell id="18" value="reserved: false" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+      <mxGeometry x="480" y="300" width="160" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- Edge: Diamond → failure box (NO, down) -->
+    <mxCell id="19" value="NO" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" source="11" target="18" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Failure box → Order Service: HTTP 409 -->
+    <mxCell id="20" value="HTTP 409&#xa;Insufficient Stock" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#b85450;" edge="1" source="18" target="3" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="135" y="325" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- ============================================================ -->
+    <!-- DIAGRAM 2: Dispatch & Rider Assignment (y=400 to y=760)      -->
+    <!-- ============================================================ -->
+
+    <!-- Title -->
+    <mxCell id="21" value="Dispatch &amp; Rider Assignment Flow" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="40" y="400" width="520" height="30" as="geometry" />
+    </mxCell>
+
+    <!-- Participant headers (y=430, height=40, width=140) -->
+    <!-- Kafka header -->
+    <mxCell id="22" value="Kafka" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="40" y="430" width="140" height="40" as="geometry" />
+    </mxCell>
+
+    <!-- Dispatch Service header -->
+    <mxCell id="23" value="Dispatch Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="200" y="430" width="140" height="40" as="geometry" />
+    </mxCell>
+
+    <!-- PostgreSQL PostGIS header -->
+    <mxCell id="24" value="PostgreSQL&#xa;(PostGIS)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="380" y="430" width="140" height="40" as="geometry" />
+    </mxCell>
+
+    <!-- Notification Svc header -->
+    <mxCell id="25" value="Notification Svc" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="560" y="430" width="140" height="40" as="geometry" />
+    </mxCell>
+
+    <!-- Rider App header -->
+    <mxCell id="26" value="Rider App" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="740" y="430" width="140" height="40" as="geometry" />
+    </mxCell>
+
+    <!-- ETA Service header -->
+    <mxCell id="27" value="ETA Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="920" y="430" width="140" height="40" as="geometry" />
+    </mxCell>
+
+    <!-- Lifeline dashed vertical lines (y=470 to y=740) -->
+    <!-- Kafka lifeline -->
+    <mxCell id="28" value="" style="edgeStyle=none;html=1;dashed=1;strokeColor=#9673a6;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="110" y="470" as="sourcePoint" />
+        <mxPoint x="110" y="740" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Dispatch Service lifeline -->
+    <mxCell id="29" value="" style="edgeStyle=none;html=1;dashed=1;strokeColor=#6c8ebf;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="270" y="470" as="sourcePoint" />
+        <mxPoint x="270" y="740" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- PostgreSQL PostGIS lifeline -->
+    <mxCell id="30" value="" style="edgeStyle=none;html=1;dashed=1;strokeColor=#d6b656;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="450" y="470" as="sourcePoint" />
+        <mxPoint x="450" y="740" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Notification Svc lifeline -->
+    <mxCell id="31" value="" style="edgeStyle=none;html=1;dashed=1;strokeColor=#82b366;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="630" y="470" as="sourcePoint" />
+        <mxPoint x="630" y="740" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Rider App lifeline -->
+    <mxCell id="32" value="" style="edgeStyle=none;html=1;dashed=1;strokeColor=#6c8ebf;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="810" y="470" as="sourcePoint" />
+        <mxPoint x="810" y="740" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- ETA Service lifeline -->
+    <mxCell id="33" value="" style="edgeStyle=none;html=1;dashed=1;strokeColor=#82b366;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="990" y="470" as="sourcePoint" />
+        <mxPoint x="990" y="740" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Message arrows (sequence) -->
+    <!-- y=490: Kafka → Dispatch Service: "consume order.placed" -->
+    <mxCell id="34" value="consume order.placed" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="110" y="490" as="sourcePoint" />
+        <mxPoint x="270" y="490" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- y=520: Dispatch Service → PostgreSQL PostGIS: "ST_DWithin find AVAILABLE riders ≤3km" -->
+    <mxCell id="35" value="ST_DWithin&#xa;find AVAILABLE riders ≤3km" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="270" y="520" as="sourcePoint" />
+        <mxPoint x="450" y="520" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- y=550: PostgreSQL PostGIS → Dispatch Service: "top candidates" (dashed return) -->
+    <mxCell id="36" value="top candidates" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="450" y="550" as="sourcePoint" />
+        <mxPoint x="270" y="550" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Internal note on Dispatch Service at y=570 -->
+    <mxCell id="37" value="Score: proximity + load + avg delivery time" style="text;html=1;strokeColor=#6c8ebf;fillColor=#dae8fc;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=9;" vertex="1" parent="1">
+      <mxGeometry x="185" y="562" width="180" height="28" as="geometry" />
+    </mxCell>
+
+    <!-- y=590: Dispatch Service → Notification Svc: "notify top-3 riders" -->
+    <mxCell id="38" value="notify top-3 riders" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="270" y="595" as="sourcePoint" />
+        <mxPoint x="630" y="595" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- y=615: Notification Svc → Rider App: "push notification (offer order)" -->
+    <mxCell id="39" value="push notification (offer order)" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="630" y="618" as="sourcePoint" />
+        <mxPoint x="810" y="618" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- ALT box (dashed rectangle) x=200 to x=1070, y=630 to y=722 -->
+    <mxCell id="40" value="alt [first-accept within 30s]" style="swimlane;startSize=20;dashed=1;dashPattern=8 8;strokeColor=#6c8ebf;fillColor=none;fontStyle=2;fontSize=10;align=left;swimlaneLine=1;" vertex="1" parent="1">
+      <mxGeometry x="200" y="630" width="870" height="92" as="geometry" />
+    </mxCell>
+
+    <!-- y=645: Rider App → Dispatch Service: "accept" (inside alt box, relative coords) -->
+    <mxCell id="41" value="accept" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="810" y="653" as="sourcePoint" />
+        <mxPoint x="270" y="653" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- y=665: Dispatch Service → PostgreSQL PostGIS: "UPDATE status=ON_DELIVERY" -->
+    <mxCell id="42" value="UPDATE status=ON_DELIVERY&#xa;WHERE status=AVAILABLE" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="270" y="668" as="sourcePoint" />
+        <mxPoint x="450" y="668" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Optimistic lock note -->
+    <mxCell id="43" value="optimistic lock" style="text;html=1;strokeColor=#d6b656;fillColor=#fff2cc;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=9;" vertex="1" parent="1">
+      <mxGeometry x="360" y="672" width="100" height="22" as="geometry" />
+    </mxCell>
+
+    <!-- y=685: PostgreSQL PostGIS → Dispatch Service: "success (1 row)" (dashed) -->
+    <mxCell id="44" value="success (1 row)" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="450" y="686" as="sourcePoint" />
+        <mxPoint x="270" y="686" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- y=700: Dispatch Service → Kafka: "publish rider.assigned" -->
+    <mxCell id="45" value="publish rider.assigned" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="270" y="703" as="sourcePoint" />
+        <mxPoint x="110" y="703" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- y=715: Kafka → ETA Service: "begin live tracking" -->
+    <mxCell id="46" value="begin live tracking" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="110" y="717" as="sourcePoint" />
+        <mxPoint x="990" y="717" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- ELSE section label inside alt box -->
+    <mxCell id="47" value="else [30s timeout → expand radius → retry]" style="text;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=9;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="205" y="723" width="300" height="22" as="geometry" />
+    </mxCell>
+
+    <!-- Circuit breaker note below alt box at y=750 -->
+    <mxCell id="48" value="After 3 failures: circuit breaker OPEN → escalate to ops" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="200" y="750" width="350" height="35" as="geometry" />
+    </mxCell>
+
+    <!-- ============================================================ -->
+    <!-- DIAGRAM 3: ETA Calculation Pipeline (y=790 to y=1140)        -->
+    <!-- ============================================================ -->
+
+    <!-- Title -->
+    <mxCell id="49" value="ETA Calculation &amp; Rider Tracking Pipeline" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="40" y="790" width="520" height="30" as="geometry" />
+    </mxCell>
+
+    <!-- Lane 1: Pre-checkout (x=40, y=830, width=380, height=120) -->
+    <mxCell id="50" value="Lane 1 — Pre-checkout" style="swimlane;startSize=25;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="40" y="830" width="380" height="110" as="geometry" />
+    </mxCell>
+
+    <!-- Inside Lane 1: Redis box -->
+    <mxCell id="51" value="Redis&#xa;(active_orders/picker_count)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=9;" vertex="1" parent="50">
+      <mxGeometry x="10" y="35" width="110" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- Inside Lane 1: Congestion Multiplier -->
+    <mxCell id="52" value="Congestion&#xa;Multiplier" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=9;" vertex="1" parent="50">
+      <mxGeometry x="135" y="35" width="110" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- Inside Lane 1: T_pick Estimate -->
+    <mxCell id="53" value="T_pick Estimate" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=9;" vertex="1" parent="50">
+      <mxGeometry x="260" y="35" width="110" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- Lane 1 internal arrows -->
+    <mxCell id="54" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="51" target="52" parent="50">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="55" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="52" target="53" parent="50">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Lane 2: Post-order (x=440, y=830, width=380, height=110) -->
+    <mxCell id="56" value="Lane 2 — Post-order" style="swimlane;startSize=25;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="440" y="830" width="380" height="110" as="geometry" />
+    </mxCell>
+
+    <!-- Inside Lane 2: Redis GEO -->
+    <mxCell id="57" value="Redis GEO&#xa;(Rider GPS)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=9;" vertex="1" parent="56">
+      <mxGeometry x="10" y="35" width="110" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- Inside Lane 2: Distance to Store -->
+    <mxCell id="58" value="Distance&#xa;to Store" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=9;" vertex="1" parent="56">
+      <mxGeometry x="135" y="35" width="110" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- Inside Lane 2: T_wait Estimate -->
+    <mxCell id="59" value="T_wait Estimate" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=9;" vertex="1" parent="56">
+      <mxGeometry x="260" y="35" width="110" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- Lane 2 internal arrows -->
+    <mxCell id="60" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="57" target="58" parent="56">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="61" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="58" target="59" parent="56">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Lane 3: Live every 5s (x=840, y=830, width=380, height=110) -->
+    <mxCell id="62" value="Lane 3 — Live (every 5s)" style="swimlane;startSize=25;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="840" y="830" width="380" height="110" as="geometry" />
+    </mxCell>
+
+    <!-- Inside Lane 3: Rider App GPS -->
+    <mxCell id="63" value="Rider App GPS" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=9;" vertex="1" parent="62">
+      <mxGeometry x="10" y="35" width="100" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- Inside Lane 3: Kafka rider.location.updated -->
+    <mxCell id="64" value="Kafka&#xa;rider.location.updated" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=9;" vertex="1" parent="62">
+      <mxGeometry x="125" y="35" width="120" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- Inside Lane 3: T_travel Recalc -->
+    <mxCell id="65" value="T_travel Recalc" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=9;" vertex="1" parent="62">
+      <mxGeometry x="260" y="35" width="110" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- Lane 3 internal arrows -->
+    <mxCell id="66" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="63" target="64" parent="62">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="67" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="64" target="65" parent="62">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Central ETA Service node (x=600, y=990, width=200, height=60) -->
+    <mxCell id="68" value="ETA Service&#xa;T_pick + T_wait + T_travel" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="600" y="980" width="200" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- Converging arrows from lane last nodes into ETA Service -->
+    <!-- Lane 1 T_pick Estimate → ETA Service -->
+    <mxCell id="69" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" source="53" target="68" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="370" y="960" />
+          <mxPoint x="580" y="960" />
+          <mxPoint x="580" y="1010" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Lane 2 T_wait Estimate → ETA Service -->
+    <mxCell id="70" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="59" target="68" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="760" y="960" />
+          <mxPoint x="700" y="960" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Lane 3 T_travel Recalc → ETA Service -->
+    <mxCell id="71" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" source="65" target="68" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="1050" y="960" />
+          <mxPoint x="820" y="960" />
+          <mxPoint x="820" y="1010" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Maps API node (x=500, y=1060, width=150, height=50) -->
+    <mxCell id="72" value="Maps API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+      <mxGeometry x="500" y="1060" width="150" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- ETA Service → Maps API: "T_travel request" -->
+    <mxCell id="73" value="T_travel request" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="68" target="72" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Precise T_travel node (x=700, y=1060, width=150, height=50) -->
+    <mxCell id="74" value="Precise T_travel" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+      <mxGeometry x="700" y="1060" width="150" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- Maps API → Precise T_travel: "200 OK" -->
+    <mxCell id="75" value="200 OK" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="72" target="74" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Redis Cache fallback node (x=300, y=1060, width=170, height=50) -->
+    <mxCell id="76" value="Redis Cache&#xa;Zone ETAs TTL 5min" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+      <mxGeometry x="300" y="1060" width="170" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- Maps API → Redis Cache: "circuit breaker fallback" (dashed red) -->
+    <mxCell id="77" value="circuit breaker&#xa;fallback" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;strokeColor=#b85450;" edge="1" source="72" target="76" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Decision diamond (x=600, y=1130, width=160, height=50) -->
+    <mxCell id="78" value="|new_ETA − shown_ETA|&#xa;&gt; 2 min?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="600" y="1130" width="160" height="55" as="geometry" />
+    </mxCell>
+
+    <!-- ETA Service → Diamond (vertical) -->
+    <mxCell id="79" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="68" target="78" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="700" y="1120" />
+          <mxPoint x="680" y="1120" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Push to Customer node (x=820, y=1130, width=180, height=50) -->
+    <mxCell id="80" value="Push to Customer&#xa;(WebSocket/Push)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+      <mxGeometry x="820" y="1130" width="180" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- Diamond → Push to Customer: YES -->
+    <mxCell id="81" value="YES" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" source="78" target="80" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Suppress node (x=380, y=1130, width=170, height=50) -->
+    <mxCell id="82" value="Suppress&#xa;(no action)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+      <mxGeometry x="380" y="1130" width="170" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- Diamond → Suppress: NO -->
+    <mxCell id="83" value="NO" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" source="78" target="82" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+  </root>
+</mxGraphModel>

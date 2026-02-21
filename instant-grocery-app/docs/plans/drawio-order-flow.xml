@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+
+    <!-- ============================================================ -->
+    <!-- DIAGRAM 1: Order State Machine (y=40 to y=400)              -->
+    <!-- ============================================================ -->
+
+    <!-- Section Title -->
+    <mxCell id="2" value="Order State Machine" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="600" y="40" width="400" height="40" as="geometry" />
+    </mxCell>
+
+    <!-- Start circle -->
+    <mxCell id="3" value="" style="ellipse;fillColor=#000000;fontColor=#ffffff;strokeColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="40" y="188" width="30" height="30" as="geometry" />
+    </mxCell>
+
+    <!-- CART_LOCKED -->
+    <mxCell id="4" value="CART_LOCKED" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="120" y="175" width="130" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- PAYMENT_PENDING -->
+    <mxCell id="5" value="PAYMENT_PENDING" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="290" y="175" width="130" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- PAYMENT_CONFIRMED -->
+    <mxCell id="6" value="PAYMENT_CONFIRMED" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="460" y="175" width="130" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- INVENTORY_RESERVED -->
+    <mxCell id="7" value="INVENTORY_RESERVED" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="640" y="175" width="130" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- PICKING -->
+    <mxCell id="8" value="PICKING" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="820" y="175" width="130" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- PACKED -->
+    <mxCell id="9" value="PACKED" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="970" y="175" width="130" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- RIDER_ASSIGNED -->
+    <mxCell id="10" value="RIDER_ASSIGNED" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="1100" y="175" width="130" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- OUT_FOR_DELIVERY -->
+    <mxCell id="11" value="OUT_FOR_DELIVERY" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="1270" y="175" width="130" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- DELIVERED (terminal, green) -->
+    <mxCell id="12" value="DELIVERED" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="1440" y="175" width="130" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- End circle (happy path) -->
+    <mxCell id="13" value="" style="ellipse;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="1600" y="188" width="30" height="30" as="geometry" />
+    </mxCell>
+
+    <!-- Failure/Cancellation States (y=340, red fill) -->
+
+    <!-- FAILED -->
+    <mxCell id="14" value="FAILED" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+      <mxGeometry x="290" y="340" width="130" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- CANCELLED_OOS -->
+    <mxCell id="15" value="CANCELLED&#xa;(OOS)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+      <mxGeometry x="700" y="340" width="130" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- CANCELLED_CUST -->
+    <mxCell id="16" value="CANCELLED&#xa;(by customer)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+      <mxGeometry x="970" y="340" width="130" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- FAILED_DELIVERY -->
+    <mxCell id="17" value="FAILED&#xa;(delivery)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+      <mxGeometry x="1440" y="340" width="130" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- End circles for failure paths -->
+    <mxCell id="18" value="" style="ellipse;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="355" y="430" width="30" height="30" as="geometry" />
+    </mxCell>
+    <mxCell id="19" value="" style="ellipse;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="765" y="430" width="30" height="30" as="geometry" />
+    </mxCell>
+    <mxCell id="20" value="" style="ellipse;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="1035" y="430" width="30" height="30" as="geometry" />
+    </mxCell>
+    <mxCell id="21" value="" style="ellipse;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="1505" y="430" width="30" height="30" as="geometry" />
+    </mxCell>
+
+    <!-- ============================================================ -->
+    <!-- Happy Path Edges (solid green arrows, left-to-right)         -->
+    <!-- ============================================================ -->
+
+    <!-- Start → CART_LOCKED -->
+    <mxCell id="22" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#82b366;strokeWidth=2;" edge="1" source="3" target="4" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- CART_LOCKED → PAYMENT_PENDING -->
+    <mxCell id="23" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#82b366;strokeWidth=2;" edge="1" source="4" target="5" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- PAYMENT_PENDING → PAYMENT_CONFIRMED -->
+    <mxCell id="24" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#82b366;strokeWidth=2;" edge="1" source="5" target="6" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- PAYMENT_CONFIRMED → INVENTORY_RESERVED -->
+    <mxCell id="25" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#82b366;strokeWidth=2;" edge="1" source="6" target="7" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- INVENTORY_RESERVED → PICKING -->
+    <mxCell id="26" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#82b366;strokeWidth=2;" edge="1" source="7" target="8" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- PICKING → PACKED -->
+    <mxCell id="27" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#82b366;strokeWidth=2;" edge="1" source="8" target="9" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- PACKED → RIDER_ASSIGNED -->
+    <mxCell id="28" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#82b366;strokeWidth=2;" edge="1" source="9" target="10" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- RIDER_ASSIGNED → OUT_FOR_DELIVERY -->
+    <mxCell id="29" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#82b366;strokeWidth=2;" edge="1" source="10" target="11" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- OUT_FOR_DELIVERY → DELIVERED -->
+    <mxCell id="30" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#82b366;strokeWidth=2;" edge="1" source="11" target="12" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- DELIVERED → End -->
+    <mxCell id="31" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#82b366;strokeWidth=2;" edge="1" source="12" target="13" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ============================================================ -->
+    <!-- Failure Edges (dashed red arrows going down)                 -->
+    <!-- ============================================================ -->
+
+    <!-- PAYMENT_PENDING → FAILED -->
+    <mxCell id="32" value="payment declined" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#b85450;strokeWidth=2;dashed=1;endArrow=block;endFill=1;" edge="1" source="5" target="14" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- INVENTORY_RESERVED → CANCELLED_OOS -->
+    <mxCell id="33" value="item OOS" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#b85450;strokeWidth=2;dashed=1;endArrow=block;endFill=1;" edge="1" source="7" target="15" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- PICKING → CANCELLED_CUST -->
+    <mxCell id="34" value="customer cancels" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#b85450;strokeWidth=2;dashed=1;endArrow=block;endFill=1;" edge="1" source="8" target="16" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- OUT_FOR_DELIVERY → FAILED_DELIVERY -->
+    <mxCell id="35" value="delivery failed" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#b85450;strokeWidth=2;dashed=1;endArrow=block;endFill=1;" edge="1" source="11" target="17" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- FAILED → End (below) -->
+    <mxCell id="36" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#b85450;strokeWidth=2;dashed=1;" edge="1" source="14" target="18" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- CANCELLED_OOS → End -->
+    <mxCell id="37" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#b85450;strokeWidth=2;dashed=1;" edge="1" source="15" target="19" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- CANCELLED_CUST → End -->
+    <mxCell id="38" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#b85450;strokeWidth=2;dashed=1;" edge="1" source="16" target="20" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- FAILED_DELIVERY → End -->
+    <mxCell id="39" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#b85450;strokeWidth=2;dashed=1;" edge="1" source="17" target="21" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ============================================================ -->
+    <!-- DIAGRAM 2: Order Placement Sequence (y=480 to y=1140)       -->
+    <!-- ============================================================ -->
+
+    <!-- Section Title -->
+    <mxCell id="40" value="Order Placement Critical Path (Synchronous &lt; 500ms)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="300" y="480" width="800" height="30" as="geometry" />
+    </mxCell>
+
+    <!-- ============================================================ -->
+    <!-- Swimlane Participant Headers (y=520, height=580)             -->
+    <!-- ============================================================ -->
+
+    <!-- Customer -->
+    <mxCell id="41" value="Customer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="40" y="520" width="160" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- API Gateway -->
+    <mxCell id="42" value="API Gateway" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="200" y="520" width="160" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- Order Service -->
+    <mxCell id="43" value="Order Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="360" y="520" width="160" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- Inventory Service -->
+    <mxCell id="44" value="Inventory Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="520" y="520" width="160" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- Redis -->
+    <mxCell id="45" value="Redis" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="680" y="520" width="160" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- Payment Service -->
+    <mxCell id="46" value="Payment Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=3;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="840" y="520" width="160" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- PostgreSQL -->
+    <mxCell id="47" value="PostgreSQL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="1000" y="520" width="160" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- Kafka -->
+    <mxCell id="48" value="Kafka" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="1160" y="520" width="160" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- ============================================================ -->
+    <!-- Lifeline dashed vertical lines                               -->
+    <!-- ============================================================ -->
+
+    <!-- Customer lifeline -->
+    <mxCell id="49" value="" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" edge="1" parent="1">
+      <mxGeometry x="120" y="570" width="1" height="570" relative="0" as="geometry">
+        <Array as="points">
+          <mxPoint x="120" y="1140" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- API Gateway lifeline -->
+    <mxCell id="50" value="" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" edge="1" parent="1">
+      <mxGeometry x="280" y="570" width="1" height="570" relative="0" as="geometry">
+        <Array as="points">
+          <mxPoint x="280" y="1140" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Order Service lifeline -->
+    <mxCell id="51" value="" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" edge="1" parent="1">
+      <mxGeometry x="440" y="570" width="1" height="570" relative="0" as="geometry">
+        <Array as="points">
+          <mxPoint x="440" y="1140" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Inventory Service lifeline -->
+    <mxCell id="52" value="" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" edge="1" parent="1">
+      <mxGeometry x="600" y="570" width="1" height="570" relative="0" as="geometry">
+        <Array as="points">
+          <mxPoint x="600" y="1140" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Redis lifeline -->
+    <mxCell id="53" value="" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" edge="1" parent="1">
+      <mxGeometry x="760" y="570" width="1" height="570" relative="0" as="geometry">
+        <Array as="points">
+          <mxPoint x="760" y="1140" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Payment Service lifeline -->
+    <mxCell id="54" value="" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" edge="1" parent="1">
+      <mxGeometry x="920" y="570" width="1" height="570" relative="0" as="geometry">
+        <Array as="points">
+          <mxPoint x="920" y="1140" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- PostgreSQL lifeline -->
+    <mxCell id="55" value="" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" edge="1" parent="1">
+      <mxGeometry x="1080" y="570" width="1" height="570" relative="0" as="geometry">
+        <Array as="points">
+          <mxPoint x="1080" y="1140" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Kafka lifeline -->
+    <mxCell id="56" value="" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" edge="1" parent="1">
+      <mxGeometry x="1240" y="570" width="1" height="570" relative="0" as="geometry">
+        <Array as="points">
+          <mxPoint x="1240" y="1140" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- ============================================================ -->
+    <!-- Activation Box: Order Service (y=620 to y=1090)             -->
+    <!-- ============================================================ -->
+    <mxCell id="57" value="" style="fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+      <mxGeometry x="435" y="620" width="10" height="470" as="geometry" />
+    </mxCell>
+
+    <!-- ============================================================ -->
+    <!-- Sequence Messages                                            -->
+    <!-- ============================================================ -->
+
+    <!-- y=580: Customer → API Gateway: "POST /orders" -->
+    <mxCell id="58" value="POST /orders" style="edgeStyle=elbowEdgeStyle;elbow=vertical;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;endArrow=block;endFill=1;" edge="1" parent="1">
+      <mxGeometry x="120" y="580" relative="1" as="geometry">
+        <Array as="points" />
+        <mxPoint x="120" y="583" as="sourcePoint" />
+        <mxPoint x="280" y="583" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- y=620: API Gateway → Order Service: "forward request" -->
+    <mxCell id="59" value="forward request" style="edgeStyle=elbowEdgeStyle;elbow=vertical;html=1;endArrow=block;endFill=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="280" y="623" as="sourcePoint" />
+        <mxPoint x="440" y="623" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- y=660: Order Service → Inventory Service: "gRPC reserve_stock(items)" (red) -->
+    <mxCell id="60" value="gRPC reserve_stock(items)" style="edgeStyle=elbowEdgeStyle;elbow=vertical;html=1;strokeColor=#b85450;endArrow=block;endFill=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="445" y="663" as="sourcePoint" />
+        <mxPoint x="600" y="663" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- y=700: Inventory Service → Redis: "EVAL Lua script DECR qty_available" (red) -->
+    <mxCell id="61" value="EVAL Lua script&#xa;DECRBY qty_available" style="edgeStyle=elbowEdgeStyle;elbow=vertical;html=1;strokeColor=#b85450;endArrow=block;endFill=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="600" y="703" as="sourcePoint" />
+        <mxPoint x="760" y="703" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- y=740: Redis → Inventory Service: "OK (stock reserved)" (dashed return) -->
+    <mxCell id="62" value="OK (stock reserved)" style="edgeStyle=elbowEdgeStyle;elbow=vertical;html=1;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="760" y="743" as="sourcePoint" />
+        <mxPoint x="600" y="743" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- ============================================================ -->
+    <!-- ALT Box: INSUFFICIENT_STOCK                                  -->
+    <!-- ============================================================ -->
+    <mxCell id="63" value="alt [INSUFFICIENT_STOCK]" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=11;fontStyle=2;" vertex="1" parent="1">
+      <mxGeometry x="365" y="762" width="200" height="20" as="geometry" />
+    </mxCell>
+
+    <!-- ALT box border -->
+    <mxCell id="64" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#666666;dashed=1;strokeWidth=2;" vertex="1" parent="1">
+      <mxGeometry x="360" y="760" width="960" height="140" as="geometry" />
+    </mxCell>
+
+    <!-- Inside alt box y=780: Inventory Service → Order Service: "INSUFFICIENT_STOCK" -->
+    <mxCell id="65" value="INSUFFICIENT_STOCK" style="edgeStyle=elbowEdgeStyle;elbow=vertical;html=1;strokeColor=#b85450;endArrow=block;endFill=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="600" y="783" as="sourcePoint" />
+        <mxPoint x="445" y="783" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- y=810: Order Service → API Gateway: "409 Conflict" -->
+    <mxCell id="66" value="409 Conflict" style="edgeStyle=elbowEdgeStyle;elbow=vertical;html=1;strokeColor=#b85450;endArrow=block;endFill=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="435" y="813" as="sourcePoint" />
+        <mxPoint x="280" y="813" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- y=840: API Gateway → Customer: "409 Conflict" -->
+    <mxCell id="67" value="409 Conflict" style="edgeStyle=elbowEdgeStyle;elbow=vertical;html=1;strokeColor=#b85450;endArrow=block;endFill=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="280" y="843" as="sourcePoint" />
+        <mxPoint x="120" y="843" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- ============================================================ -->
+    <!-- Happy path continuation (below alt box)                     -->
+    <!-- ============================================================ -->
+
+    <!-- y=920: Inventory Service → Order Service: "reserved: true" (dashed return) -->
+    <mxCell id="68" value="reserved: true" style="edgeStyle=elbowEdgeStyle;elbow=vertical;html=1;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="600" y="923" as="sourcePoint" />
+        <mxPoint x="445" y="923" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- y=960: Order Service → Payment Service: "authorize_charge(amount)" (red) -->
+    <mxCell id="69" value="authorize_charge(amount)" style="edgeStyle=elbowEdgeStyle;elbow=vertical;html=1;strokeColor=#b85450;endArrow=block;endFill=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="445" y="963" as="sourcePoint" />
+        <mxPoint x="920" y="963" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- y=1000: Payment Service → Order Service: "authorized" (dashed return) -->
+    <mxCell id="70" value="authorized" style="edgeStyle=elbowEdgeStyle;elbow=vertical;html=1;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="920" y="1003" as="sourcePoint" />
+        <mxPoint x="445" y="1003" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- y=1030: Order Service → PostgreSQL: "INSERT order(PAYMENT_CONFIRMED)" -->
+    <mxCell id="71" value="INSERT order(PAYMENT_CONFIRMED)" style="edgeStyle=elbowEdgeStyle;elbow=vertical;html=1;endArrow=block;endFill=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="445" y="1033" as="sourcePoint" />
+        <mxPoint x="1080" y="1033" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- y=1060: Order Service → Kafka: "publish order.placed" -->
+    <mxCell id="72" value="publish order.placed" style="edgeStyle=elbowEdgeStyle;elbow=vertical;html=1;endArrow=block;endFill=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="445" y="1063" as="sourcePoint" />
+        <mxPoint x="1240" y="1063" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- y=1090: Order Service → API Gateway: "{order_id, ETA}" -->
+    <mxCell id="73" value="{order_id, ETA}" style="edgeStyle=elbowEdgeStyle;elbow=vertical;html=1;endArrow=block;endFill=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="435" y="1093" as="sourcePoint" />
+        <mxPoint x="280" y="1093" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- y=1113: API Gateway → Customer: "201 Created {order_id, ETA}" -->
+    <mxCell id="74" value="201 Created {order_id, ETA}" style="edgeStyle=elbowEdgeStyle;elbow=vertical;html=1;endArrow=block;endFill=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="280" y="1116" as="sourcePoint" />
+        <mxPoint x="120" y="1116" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+
+  </root>
+</mxGraphModel>
