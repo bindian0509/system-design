@@ -744,6 +744,198 @@ GET /health/ready  → 200 if DB + Redis healthy  (K8s readiness probe)
 
 ---
 
+## 10. AWS Infrastructure Mapping
+
+Every logical component maps to a managed AWS service. The principle: eliminate undifferentiated heavy lifting — no self-managed Kafka brokers, no patching Elasticsearch nodes, no idle EMR clusters.
+
+### Component → AWS Service
+
+| Design Component | AWS Service | Config / Tier | Reason for this choice |
+|---|---|---|---|
+| **API Gateway / BFF** | AWS API Gateway (HTTP API) | Regional endpoint, JWT authorizer | Pay-per-call; HTTP API is 70% cheaper than REST API for this traffic pattern |
+| **WebSocket (order tracking)** | AWS API Gateway WebSocket API | Regional | Native WebSocket with connection state managed by API Gateway — no custom server |
+| **Load Balancer** | Application Load Balancer (ALB) | 1 instance → EKS NodePort | Layer-7 routing; integrates with AWS WAF for DDoS protection |
+| **CDN (product images)** | Amazon CloudFront | Price Class 200 (Americas + Asia) | Edge cache for S3-hosted SKU images, TTL 24h; ~95% cache hit rate on static assets |
+| **Microservices (7 services + Location Ingestor)** | Amazon EKS | c6i.xlarge nodes: 4 On-Demand + 4 Spot | Kubernetes HPA for per-service scaling; Spot nodes for Notification + ETA (stateless, fault-tolerant) |
+| **Orders DB** | Amazon Aurora PostgreSQL | db.r7g.large, Multi-AZ (writer + 1 reader) | ACID; automated failover < 30s (vs. 60–120s for standard RDS Multi-AZ); storage auto-scales to 128TB |
+| **Dispatch DB (PostGIS)** | Amazon Aurora PostgreSQL | db.r7g.large, Multi-AZ | PostGIS extension supported on Aurora; GiST index for `ST_DWithin` rider lookups |
+| **Catalog DB** | Amazon Aurora PostgreSQL | db.r7g.medium, Multi-AZ | Lower write volume; Aurora clones enable zero-copy read replicas for catalog exports |
+| **Inventory cold layer** | Amazon Aurora PostgreSQL | db.r7g.medium, Multi-AZ | Write-behind from Kafka; Aurora Serverless v2 is a viable future switch if write cadence drops |
+| **Users DB** | Amazon Aurora PostgreSQL | db.r7g.medium, Multi-AZ | Standard CRUD; small footprint |
+| **Inventory hot layer** | Amazon ElastiCache for Redis 7 | cache.r7g.large, primary + 1 replica | Lua script atomicity; `maxmemory-policy noeviction` enforced; sub-ms HGET/HDECRBY |
+| **ETA + Rider location (Redis GEO)** | Amazon ElastiCache for Redis 7 | cache.r7g.large, primary + 1 replica | GEOADD / GEORADIUS; headroom for 2,000 writes/sec on r7g.large (~200k ops/sec capacity) |
+| **Recommendations + Autocomplete** | Amazon ElastiCache for Redis 7 | cache.r7g.medium, primary + 1 replica | `reco:{user_id}` hashes (≈40MB total); sorted sets for `ZRANGEBYLEX` autocomplete |
+| **Kafka (event bus)** | Amazon MSK (Managed Streaming for Apache Kafka) | kafka.m5.large × 3 brokers, Kafka 3.7 | Managed Kafka; automatic storage expansion; MSK Connect available for future S3/Redshift sinks |
+| **Search (Elasticsearch)** | Amazon OpenSearch Service | m6g.large.search × 3 nodes (HA) | Per-store index pattern, 200k docs; zero-downtime blue/green index alias upgrades |
+| **Product images** | Amazon S3 | Standard storage class | Origin for CloudFront; S3 lifecycle rules move old SKU images to S3-IA after 90 days |
+| **Recommendation batch job** | Amazon EMR Serverless | Spark 3.5, auto-sizing | Nightly 01:00 AM, ~2hr run; pay only for compute used — no idle cluster cost vs. a standing EMR cluster |
+| **Push notifications** | Amazon SNS | Standard (mobile push) | Direct integration with APNs (iOS) + FCM (Android); no own push infrastructure |
+| **SMS / WhatsApp notifications** | Third-party aggregator (Gupshup, ValueFirst, Twilio India) | — | AWS SNS SMS pricing in India (~$0.023/SMS) is 5–10× more expensive than regional aggregators; excluded from AWS bill |
+| **Maps / Routing (T_travel)** | Amazon Location Service (Routes API) | Standard | $0.004/route after first 1M free — 1,875× cheaper than Google Maps Distance Matrix at 3M calls/month |
+| **Distributed tracing** | AWS X-Ray | OpenTelemetry SDK → X-Ray OTLP endpoint | Drop-in replacement for Jaeger; deep EKS + ALB integration; no separate Jaeger cluster to operate |
+| **Metrics** | Amazon Managed Service for Prometheus (AMP) | Default workspace | Prometheus-compatible; scraped from EKS via AWS Distro for OpenTelemetry (ADOT) Collector |
+| **Dashboards** | Amazon Managed Grafana (AMG) | Standard tier, SSO via IAM Identity Center | Pre-built dashboards for MSK, ElastiCache, Aurora; connects directly to AMP + CloudWatch |
+| **Logs** | Amazon CloudWatch Logs | Log groups per service, 30-day retention | Structured JSON ingest; CloudWatch Logs Insights for ad-hoc queries without a separate ELK stack |
+
+### AWS Architecture
+
+```mermaid
+flowchart TD
+    CLIENT(["Mobile / Web Client"])
+
+    subgraph EDGE["AWS Edge Layer"]
+        APIG["AWS API Gateway\nHTTP API · WebSocket API"]
+        CF["Amazon CloudFront\nProduct images · static assets"]
+        ALB["Application Load Balancer\n+ AWS WAF"]
+    end
+
+    subgraph EKS_CLUSTER["Amazon EKS — c6i.xlarge × 8 (On-Demand + Spot)"]
+        SVCS["Order · Inventory · Catalog · Dispatch\nETA · Notification · User · Location Ingestor"]
+    end
+
+    subgraph MSK_TIER["Amazon MSK — 3 × kafka.m5.large · Kafka 3.7"]
+        TOPICS_L["order.placed · inventory.reserved · rider.assigned\norder.packed · order.delivered · rider.location.updated"]
+    end
+
+    subgraph AURORA_TIER["Amazon Aurora PostgreSQL — Multi-AZ · Auto-storage"]
+        A1[("Orders\nr7g.large")]
+        A2[("Dispatch + PostGIS\nr7g.large")]
+        A3[("Catalog\nr7g.medium")]
+        A4[("Inventory cold\nr7g.medium")]
+        A5[("Users\nr7g.medium")]
+    end
+
+    subgraph REDIS_TIER["Amazon ElastiCache for Redis 7"]
+        RC1[("Inventory hot\nr7g.large")]
+        RC2[("ETA + GEO\nr7g.large")]
+        RC3[("Reco + Autocomplete\nr7g.medium")]
+    end
+
+    subgraph SEARCH_TIER["Amazon OpenSearch Service"]
+        OSS[("catalog_{store_id} × 40\nm6g.large.search × 3 nodes")]
+    end
+
+    subgraph BATCH_TIER["Batch · Notifications · Routing"]
+        EMR_P["EMR Serverless\nNightly Spark — reco job"]
+        SNS_P["Amazon SNS\nMobile push (APNs + FCM)"]
+        LOC_P["Amazon Location Service\nRoutes API — T_travel"]
+    end
+
+    subgraph OBS_TIER["Observability"]
+        OBS_L["AMP · Managed Grafana\nCloudWatch Logs · AWS X-Ray"]
+    end
+
+    CLIENT --> APIG
+    CLIENT --> CF
+    APIG --> ALB --> EKS_CLUSTER
+    EKS_CLUSTER <--> MSK_TIER
+    EKS_CLUSTER --> AURORA_TIER
+    EKS_CLUSTER --> REDIS_TIER
+    EKS_CLUSTER --> SEARCH_TIER
+    EKS_CLUSTER --> BATCH_TIER
+    EKS_CLUSTER --> OBS_TIER
+
+    style EDGE fill:#ff9900,color:#000
+    style EKS_CLUSTER fill:#232f3e,color:#fff
+    style MSK_TIER fill:#7c4dff,color:#fff
+    style AURORA_TIER fill:#1a237e,color:#fff
+    style REDIS_TIER fill:#b71c1c,color:#fff
+    style SEARCH_TIER fill:#004d40,color:#fff
+    style BATCH_TIER fill:#1b5e20,color:#fff
+    style OBS_TIER fill:#37474f,color:#fff
+```
+
+### Three Key AWS-Specific Choices
+
+**Aurora over standard RDS PostgreSQL:** Aurora storage auto-scales without provisioning; the writer/reader endpoint split lets the Catalog Service fan reads across up to 15 read replicas with no application changes. Failover is < 30s vs. 60–120s for standard RDS Multi-AZ — directly relevant to the 99.9% order placement availability target.
+
+**EMR Serverless over a standing EMR cluster:** The recommendation batch runs once nightly for ~2 hours. A standing 5-node m5.xlarge cluster would cost ~$1,600/month for 22 idle hours per day. EMR Serverless charges only for the active 2-hour window → ~$180/month.
+
+**Amazon Location Service over Google Maps:** At 3M routing calls/month, Google Maps Distance Matrix API costs $5.00 per 1,000 elements = **$15,000/month**. Amazon Location Service costs $0.004/route × 2M billed calls = **$8/month** — a 1,875× cost difference. The trade-off is less real-time traffic accuracy; the 5-minute zone cache (§5) absorbs most of this.
+
+---
+
+## 11. Monthly Cost Estimate
+
+### Assumptions
+
+| Parameter | Value |
+|---|---|
+| AWS Region | `ap-south-1` (Mumbai) — closest to Pune / Bengaluru |
+| Orders / day | 100,000 |
+| Concurrent riders | 10,000 |
+| Rider location writes | 2,000/sec |
+| EKS node split | 4 On-Demand + 4 Spot c6i.xlarge |
+| Pricing basis | AWS public list price, `ap-south-1`, February 2026 (no EDP/SPA discount) |
+| SMS / WhatsApp | Excluded — handled by regional aggregator outside AWS |
+
+### Cost Breakdown
+
+| Category | AWS Service(s) | Qty / Config | $/month |
+|---|---|---|---|
+| **EKS Compute** | EKS control plane + 4× c6i.xlarge On-Demand + 4× c6i.xlarge Spot | $73 + $496 + $175 | **$744** |
+| **Aurora PostgreSQL** | Orders (r7g.large ×2) + Dispatch (r7g.large ×2) + Catalog / Inventory / Users (r7g.medium ×2 each) + 500GB storage | 5 clusters | **$1,400** |
+| **ElastiCache Redis** | Inventory (r7g.large ×2) + ETA/GEO (r7g.large ×2) + Reco/Autocomplete (r7g.medium ×2) | 3 clusters | **$920** |
+| **Amazon MSK** | 3× kafka.m5.large brokers + 1TB storage (30-day retention) | 3 brokers | **$560** |
+| **Amazon OpenSearch** | 3× m6g.large.search nodes + 50GB gp3 storage | 3-node HA cluster | **$327** |
+| **API Gateway + ALB** | HTTP API (5M calls/mo) + WebSocket API + 1× ALB | — | **$105** |
+| **S3 + CloudFront** | 50GB S3 Standard + 500GB CDN transfer/month (Asia-Pacific) | — | **$44** |
+| **EMR Serverless** | Nightly Spark job ~2hr/night · 40 vCPUs · 160GB memory | 30 nights/month | **$180** |
+| **Amazon SNS** | Mobile push notifications (~15M/month to APNs + FCM) | First 1M free, $0.50/M after | **$7** |
+| **Location Service** | ~3M routing API calls/month | First 1M free, $0.004/route | **$8** |
+| **Observability** | AMP (50M samples) + Managed Grafana (5 editors) + CloudWatch Logs (100GB) + X-Ray | — | **$165** |
+| **Data Transfer** | NAT Gateway + internet egress (API responses to mobile) | — | **$150** |
+| **Monthly Total** | | | **≈ $4,610** |
+
+> **Annual run rate: ≈ $55,320** at steady-state public pricing.
+
+### Cost by Category
+
+```mermaid
+pie title Monthly AWS Spend — $4,610/month
+    "Aurora PostgreSQL" : 1400
+    "ElastiCache Redis" : 920
+    "EKS Compute" : 744
+    "Amazon MSK (Kafka)" : 560
+    "Amazon OpenSearch" : 327
+    "Observability" : 165
+    "Data Transfer" : 150
+    "API Gateway + ALB" : 105
+    "EMR Serverless" : 180
+    "S3 + CloudFront" : 44
+    "Amazon SNS" : 7
+    "Location Service" : 8
+```
+
+Database and cache together account for 50% of the bill — typical for a read/write-heavy transactional system. Compute is deliberately small relative to data tier because the design offloads state into managed services rather than in-process memory.
+
+### Cost Optimization Levers
+
+| Lever | Applies To | Estimated Saving |
+|---|---|---|
+| **1-year Reserved Instances (no upfront)** | Aurora + ElastiCache (predictable baseline) | −30% on $2,320 = **−$696/month** |
+| **Compute Savings Plans (1-year)** | EKS On-Demand nodes | −20% on $496 = **−$99/month** |
+| **MSK Tiered Storage** | `order.delivered`, `rider.location.updated` (high volume, read rarely) | Move cold messages to S3 at $0.023/GB vs $0.10/GB |
+| **Aurora I/O-Optimized pricing** | Catalog + Users DBs (low I/O) | Disable if < 1M I/O events/day — saves ~$30/month |
+| **CloudFront caching (Cache-Control headers)** | `/catalog/search` responses, product images | Reduces origin requests → fewer OpenSearch + S3 GETs |
+| **EKS Karpenter for node right-sizing** | EKS worker nodes | Replaces fixed c6i.xlarge with mixed instance types; can cut node cost 15–20% |
+
+**Projected cost with 1-year RIs + Compute Savings Plans: ≈ $3,815/month ($45,780/year)**
+
+### Cost Scaling Projections
+
+| Scale | Orders/day | Bottleneck that scales first | Estimated AWS bill |
+|---|---|---|---|
+| MVP / pilot | 10,000 | — (all services under-utilized) | ~$1,400/month |
+| Single metro (this design) | 100,000 | ElastiCache, Aurora | ~$4,600/month |
+| 3-city expansion | 300,000 | MSK broker count, Aurora read replicas | ~$10,000–13,000/month |
+| 10-city expansion | 1,000,000 | EKS node count, Aurora Global Database | ~$30,000–40,000/month |
+| Blinkit national scale (est.) | 2,000,000+ | All tiers; EDP discounts kick in >$100k/month | ~$60,000–80,000/month |
+
+> Multi-city does **not** scale linearly: MSK and Aurora control plane costs are fixed, EDP (Enterprise Discount Program) discounts apply above ~$100k/month, and Savings Plans compound with scale. At Blinkit's actual scale, effective AWS cost per order is likely 30–50% lower than public pricing.
+
+---
+
 ## Out of Scope (flag proactively in interviews)
 
 - Surge pricing / dynamic delivery fees
