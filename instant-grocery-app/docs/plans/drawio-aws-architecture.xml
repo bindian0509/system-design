@@ -1,0 +1,689 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2340" pageHeight="1654" math="0" shadow="0">
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- TITLE                                                          -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <mxCell id="2"
+      value="AWS Infrastructure — Instant Grocery Delivery (ap-south-1 · 100 k orders/day)"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=5;
+             fillColor=#1A1A2E;strokeColor=#1A1A2E;fontColor=#ffffff;
+             fontStyle=1;fontSize=16;fontFamily=Helvetica Neue;
+             verticalAlign=middle;">
+      <mxGeometry x="40" y="15" width="1000" height="52" as="geometry"/>
+    </mxCell>
+
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- ROW 1 — CLIENT  (y=85)                                        -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <mxCell id="3"
+      value="&lt;b&gt;Mobile / Web Client&lt;/b&gt;&lt;br/&gt;iOS · Android · PWA"
+      vertex="1" parent="1"
+      style="ellipse;whiteSpace=wrap;html=1;sketch=1;
+             fillColor=#FF9900;strokeColor=#E65100;fontColor=#ffffff;
+             fontStyle=1;fontSize=13;fontFamily=Helvetica Neue;">
+      <mxGeometry x="1020" y="85" width="260" height="80" as="geometry"/>
+    </mxCell>
+
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- ROW 2 — EDGE LAYER  (y=210, h=150)                            -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- Container background -->
+    <mxCell id="4"
+      value="&lt;b&gt;AWS Edge Layer&lt;/b&gt;"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=2;
+             fillColor=#4A148C;strokeColor=#6A1B9A;fontColor=#ffffff;
+             fontStyle=1;fontSize=14;fontFamily=Helvetica Neue;
+             verticalAlign=top;spacingTop=6;">
+      <mxGeometry x="40" y="210" width="2260" height="150" as="geometry"/>
+    </mxCell>
+
+    <!-- CloudFront -->
+    <mxCell id="5"
+      value="&lt;b&gt;Amazon CloudFront&lt;/b&gt;&lt;br/&gt;Product images · static assets&lt;br/&gt;Price Class 200 · TTL 24 h"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=8;
+             fillColor=#7B1FA2;strokeColor=#4A148C;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;verticalAlign=middle;">
+      <mxGeometry x="80" y="248" width="260" height="88" as="geometry"/>
+    </mxCell>
+
+    <!-- API GW HTTP -->
+    <mxCell id="6"
+      value="&lt;b&gt;AWS API Gateway&lt;/b&gt;&lt;br/&gt;HTTP API · JWT authorizer&lt;br/&gt;5 M calls/month"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=8;
+             fillColor=#8E24AA;strokeColor=#4A148C;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;verticalAlign=middle;">
+      <mxGeometry x="390" y="248" width="280" height="88" as="geometry"/>
+    </mxCell>
+
+    <!-- API GW WebSocket -->
+    <mxCell id="7"
+      value="&lt;b&gt;AWS API Gateway&lt;/b&gt;&lt;br/&gt;WebSocket API · order tracking&lt;br/&gt;Rider + customer connections"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=8;
+             fillColor=#9C27B0;strokeColor=#4A148C;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;verticalAlign=middle;">
+      <mxGeometry x="730" y="248" width="300" height="88" as="geometry"/>
+    </mxCell>
+
+    <!-- ALB + WAF -->
+    <mxCell id="8"
+      value="&lt;b&gt;Application Load Balancer&lt;/b&gt;&lt;br/&gt;+ AWS WAF · L7 routing&lt;br/&gt;→ EKS NodePort services"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=8;
+             fillColor=#6A1B9A;strokeColor=#4A148C;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;verticalAlign=middle;">
+      <mxGeometry x="1090" y="248" width="290" height="88" as="geometry"/>
+    </mxCell>
+
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- ROW 3 — AMAZON EKS  (y=410, h=220)                           -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- Container -->
+    <mxCell id="9"
+      value="&lt;b&gt;Amazon EKS — c6i.xlarge × 8 nodes (4 On-Demand + 4 Spot) · HPA per service · Cluster Autoscaler&lt;/b&gt;"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=2;
+             fillColor=#BF360C;strokeColor=#E64A19;fontColor=#ffffff;
+             fontStyle=1;fontSize=13;fontFamily=Helvetica Neue;
+             verticalAlign=top;spacingTop=6;">
+      <mxGeometry x="40" y="410" width="2260" height="220" as="geometry"/>
+    </mxCell>
+
+    <!-- EKS Row A — y=450, h=75 -->
+    <mxCell id="10"
+      value="&lt;b&gt;Order Service&lt;/b&gt;&lt;br/&gt;Write-ahead · idempotency&lt;br/&gt;Payment orchestration"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=10;
+             fillColor=#FF5722;strokeColor=#BF360C;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;verticalAlign=middle;">
+      <mxGeometry x="80" y="450" width="255" height="75" as="geometry"/>
+    </mxCell>
+    <mxCell id="11"
+      value="&lt;b&gt;Inventory Service&lt;/b&gt;&lt;br/&gt;Redis Lua scripts · gRPC&lt;br/&gt;Two-layer hot/cold"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=10;
+             fillColor=#FF5722;strokeColor=#BF360C;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;verticalAlign=middle;">
+      <mxGeometry x="385" y="450" width="255" height="75" as="geometry"/>
+    </mxCell>
+    <mxCell id="12"
+      value="&lt;b&gt;Catalog Service&lt;/b&gt;&lt;br/&gt;OpenSearch · autocomplete&lt;br/&gt;Per-store index"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=10;
+             fillColor=#FF5722;strokeColor=#BF360C;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;verticalAlign=middle;">
+      <mxGeometry x="690" y="450" width="255" height="75" as="geometry"/>
+    </mxCell>
+    <mxCell id="13"
+      value="&lt;b&gt;Dispatch Service&lt;/b&gt;&lt;br/&gt;PostGIS ST_DWithin&lt;br/&gt;Optimistic lock · top-3 offer"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=10;
+             fillColor=#FF5722;strokeColor=#BF360C;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;verticalAlign=middle;">
+      <mxGeometry x="995" y="450" width="255" height="75" as="geometry"/>
+    </mxCell>
+
+    <!-- EKS Row B — y=540, h=68 -->
+    <mxCell id="14"
+      value="&lt;b&gt;ETA Service&lt;/b&gt;&lt;br/&gt;Delta suppression &gt;2 min&lt;br/&gt;Circuit breaker → zone cache"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=10;
+             fillColor=#FF7043;strokeColor=#BF360C;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;verticalAlign=middle;">
+      <mxGeometry x="80" y="538" width="255" height="68" as="geometry"/>
+    </mxCell>
+    <mxCell id="15"
+      value="&lt;b&gt;Notification Service&lt;/b&gt;&lt;br/&gt;SNS push · fire-and-forget&lt;br/&gt;Async Kafka consumer"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=10;
+             fillColor=#FF7043;strokeColor=#BF360C;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;verticalAlign=middle;">
+      <mxGeometry x="385" y="538" width="255" height="68" as="geometry"/>
+    </mxCell>
+    <mxCell id="16"
+      value="&lt;b&gt;User Service&lt;/b&gt;&lt;br/&gt;Auth · profiles · addresses&lt;br/&gt;Standard CRUD"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=10;
+             fillColor=#FF7043;strokeColor=#BF360C;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;verticalAlign=middle;">
+      <mxGeometry x="690" y="538" width="255" height="68" as="geometry"/>
+    </mxCell>
+    <mxCell id="17"
+      value="&lt;b&gt;Location Ingestor&lt;/b&gt;&lt;br/&gt;2,000 writes/sec · stateless&lt;br/&gt;POST /rider/location"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=10;
+             fillColor=#FF7043;strokeColor=#BF360C;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;verticalAlign=middle;">
+      <mxGeometry x="995" y="538" width="255" height="68" as="geometry"/>
+    </mxCell>
+
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- ROW 4 — AMAZON MSK  (y=678, h=148)                           -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- Container -->
+    <mxCell id="18"
+      value="&lt;b&gt;Amazon MSK — Apache Kafka 3.7 · 3 × kafka.m5.large · 1 TB tiered storage · 30-day retention&lt;/b&gt;"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=2;
+             fillColor=#311B92;strokeColor=#4527A0;fontColor=#ffffff;
+             fontStyle=1;fontSize=13;fontFamily=Helvetica Neue;
+             verticalAlign=top;spacingTop=6;">
+      <mxGeometry x="40" y="678" width="2260" height="148" as="geometry"/>
+    </mxCell>
+
+    <!-- Kafka topics ribbon -->
+    <mxCell id="19"
+      value="&lt;b&gt;Topics:&lt;/b&gt;  order.placed  ·  inventory.reserved  ·  inventory.failed  ·  rider.assigned  ·  order.packed  ·  order.delivered  ·  rider.location.updated"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=5;
+             fillColor=#4527A0;strokeColor=#311B92;fontColor=#ffffff;
+             fontSize=12;fontFamily=Helvetica Neue;verticalAlign=middle;">
+      <mxGeometry x="80" y="715" width="1180" height="58" as="geometry"/>
+    </mxCell>
+
+    <!-- Broker 1 -->
+    <mxCell id="20"
+      value="&lt;b&gt;Broker 1&lt;/b&gt;&lt;br/&gt;kafka.m5.large&lt;br/&gt;AZ-a"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=10;
+             fillColor=#5E35B1;strokeColor=#311B92;fontColor=#ffffff;
+             fontStyle=1;fontSize=11;fontFamily=Helvetica Neue;">
+      <mxGeometry x="1320" y="710" width="220" height="66" as="geometry"/>
+    </mxCell>
+
+    <!-- Broker 2 -->
+    <mxCell id="21"
+      value="&lt;b&gt;Broker 2&lt;/b&gt;&lt;br/&gt;kafka.m5.large&lt;br/&gt;AZ-b"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=10;
+             fillColor=#5E35B1;strokeColor=#311B92;fontColor=#ffffff;
+             fontStyle=1;fontSize=11;fontFamily=Helvetica Neue;">
+      <mxGeometry x="1580" y="710" width="220" height="66" as="geometry"/>
+    </mxCell>
+
+    <!-- Broker 3 -->
+    <mxCell id="22"
+      value="&lt;b&gt;Broker 3&lt;/b&gt;&lt;br/&gt;kafka.m5.large&lt;br/&gt;AZ-c"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=10;
+             fillColor=#5E35B1;strokeColor=#311B92;fontColor=#ffffff;
+             fontStyle=1;fontSize=11;fontFamily=Helvetica Neue;">
+      <mxGeometry x="1840" y="710" width="220" height="66" as="geometry"/>
+    </mxCell>
+
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- ROW 5 — DATA TIER  (y=874)                                    -->
+    <!--   Aurora  x=40   w=950                                        -->
+    <!--   Redis   x=1010 w=620                                        -->
+    <!--   OpenSrch x=1650 w=380                                       -->
+    <!--   S3      x=2050 w=250                                        -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+
+    <!-- ── Aurora Container (x=40, w=950, h=280) ── -->
+    <mxCell id="23"
+      value="&lt;b&gt;Amazon Aurora PostgreSQL — Multi-AZ · auto-failover &lt; 30 s&lt;/b&gt;"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=2;
+             fillColor=#0D47A1;strokeColor=#1565C0;fontColor=#ffffff;
+             fontStyle=1;fontSize=13;fontFamily=Helvetica Neue;
+             verticalAlign=top;spacingTop=6;">
+      <mxGeometry x="40" y="874" width="950" height="280" as="geometry"/>
+    </mxCell>
+
+    <!-- Aurora DB — Orders -->
+    <mxCell id="24"
+      value="&lt;b&gt;Orders DB&lt;/b&gt;&lt;br/&gt;db.r7g.large&lt;br/&gt;writer + 1 reader"
+      vertex="1" parent="1"
+      style="shape=cylinder3;whiteSpace=wrap;html=1;sketch=1;
+             fillColor=#1565C0;strokeColor=#0D47A1;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;
+             boundedLbl=1;backgroundOutline=1;size=12;">
+      <mxGeometry x="65" y="918" width="160" height="95" as="geometry"/>
+    </mxCell>
+
+    <!-- Aurora DB — Dispatch -->
+    <mxCell id="25"
+      value="&lt;b&gt;Dispatch + PostGIS&lt;/b&gt;&lt;br/&gt;db.r7g.large&lt;br/&gt;writer + 1 reader"
+      vertex="1" parent="1"
+      style="shape=cylinder3;whiteSpace=wrap;html=1;sketch=1;
+             fillColor=#1565C0;strokeColor=#0D47A1;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;
+             boundedLbl=1;backgroundOutline=1;size=12;">
+      <mxGeometry x="255" y="918" width="175" height="95" as="geometry"/>
+    </mxCell>
+
+    <!-- Aurora DB — Catalog -->
+    <mxCell id="26"
+      value="&lt;b&gt;Catalog DB&lt;/b&gt;&lt;br/&gt;db.r7g.medium&lt;br/&gt;writer + 1 reader"
+      vertex="1" parent="1"
+      style="shape=cylinder3;whiteSpace=wrap;html=1;sketch=1;
+             fillColor=#1976D2;strokeColor=#0D47A1;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;
+             boundedLbl=1;backgroundOutline=1;size=12;">
+      <mxGeometry x="65" y="1040" width="160" height="90" as="geometry"/>
+    </mxCell>
+
+    <!-- Aurora DB — Inventory Cold -->
+    <mxCell id="27"
+      value="&lt;b&gt;Inventory Cold&lt;/b&gt;&lt;br/&gt;db.r7g.medium&lt;br/&gt;writer + 1 reader"
+      vertex="1" parent="1"
+      style="shape=cylinder3;whiteSpace=wrap;html=1;sketch=1;
+             fillColor=#1976D2;strokeColor=#0D47A1;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;
+             boundedLbl=1;backgroundOutline=1;size=12;">
+      <mxGeometry x="255" y="1040" width="160" height="90" as="geometry"/>
+    </mxCell>
+
+    <!-- Aurora DB — Users -->
+    <mxCell id="28"
+      value="&lt;b&gt;Users DB&lt;/b&gt;&lt;br/&gt;db.r7g.medium&lt;br/&gt;writer + 1 reader"
+      vertex="1" parent="1"
+      style="shape=cylinder3;whiteSpace=wrap;html=1;sketch=1;
+             fillColor=#1976D2;strokeColor=#0D47A1;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;
+             boundedLbl=1;backgroundOutline=1;size=12;">
+      <mxGeometry x="450" y="1040" width="160" height="90" as="geometry"/>
+    </mxCell>
+
+    <!-- Aurora cost badge -->
+    <mxCell id="29"
+      value="~$1,400 / month"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=8;
+             fillColor=#1E88E5;strokeColor=#1565C0;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;fontStyle=1;">
+      <mxGeometry x="660" y="1055" width="300" height="38" as="geometry"/>
+    </mxCell>
+
+    <!-- ── ElastiCache Container (x=1010, w=620, h=280) ── -->
+    <mxCell id="30"
+      value="&lt;b&gt;Amazon ElastiCache for Redis 7 — maxmemory-policy noeviction on Inventory&lt;/b&gt;"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=2;
+             fillColor=#B71C1C;strokeColor=#C62828;fontColor=#ffffff;
+             fontStyle=1;fontSize=13;fontFamily=Helvetica Neue;
+             verticalAlign=top;spacingTop=6;">
+      <mxGeometry x="1010" y="874" width="620" height="280" as="geometry"/>
+    </mxCell>
+
+    <!-- Redis — Inventory Hot -->
+    <mxCell id="31"
+      value="&lt;b&gt;Inventory Hot&lt;/b&gt;&lt;br/&gt;cache.r7g.large&lt;br/&gt;primary + replica&lt;br/&gt;HDECRBY Lua atomic"
+      vertex="1" parent="1"
+      style="shape=cylinder3;whiteSpace=wrap;html=1;sketch=1;
+             fillColor=#E53935;strokeColor=#B71C1C;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;
+             boundedLbl=1;backgroundOutline=1;size=12;">
+      <mxGeometry x="1030" y="918" width="170" height="110" as="geometry"/>
+    </mxCell>
+
+    <!-- Redis — ETA + Rider GEO -->
+    <mxCell id="32"
+      value="&lt;b&gt;ETA + Rider GEO&lt;/b&gt;&lt;br/&gt;cache.r7g.large&lt;br/&gt;primary + replica&lt;br/&gt;GEOADD 2,000 w/s"
+      vertex="1" parent="1"
+      style="shape=cylinder3;whiteSpace=wrap;html=1;sketch=1;
+             fillColor=#E53935;strokeColor=#B71C1C;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;
+             boundedLbl=1;backgroundOutline=1;size=12;">
+      <mxGeometry x="1230" y="918" width="170" height="110" as="geometry"/>
+    </mxCell>
+
+    <!-- Redis — Reco + Autocomplete -->
+    <mxCell id="33"
+      value="&lt;b&gt;Reco + Autocomplete&lt;/b&gt;&lt;br/&gt;cache.r7g.medium&lt;br/&gt;primary + replica&lt;br/&gt;ZRANGEBYLEX"
+      vertex="1" parent="1"
+      style="shape=cylinder3;whiteSpace=wrap;html=1;sketch=1;
+             fillColor=#EF5350;strokeColor=#B71C1C;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;
+             boundedLbl=1;backgroundOutline=1;size=12;">
+      <mxGeometry x="1425" y="918" width="170" height="110" as="geometry"/>
+    </mxCell>
+
+    <!-- Redis cost badge -->
+    <mxCell id="34"
+      value="~$920 / month"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=8;
+             fillColor=#EF5350;strokeColor=#B71C1C;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;fontStyle=1;">
+      <mxGeometry x="1220" y="1060" width="200" height="38" as="geometry"/>
+    </mxCell>
+
+    <!-- ── OpenSearch Container (x=1650, w=380, h=280) ── -->
+    <mxCell id="35"
+      value="&lt;b&gt;Amazon OpenSearch Service&lt;/b&gt;"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=2;
+             fillColor=#004D40;strokeColor=#00695C;fontColor=#ffffff;
+             fontStyle=1;fontSize=13;fontFamily=Helvetica Neue;
+             verticalAlign=top;spacingTop=6;">
+      <mxGeometry x="1650" y="874" width="380" height="280" as="geometry"/>
+    </mxCell>
+
+    <!-- OpenSearch cluster box -->
+    <mxCell id="36"
+      value="&lt;b&gt;catalog_{store_id}&lt;/b&gt;&lt;br/&gt;40 indexes · m6g.large.search × 3&lt;br/&gt;200 k documents per store&lt;br/&gt;Fuzzy search · BM25 · nGram&lt;br/&gt;Auto-reindex on price change"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=8;
+             fillColor=#00796B;strokeColor=#004D40;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;verticalAlign=middle;">
+      <mxGeometry x="1668" y="918" width="344" height="190" as="geometry"/>
+    </mxCell>
+
+    <!-- ── S3 + CloudFront Container (x=2050, w=250, h=280) ── -->
+    <mxCell id="37"
+      value="&lt;b&gt;Amazon S3 + CloudFront&lt;/b&gt;"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=2;
+             fillColor=#1B5E20;strokeColor=#2E7D32;fontColor=#ffffff;
+             fontStyle=1;fontSize=13;fontFamily=Helvetica Neue;
+             verticalAlign=top;spacingTop=6;">
+      <mxGeometry x="2050" y="874" width="250" height="280" as="geometry"/>
+    </mxCell>
+
+    <!-- S3 product images box -->
+    <mxCell id="38"
+      value="&lt;b&gt;Product Images&lt;/b&gt;&lt;br/&gt;~50 GB · S3 Standard&lt;br/&gt;Chunked upload pipeline&lt;br/&gt;TTL 24 h via CloudFront"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=8;
+             fillColor=#43A047;strokeColor=#1B5E20;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;verticalAlign=middle;">
+      <mxGeometry x="2065" y="918" width="220" height="100" as="geometry"/>
+    </mxCell>
+
+    <!-- S3 catalog backup box -->
+    <mxCell id="39"
+      value="&lt;b&gt;Catalog Backups&lt;/b&gt;&lt;br/&gt;S3 Intelligent-Tiering&lt;br/&gt;7-year retention"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=8;
+             fillColor=#388E3C;strokeColor=#1B5E20;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;verticalAlign=middle;">
+      <mxGeometry x="2065" y="1040" width="220" height="80" as="geometry"/>
+    </mxCell>
+
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- ROW 6 — BATCH / NOTIFY / ROUTING  +  OBSERVABILITY  (y=1204) -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+
+    <!-- ── Batch/Notify/Routing Container (x=40, w=1200, h=150) ── -->
+    <mxCell id="40"
+      value="&lt;b&gt;Batch · Notify · Routing&lt;/b&gt;"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=2;
+             fillColor=#006064;strokeColor=#00838F;fontColor=#ffffff;
+             fontStyle=1;fontSize=13;fontFamily=Helvetica Neue;
+             verticalAlign=top;spacingTop=6;">
+      <mxGeometry x="40" y="1204" width="1200" height="160" as="geometry"/>
+    </mxCell>
+
+    <!-- EMR -->
+    <mxCell id="41"
+      value="&lt;b&gt;Amazon EMR&lt;/b&gt;&lt;br/&gt;Reco model nightly&lt;br/&gt;Spark · m5.xlarge"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=8;
+             fillColor=#00838F;strokeColor=#006064;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;verticalAlign=middle;">
+      <mxGeometry x="65" y="1244" width="250" height="90" as="geometry"/>
+    </mxCell>
+
+    <!-- SNS -->
+    <mxCell id="42"
+      value="&lt;b&gt;Amazon SNS&lt;/b&gt;&lt;br/&gt;Push notifications&lt;br/&gt;SMS · Email · FCM"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=8;
+             fillColor=#0097A7;strokeColor=#006064;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;verticalAlign=middle;">
+      <mxGeometry x="355" y="1244" width="250" height="90" as="geometry"/>
+    </mxCell>
+
+    <!-- Location Service -->
+    <mxCell id="43"
+      value="&lt;b&gt;Amazon Location Service&lt;/b&gt;&lt;br/&gt;HERE Maps geocoding&lt;br/&gt;Routing · geofences"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=8;
+             fillColor=#00ACC1;strokeColor=#006064;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;verticalAlign=middle;">
+      <mxGeometry x="645" y="1244" width="260" height="90" as="geometry"/>
+    </mxCell>
+
+    <!-- EventBridge -->
+    <mxCell id="44"
+      value="&lt;b&gt;Amazon EventBridge&lt;/b&gt;&lt;br/&gt;Scheduled rules&lt;br/&gt;nightly batch · cron"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=8;
+             fillColor=#00695C;strokeColor=#006064;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;verticalAlign=middle;">
+      <mxGeometry x="945" y="1244" width="260" height="90" as="geometry"/>
+    </mxCell>
+
+    <!-- ── Observability Container (x=1260, w=1040, h=160) ── -->
+    <mxCell id="45"
+      value="&lt;b&gt;Observability — Metrics · Traces · Logs&lt;/b&gt;"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=2;
+             fillColor=#37474F;strokeColor=#455A64;fontColor=#ffffff;
+             fontStyle=1;fontSize=13;fontFamily=Helvetica Neue;
+             verticalAlign=top;spacingTop=6;">
+      <mxGeometry x="1260" y="1204" width="1040" height="160" as="geometry"/>
+    </mxCell>
+
+    <!-- AMP -->
+    <mxCell id="46"
+      value="&lt;b&gt;AMP&lt;/b&gt;&lt;br/&gt;Prometheus metrics&lt;br/&gt;15-day retention"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=8;
+             fillColor=#546E7A;strokeColor=#37474F;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;verticalAlign=middle;">
+      <mxGeometry x="1280" y="1244" width="220" height="90" as="geometry"/>
+    </mxCell>
+
+    <!-- Grafana -->
+    <mxCell id="47"
+      value="&lt;b&gt;Amazon Managed Grafana&lt;/b&gt;&lt;br/&gt;SLO dashboards&lt;br/&gt;Alerting → PagerDuty"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=8;
+             fillColor=#607D8B;strokeColor=#37474F;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;verticalAlign=middle;">
+      <mxGeometry x="1530" y="1244" width="220" height="90" as="geometry"/>
+    </mxCell>
+
+    <!-- CloudWatch -->
+    <mxCell id="48"
+      value="&lt;b&gt;Amazon CloudWatch&lt;/b&gt;&lt;br/&gt;Structured logs&lt;br/&gt;Log Insights queries"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=8;
+             fillColor=#546E7A;strokeColor=#37474F;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;verticalAlign=middle;">
+      <mxGeometry x="1780" y="1244" width="220" height="90" as="geometry"/>
+    </mxCell>
+
+    <!-- X-Ray -->
+    <mxCell id="49"
+      value="&lt;b&gt;AWS X-Ray&lt;/b&gt;&lt;br/&gt;Distributed tracing&lt;br/&gt;OpenTelemetry SDK"
+      vertex="1" parent="1"
+      style="rounded=1;whiteSpace=wrap;html=1;sketch=1;arcSize=8;
+             fillColor=#607D8B;strokeColor=#37474F;fontColor=#ffffff;
+             fontSize=11;fontFamily=Helvetica Neue;verticalAlign=middle;">
+      <mxGeometry x="2030" y="1244" width="240" height="90" as="geometry"/>
+    </mxCell>
+
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- EDGES / CONNECTIONS                                            -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+
+    <!-- Client → Edge Layer -->
+    <mxCell id="50" value="HTTPS" edge="1" source="3" target="4" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;sketch=1;
+             strokeColor=#FF9900;strokeWidth=2;fontColor=#FF9900;
+             fontSize=11;fontFamily=Helvetica Neue;fontStyle=1;
+             exitX=0.5;exitY=1;exitDx=0;exitDy=0;
+             entryX=0.5;entryY=0;entryDx=0;entryDy=0;">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- Edge Layer → EKS -->
+    <mxCell id="51" value="routed" edge="1" source="4" target="9" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;sketch=1;
+             strokeColor=#9C27B0;strokeWidth=2;fontColor=#9C27B0;
+             fontSize=10;fontFamily=Helvetica Neue;fontStyle=1;
+             exitX=0.5;exitY=1;exitDx=0;exitDy=0;
+             entryX=0.5;entryY=0;entryDx=0;entryDy=0;">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- EKS → MSK (publish) -->
+    <mxCell id="52" value="Kafka produce" edge="1" source="9" target="18" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;sketch=1;
+             strokeColor=#5E35B1;strokeWidth=2;fontColor=#5E35B1;
+             fontSize=10;fontFamily=Helvetica Neue;fontStyle=1;
+             exitX=0.5;exitY=1;exitDx=0;exitDy=0;
+             entryX=0.5;entryY=0;entryDx=0;entryDy=0;">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- MSK → Aurora (write-behind consumers) -->
+    <mxCell id="53" value="write-behind" edge="1" source="18" target="23" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;sketch=1;
+             strokeColor=#1976D2;strokeWidth=2;fontColor=#1976D2;
+             fontSize=10;fontFamily=Helvetica Neue;fontStyle=1;
+             exitX=0;exitY=1;exitDx=0;exitDy=0;
+             entryX=0;entryY=0;entryDx=0;entryDy=0;">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- EKS → Aurora (direct reads) -->
+    <mxCell id="54" value="read / transact" edge="1" source="9" target="23" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;sketch=1;
+             strokeColor=#1E88E5;strokeWidth=2;fontColor=#1E88E5;
+             fontSize=10;fontFamily=Helvetica Neue;fontStyle=1;
+             exitX=0.2;exitY=1;exitDx=0;exitDy=0;
+             entryX=0.5;entryY=0;entryDx=0;entryDy=0;">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="492" y="858"/>
+          <mxPoint x="515" y="858"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- EKS → ElastiCache -->
+    <mxCell id="55" value="cache R/W" edge="1" source="9" target="30" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;sketch=1;
+             strokeColor=#E53935;strokeWidth=2;fontColor=#E53935;
+             fontSize=10;fontFamily=Helvetica Neue;fontStyle=1;
+             exitX=0.55;exitY=1;exitDx=0;exitDy=0;
+             entryX=0.5;entryY=0;entryDx=0;entryDy=0;">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="1289" y="858"/>
+          <mxPoint x="1320" y="858"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- EKS → OpenSearch -->
+    <mxCell id="56" value="search / index" edge="1" source="9" target="35" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;sketch=1;
+             strokeColor=#00796B;strokeWidth=2;fontColor=#00796B;
+             fontSize=10;fontFamily=Helvetica Neue;fontStyle=1;
+             exitX=0.75;exitY=1;exitDx=0;exitDy=0;
+             entryX=0.5;entryY=0;entryDx=0;entryDy=0;">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="1745" y="858"/>
+          <mxPoint x="1840" y="858"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- EKS → S3 -->
+    <mxCell id="57" value="image upload" edge="1" source="9" target="37" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;sketch=1;
+             strokeColor=#43A047;strokeWidth=2;fontColor=#43A047;
+             fontSize=10;fontFamily=Helvetica Neue;fontStyle=1;
+             exitX=0.9;exitY=1;exitDx=0;exitDy=0;
+             entryX=0.5;entryY=0;entryDx=0;entryDy=0;">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="2101" y="858"/>
+          <mxPoint x="2175" y="858"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- MSK → Notification Service (Kafka consumer) -->
+    <mxCell id="58" value="consume" edge="1" source="18" target="15" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;sketch=1;
+             strokeColor=#FF7043;strokeWidth=1;fontColor=#FF7043;
+             dashed=1;fontSize=10;fontFamily=Helvetica Neue;fontStyle=1;
+             exitX=0.2;exitY=0;exitDx=0;exitDy=0;
+             entryX=0.5;entryY=1;entryDx=0;entryDy=0;">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- EKS → Batch/Notify container -->
+    <mxCell id="59" value="async jobs" edge="1" source="9" target="40" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;sketch=1;
+             strokeColor=#00ACC1;strokeWidth=2;fontColor=#00ACC1;
+             fontSize=10;fontFamily=Helvetica Neue;fontStyle=1;
+             exitX=0.25;exitY=1;exitDx=0;exitDy=0;
+             entryX=0.5;entryY=0;entryDx=0;entryDy=0;">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="605" y="1185"/>
+          <mxPoint x="640" y="1185"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- EKS → Observability (telemetry) -->
+    <mxCell id="60" value="metrics / traces" edge="1" source="9" target="45" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;sketch=1;
+             strokeColor=#607D8B;strokeWidth=2;fontColor=#607D8B;
+             fontSize=10;fontFamily=Helvetica Neue;fontStyle=1;
+             exitX=0.8;exitY=1;exitDx=0;exitDy=0;
+             entryX=0.3;entryY=0;entryDx=0;entryDy=0;">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="1852" y="1185"/>
+          <mxPoint x="1572" y="1185"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Notification Service → SNS -->
+    <mxCell id="61" value="fan-out" edge="1" source="15" target="42" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;sketch=1;
+             strokeColor=#0097A7;strokeWidth=1;fontColor=#0097A7;
+             dashed=1;fontSize=10;fontFamily=Helvetica Neue;fontStyle=1;">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- Dispatch Service → Location Service -->
+    <mxCell id="62" value="geocode / route" edge="1" source="13" target="43" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;sketch=1;
+             strokeColor=#00ACC1;strokeWidth=1;fontColor=#00ACC1;
+             dashed=1;fontSize=10;fontFamily=Helvetica Neue;fontStyle=1;">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- MSK → ETA Service (consume rider.location.updated) -->
+    <mxCell id="63" value="consume location" edge="1" source="18" target="14" parent="1"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;sketch=1;
+             strokeColor=#FF7043;strokeWidth=1;fontColor=#FF7043;
+             dashed=1;fontSize=10;fontFamily=Helvetica Neue;fontStyle=1;
+             exitX=0.05;exitY=0;exitDx=0;exitDy=0;
+             entryX=0.5;entryY=1;entryDx=0;entryDy=0;">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+  </root>
+</mxGraphModel>
