@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from datetime import datetime
+from datetime import datetime, date
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -27,6 +27,8 @@ logger = logging.getLogger(__name__)
 
 scheduler = BackgroundScheduler(timezone="Asia/Kolkata")
 
+FUNDAMENTALS_BATCH_SIZE = 50
+
 
 def run_daily_scan():
     """Full pipeline: fetch data -> screen -> score -> alert."""
@@ -41,41 +43,34 @@ def run_daily_scan():
         all_symbols = [r.symbol for r in db.query(Stock.symbol).all()]
         logger.info("Total stocks in DB: %d", len(all_symbols))
 
-        # Step 2: Fetch fundamentals.
-        # Fetching all 500 is slow (~2-3s per stock). We batch-fetch a manageable
-        # subset first. On subsequent runs the DB already has data so the screener
-        # can work with existing fundamentals.
-        existing_fund_count = db.query(Fundamentals.symbol).distinct().count()
-        if existing_fund_count < 50:
-            # First run — use the curated seed list for fast bootstrapping
-            from app.data.fetcher import _seed_stock_list
-            seed_symbols = [s["symbol"] for s in _seed_stock_list()]
-            targets = seed_symbols
-            logger.info(
-                "Step 2/6: First run — fetching fundamentals for %d seed stocks",
-                len(targets),
-            )
-        else:
-            # Incremental: only re-fetch for stocks already in universe + a sample of new ones
-            universe_syms = get_universe(db)
-            # Add some stocks not yet in fundamentals table
-            known = set(
-                r[0] for r in db.query(Fundamentals.symbol).distinct().all()
-            )
-            new_batch = [s for s in all_symbols if s not in known][:30]
-            targets = list(set(universe_syms + new_batch))
-            logger.info(
-                "Step 2/6: Incremental — fetching fundamentals for %d stocks "
-                "(%d universe + %d new)",
-                len(targets),
-                len(universe_syms),
-                len(new_batch),
-            )
+        # Step 2: Fetch fundamentals — progressively expand coverage
+        known_symbols = set(
+            r[0] for r in db.query(Fundamentals.symbol).distinct().all()
+        )
+        universe_syms = get_universe(db)
+
+        # Always re-fetch current universe to keep data fresh
+        refresh_targets = list(universe_syms)
+
+        # Add new stocks we haven't fetched yet, expanding coverage each run
+        unseen = [s for s in all_symbols if s not in known_symbols]
+        new_batch = unseen[:FUNDAMENTALS_BATCH_SIZE]
+
+        targets = list(set(refresh_targets + new_batch))
+        logger.info(
+            "Step 2/6: Fetching fundamentals for %d stocks "
+            "(%d universe refresh + %d new, %d/%d total coverage)",
+            len(targets),
+            len(refresh_targets),
+            len(new_batch),
+            len(known_symbols),
+            len(all_symbols),
+        )
 
         success = fetch_fundamentals_batch(targets, db)
         logger.info("Fundamentals fetched: %d/%d succeeded", success, len(targets))
 
-        # Step 3: Run fundamental screener
+        # Step 3: Run fundamental screener across ALL stocks with fundamentals
         logger.info("Step 3/6: Running fundamental screener")
         passing = screen_stocks(db)
         update_universe(db, passing)
@@ -95,10 +90,21 @@ def run_daily_scan():
 
         benchmark_df = fetch_benchmark(period="2y")
 
-        # Step 5: Compute signals
+        # Step 5: Compute signals — delete today's old signals first to avoid duplicates
         logger.info("Step 5/6: Computing signals for %d stocks", len(universe))
+        today = date.today()
+        deleted = (
+            db.query(Signal)
+            .filter(Signal.generated_at >= datetime(today.year, today.month, today.day))
+            .delete(synchronize_session=False)
+        )
+        if deleted:
+            db.commit()
+            logger.info("Cleared %d stale signals from today", deleted)
+
         now = datetime.utcnow()
         new_signals = []
+        prev_signals = _load_previous_signals(db, universe)
 
         for sym in universe:
             price_df = load_price_history_from_db(db, sym)
@@ -160,18 +166,53 @@ def run_daily_scan():
         db.commit()
         logger.info("Generated %d signals", len(new_signals))
 
-        # Step 6: Send alerts for actionable signals
-        logger.info("Step 6/6: Sending alerts for actionable signals")
+        # Step 6: Send alerts only for signal changes (new entries or state transitions)
+        logger.info("Step 6/6: Checking for alertable signal changes")
+        alert_count = 0
         for sig in new_signals:
-            if sig.signal_type in (SignalType.STRONG_BUY, SignalType.EXIT):
-                _send_alert(sig)
+            prev = prev_signals.get(sig.symbol)
+            should_alert = False
 
-        logger.info("=== Daily scan complete: %d signals generated ===", len(new_signals))
+            if prev is None:
+                # New stock in universe — alert if actionable
+                should_alert = sig.signal_type in (SignalType.STRONG_BUY, SignalType.EXIT)
+            elif prev != sig.signal_type.value:
+                # Signal changed from previous scan
+                should_alert = sig.signal_type in (SignalType.STRONG_BUY, SignalType.EXIT)
+
+            if should_alert:
+                _send_alert(sig)
+                alert_count += 1
+
+        logger.info(
+            "=== Daily scan complete: %d signals, %d alerts sent ===",
+            len(new_signals),
+            alert_count,
+        )
 
     except Exception as e:
         logger.exception("Daily scan failed: %s", e)
     finally:
         db.close()
+
+
+def _load_previous_signals(db, symbols: list[str]) -> dict[str, str]:
+    """Load the most recent signal type for each symbol from before today."""
+    today = date.today()
+    result = {}
+    for sym in symbols:
+        prev = (
+            db.query(Signal)
+            .filter(
+                Signal.symbol == sym,
+                Signal.generated_at < datetime(today.year, today.month, today.day),
+            )
+            .order_by(Signal.generated_at.desc())
+            .first()
+        )
+        if prev:
+            result[sym] = prev.signal_type.value
+    return result
 
 
 def _send_alert(signal: Signal):

@@ -28,6 +28,11 @@ def _as_pct(val, already_pct_threshold=5.0):
     return val
 
 
+def _r2(val):
+    """Round to 2 decimal places, pass through None."""
+    return round(val, 2) if val is not None else None
+
+
 def fetch_fundamentals_for_symbol(symbol: str, db: Session | None = None) -> dict | None:
     """Fetch fundamental data from Yahoo Finance and optionally persist."""
     yf_sym = symbol + NSE_SUFFIX if not symbol.endswith(NSE_SUFFIX) else symbol
@@ -111,22 +116,22 @@ def fetch_fundamentals_for_symbol(symbol: str, db: Session | None = None) -> dic
         fund = {
             "symbol": clean,
             "as_of_date": date.today(),
-            "market_cap_cr": market_cap_cr,
-            "pe_ratio": pe,
-            "pb_ratio": pb,
-            "roe": roe,
-            "roce": roe,
-            "debt_equity": debt_equity,
-            "promoter_holding": promoter_holding,
+            "market_cap_cr": _r2(market_cap_cr),
+            "pe_ratio": _r2(pe),
+            "pb_ratio": _r2(pb),
+            "roe": _r2(roe),
+            "roce": _r2(roe),
+            "debt_equity": _r2(debt_equity),
+            "promoter_holding": _r2(promoter_holding),
             "promoter_pledge": 0.0,
-            "revenue_growth_3yr": revenue_growth,
-            "profit_growth_3yr": earnings_growth,
-            "eps": eps,
-            "dividend_yield": dividend_yield,
+            "revenue_growth_3yr": _r2(revenue_growth),
+            "profit_growth_3yr": _r2(earnings_growth),
+            "eps": _r2(eps),
+            "dividend_yield": _r2(dividend_yield),
             "free_cash_flow_positive_years": 2,
-            "peg_ratio": peg,
-            "earnings_yield": earnings_yield,
-            "pe_5yr_median": pe,
+            "peg_ratio": _r2(peg),
+            "earnings_yield": _r2(earnings_yield),
+            "pe_5yr_median": _r2(pe),
         }
 
         if db is not None:

@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from enum import Enum as PyEnum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 from sqlalchemy import (
     Column,
     Integer,
@@ -137,7 +137,26 @@ class WatchlistItem(Base):
 # --- Pydantic response schemas ---
 
 
-class StockResponse(BaseModel):
+def _round_floats(data: dict, decimals: int = 2) -> dict:
+    for k, v in data.items():
+        if isinstance(v, float):
+            data[k] = round(v, decimals)
+    return data
+
+
+class RoundedModel(BaseModel):
+    """Base model that rounds all float fields to 2 decimal places."""
+
+    @model_validator(mode="after")
+    def round_all_floats(self):
+        for field_name in self.model_fields:
+            val = getattr(self, field_name)
+            if isinstance(val, float):
+                setattr(self, field_name, round(val, 2))
+        return self
+
+
+class StockResponse(RoundedModel):
     symbol: str
     name: str
     sector: str | None
@@ -148,7 +167,7 @@ class StockResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
-class SignalResponse(BaseModel):
+class SignalResponse(RoundedModel):
     symbol: str
     generated_at: datetime
     fundamental_score: float | None
@@ -169,7 +188,7 @@ class SignalResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
-class FundamentalsResponse(BaseModel):
+class FundamentalsResponse(RoundedModel):
     symbol: str
     as_of_date: date
     market_cap_cr: float | None

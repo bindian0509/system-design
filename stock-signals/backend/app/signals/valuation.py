@@ -51,10 +51,10 @@ def compute_valuation_score(fundamentals: dict) -> tuple[float, dict]:
     if pb is not None and pb < sector_pb:
         score += 15
 
-    score = min(100.0, score)
+    score = round(min(100.0, score), 2)
 
     return score, {
-        "pe_vs_median": pe_vs_median,
+        "pe_vs_median": round(pe_vs_median, 2) if pe_vs_median is not None else None,
         "peg_assessment": peg_assessment,
-        "earnings_yield_premium": earnings_yield_premium,
+        "earnings_yield_premium": round(earnings_yield_premium, 2) if earnings_yield_premium is not None else None,
     }

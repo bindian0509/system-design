@@ -77,12 +77,12 @@ def compute_momentum_score(
     if uptrend:
         score += 10
 
-    score = min(100.0, score)
+    score = round(min(100.0, score), 2)
 
     return score, {
-        "relative_strength_6m": relative_strength_6m,
+        "relative_strength_6m": round(relative_strength_6m, 2) if relative_strength_6m is not None else None,
         "near_52w_high": near_52w_high,
         "near_52w_low": near_52w_low,
-        "roc_1m": roc_1m,
-        "roc_3m": roc_3m,
+        "roc_1m": round(roc_1m, 2) if roc_1m is not None else None,
+        "roc_3m": round(roc_3m, 2) if roc_3m is not None else None,
     }

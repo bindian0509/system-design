@@ -94,10 +94,10 @@ def compute_technical_score(price_df: pd.DataFrame) -> tuple[float, dict]:
     if vol_spike and price_up:
         score += 15
 
-    score = min(100.0, score)
+    score = round(min(100.0, score), 2)
 
     return score, {
-        "rsi": rsi,
+        "rsi": round(rsi, 2) if rsi is not None else None,
         "macd_signal": macd_signal,
         "ma_crossover": ma_crossover,
         "volume_spike": vol_spike,

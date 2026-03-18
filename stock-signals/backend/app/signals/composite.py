@@ -16,13 +16,13 @@ def compute_composite_signal(
         + w.momentum * momentum_score
         + w.valuation * valuation_score
     )
-    composite = min(100.0, composite)
+    composite = round(min(100.0, composite), 2)
 
     sub_scores = {
-        "fundamental_score": fundamental_score,
-        "technical_score": technical_score,
-        "momentum_score": momentum_score,
-        "valuation_score": valuation_score,
+        "fundamental_score": round(fundamental_score, 2),
+        "technical_score": round(technical_score, 2),
+        "momentum_score": round(momentum_score, 2),
+        "valuation_score": round(valuation_score, 2),
     }
 
     if composite > 80 and fundamental_pass and technical_score > 50:

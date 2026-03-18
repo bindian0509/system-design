@@ -16,7 +16,7 @@ def _fundamental_quality_score(row) -> float:
         score += min(25, (row.revenue_growth_3yr - s.min_revenue_growth_3yr) / 2)
     if row.profit_growth_3yr is not None and row.profit_growth_3yr >= s.min_profit_growth_3yr:
         score += min(25, (row.profit_growth_3yr - s.min_profit_growth_3yr) / 2)
-    return min(100.0, score + 25)
+    return round(min(100.0, score + 25), 2)
 
 
 def screen_stocks(db_session: Session) -> list[str]:

@@ -76,7 +76,26 @@ def get_latest_signals(
     limit: int = Query(default=50, le=200),
     db: Session = Depends(get_db),
 ):
-    q = db.query(Signal).order_by(Signal.generated_at.desc())
+    from sqlalchemy import func
+
+    # Return only the most recent signal per stock (not all historical rows)
+    latest_subq = (
+        db.query(
+            Signal.symbol,
+            func.max(Signal.generated_at).label("max_at"),
+        )
+        .group_by(Signal.symbol)
+        .subquery()
+    )
+    q = (
+        db.query(Signal)
+        .join(
+            latest_subq,
+            (Signal.symbol == latest_subq.c.symbol)
+            & (Signal.generated_at == latest_subq.c.max_at),
+        )
+        .order_by(Signal.composite_score.desc())
+    )
     if signal_type:
         q = q.filter(Signal.signal_type == signal_type)
     return q.limit(limit).all()
@@ -190,10 +209,10 @@ def get_screener_results(db: Session = Depends(get_db)):
                 "symbol": sym,
                 "name": stock.name if stock else sym,
                 "sector": stock.sector if stock else None,
-                "market_cap_cr": fund.market_cap_cr if fund else None,
-                "pe_ratio": fund.pe_ratio if fund else None,
-                "roe": fund.roe if fund else None,
-                "composite_score": signal.composite_score if signal else None,
+                "market_cap_cr": round(fund.market_cap_cr, 2) if fund and fund.market_cap_cr else None,
+                "pe_ratio": round(fund.pe_ratio, 2) if fund and fund.pe_ratio else None,
+                "roe": round(fund.roe, 2) if fund and fund.roe else None,
+                "composite_score": round(signal.composite_score, 2) if signal and signal.composite_score else None,
                 "signal_type": signal.signal_type.value if signal else None,
             }
         )
