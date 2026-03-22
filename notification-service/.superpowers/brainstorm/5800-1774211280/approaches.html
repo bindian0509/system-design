@@ -1,0 +1,40 @@
+<h2>Three Architectural Approaches</h2>
+<p class="subtitle">Choose the architecture that best fits the notification service requirements</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Monolithic Notification Service</h3>
+      <p>Single service handles all channels (SMS, Email, Push) with direct provider SDK calls inline. Quota and dedup logic lives inside the same process.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Simple to build and deploy</li><li>Easy to debug</li><li>Low operational overhead</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Cannot scale SMS vs Email independently</li><li>One channel's slowness blocks others</li><li>500M+/day will bottleneck fast</li><li>No buffering — spikes hit providers directly</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)" style="border: 2px solid #6c8ebf;">
+    <div class="letter" style="background:#6c8ebf;">B</div>
+    <div class="content">
+      <h3>Hub-and-Spoke with Channel Workers ✦ Recommended</h3>
+      <p>Central Notification API handles auth, quota enforcement, deduplication, and priority routing. It enqueues to an internal priority queue. Separate worker services (SMS Worker, Email Worker, Push Worker) consume and dispatch to providers — each scales independently.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Each channel scales independently</li><li>Internal queue absorbs traffic spikes</li><li>Clear separation of concerns</li><li>Retry logic isolated per channel</li><li>Quota/dedup enforced at hub before queuing</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>More components to operate vs monolith</li><li>Adds internal queue (Kafka/Redis Streams)</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Full Event-Driven Pipeline</h3>
+      <p>REST API is just a thin gateway that publishes to Kafka topics per priority tier. Separate consumer groups handle each priority × channel combination with full fan-out. Maximum decoupling and throughput.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Maximum throughput and decoupling</li><li>Replay and audit built into Kafka</li><li>Natural backpressure per priority</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>High operational complexity (9+ consumer groups)</li><li>Quota enforcement harder across distributed consumers</li><li>Deduplication needs shared state (Redis) accessible by all consumers</li><li>Overkill given REST API integration choice</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>

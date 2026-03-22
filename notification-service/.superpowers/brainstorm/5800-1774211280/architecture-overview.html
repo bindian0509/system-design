@@ -1,0 +1,125 @@
+<h2>Architecture Overview</h2>
+<p class="subtitle">Hub-and-Spoke Notification Service — Amazon-scale</p>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">System Architecture Diagram</div>
+    <div class="mockup-body" style="font-family: monospace; font-size: 13px; line-height: 1.8; padding: 20px;">
+      <div style="display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap;">
+
+        <!-- Callers -->
+        <div style="display: flex; flex-direction: column; gap: 8px; min-width: 140px;">
+          <div class="label">Calling Services</div>
+          <div style="background:#e8f4f8; border: 1px solid #b0cfe0; border-radius:6px; padding:8px 12px; text-align:center;">Order Service</div>
+          <div style="background:#e8f4f8; border: 1px solid #b0cfe0; border-radius:6px; padding:8px 12px; text-align:center;">Auth Service</div>
+          <div style="background:#e8f4f8; border: 1px solid #b0cfe0; border-radius:6px; padding:8px 12px; text-align:center;">Marketing Service</div>
+          <div style="background:#e8f4f8; border: 1px solid #b0cfe0; border-radius:6px; padding:8px 12px; text-align:center;">Payment Service</div>
+          <div style="background:#e8f4f8; border: 1px solid #b0cfe0; border-radius:6px; padding:8px 12px; text-align:center;">... N services</div>
+          <div style="text-align:center; margin-top:4px; font-size:11px; color:#666;">REST POST /notify</div>
+        </div>
+
+        <!-- Arrow -->
+        <div style="display:flex; align-items:center; padding-top:60px; font-size:22px; color:#6c8ebf;">&#8594;</div>
+
+        <!-- Hub -->
+        <div style="min-width: 200px;">
+          <div class="label">Notification Hub (API)</div>
+          <div style="background:#dce8fb; border: 2px solid #6c8ebf; border-radius:8px; padding:16px;">
+            <div style="font-weight:bold; margin-bottom:8px; color:#3a5f9f;">Notification Gateway</div>
+            <div style="font-size:12px; color:#555; line-height:1.7;">
+              1. Authenticate caller (API key / mTLS)<br>
+              2. Quota check (per-service, per-channel)<br>
+              3. Deduplication check (Redis idempotency key)<br>
+              4. Resolve user opt-out / DND<br>
+              5. Assign priority tier<br>
+              6. Enqueue to priority queue<br>
+              7. Return 202 Accepted + notif_id
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            <div style="background:#fff8e1; border:1px solid #f0c040; border-radius:4px; padding:4px 8px; font-size:11px;">Redis — Dedup + Quota</div>
+            <div style="background:#fff8e1; border:1px solid #f0c040; border-radius:4px; padding:4px 8px; font-size:11px;">PostgreSQL — Config DB</div>
+          </div>
+        </div>
+
+        <!-- Arrow -->
+        <div style="display:flex; align-items:center; padding-top:60px; font-size:22px; color:#6c8ebf;">&#8594;</div>
+
+        <!-- Priority Queues -->
+        <div style="min-width: 180px;">
+          <div class="label">Priority Queues (Kafka)</div>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <div style="background:#fce8e8; border:1px solid #e08080; border-radius:6px; padding:8px 12px;">
+              <strong style="color:#c00;">P1 — Critical</strong><br>
+              <span style="font-size:11px;">OTP, security alerts</span>
+            </div>
+            <div style="background:#fff3e0; border:1px solid #e0a040; border-radius:6px; padding:8px 12px;">
+              <strong style="color:#a05000;">P2 — Transactional</strong><br>
+              <span style="font-size:11px;">Orders, payments, delivery</span>
+            </div>
+            <div style="background:#e8f5e9; border:1px solid #70b070; border-radius:6px; padding:8px 12px;">
+              <strong style="color:#2e7d32;">P3 — Marketing</strong><br>
+              <span style="font-size:11px;">Promos, recommendations</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Arrow -->
+        <div style="display:flex; align-items:center; padding-top:60px; font-size:22px; color:#6c8ebf;">&#8594;</div>
+
+        <!-- Channel Workers -->
+        <div style="min-width: 160px;">
+          <div class="label">Channel Workers</div>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <div style="background:#f3e8fb; border:1px solid #a070c0; border-radius:6px; padding:8px 12px;">
+              <strong>SMS Worker</strong><br>
+              <span style="font-size:11px;">Twilio / SNS</span>
+            </div>
+            <div style="background:#f3e8fb; border:1px solid #a070c0; border-radius:6px; padding:8px 12px;">
+              <strong>Email Worker</strong><br>
+              <span style="font-size:11px;">SES / SendGrid</span>
+            </div>
+            <div style="background:#f3e8fb; border:1px solid #a070c0; border-radius:6px; padding:8px 12px;">
+              <strong>Push Worker</strong><br>
+              <span style="font-size:11px;">FCM / APNs</span>
+            </div>
+          </div>
+          <div style="margin-top:8px; background:#fff8e1; border:1px solid #f0c040; border-radius:4px; padding:4px 8px; font-size:11px; text-align:center;">DLQ (failed after retries)</div>
+        </div>
+
+        <!-- Arrow -->
+        <div style="display:flex; align-items:center; padding-top:60px; font-size:22px; color:#6c8ebf;">&#8594;</div>
+
+        <!-- Providers -->
+        <div style="min-width: 130px;">
+          <div class="label">Third-Party Providers</div>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <div style="background:#f0f0f0; border:1px solid #999; border-radius:6px; padding:8px 12px; text-align:center;">Twilio</div>
+            <div style="background:#f0f0f0; border:1px solid #999; border-radius:6px; padding:8px 12px; text-align:center;">AWS SES</div>
+            <div style="background:#f0f0f0; border:1px solid #999; border-radius:6px; padding:8px 12px; text-align:center;">FCM</div>
+            <div style="background:#f0f0f0; border:1px solid #999; border-radius:6px; padding:8px 12px; text-align:center;">APNs</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom tracking row -->
+      <div style="margin-top:24px; border-top:1px dashed #ccc; padding-top:16px; display:flex; gap:16px; flex-wrap:wrap;">
+        <div style="background:#e8f0fe; border:1px solid #9ab0e0; border-radius:6px; padding:8px 16px; font-size:12px;">
+          <strong>Notification DB (PostgreSQL)</strong><br>
+          Status tracking, audit log, delivery receipts
+        </div>
+        <div style="background:#e8f0fe; border:1px solid #9ab0e0; border-radius:6px; padding:8px 16px; font-size:12px;">
+          <strong>GET /notifications/{id}/status</strong><br>
+          Callers can poll delivery status
+        </div>
+        <div style="background:#e8f0fe; border:1px solid #9ab0e0; border-radius:6px; padding:8px 16px; font-size:12px;">
+          <strong>Metrics / Alerting</strong><br>
+          Queue depth, error rates, provider costs
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:16px;">Does this high-level architecture look right? Reply in terminal to continue to the next section.</p>
