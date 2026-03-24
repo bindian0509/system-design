@@ -1,0 +1,76 @@
+<h2>Templating: Inline vs Separate Service</h2>
+<p class="subtitle">Where should template rendering live, and how do we handle large email payloads?</p>
+
+<div class="options">
+
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Inline: Template rendering inside Notification Service</h3>
+      <p>Notification Gateway fetches the template, renders it with vars, and embeds rendered HTML into the Kafka message before enqueuing.</p>
+
+      <div style="font-family:monospace; font-size:12px; background:#f5f5f5; padding:10px; border-radius:6px; margin:10px 0; line-height:1.8;">
+        Caller → Gateway → <strong>[render here]</strong> → Kafka (large msg) → Worker → SES
+      </div>
+
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul>
+          <li>Single service to operate</li>
+          <li>Worker is dumb — no template dependency</li>
+        </ul></div>
+        <div class="cons"><h4>Cons</h4><ul>
+          <li>Kafka messages become MBs (breaks 1MB limit)</li>
+          <li>Template logic coupled to delivery logic</li>
+          <li>No A/B testing or template versioning built-in</li>
+          <li>Marketing teams need code deploys to change templates</li>
+          <li>Gateway CPU hit on render (blocks quota/dedup path)</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)" style="border:2px solid #6c8ebf;">
+    <div class="letter" style="background:#6c8ebf;">B</div>
+    <div class="content">
+      <h3>Separate Template Service ✦ Recommended</h3>
+      <p>A dedicated Template Service handles template CRUD, versioning, A/B testing, and rendering. The Notification Service only carries <code>{template_id + vars}</code> through Kafka. Workers call the Template Service just before dispatch.</p>
+
+      <div style="font-family:monospace; font-size:12px; background:#f5f5f5; padding:10px; border-radius:6px; margin:10px 0; line-height:1.8;">
+        Caller → Gateway → Kafka ({template_id, vars} — tiny) → Worker → <strong>[render here]</strong> → SES
+      </div>
+
+      <div style="background:#e8f4f8; border-radius:6px; padding:10px; margin:8px 0; font-size:12px;">
+        <strong>Large email handling:</strong> Images are CDN URLs (never base64). Rendered HTML > 256KB → stored in S3 → worker streams directly to SES. Kafka message stays &lt; 4KB always.
+      </div>
+
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul>
+          <li>Kafka messages stay tiny (template_id + vars only)</li>
+          <li>Template Service scales independently (read-heavy, cacheable)</li>
+          <li>Marketing teams own templates via UI — no code deploys</li>
+          <li>A/B testing, versioning, personalization all in one place</li>
+          <li>Images always CDN-hosted → email body stays small</li>
+          <li>S3 for rendered HTML if > 256KB threshold</li>
+          <li>Template cache at worker level (Redis, TTL 60s)</li>
+        </ul></div>
+        <div class="cons"><h4>Cons</h4><ul>
+          <li>Template Service becomes a dependency of workers</li>
+          <li>One more service to operate</li>
+          <li>Template Service outage can block email sends</li>
+          <li>Need circuit breaker + fallback on Template Service calls</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="section" style="margin-top:20px; background:#fff8e1; border:1px solid #f0c040; border-radius:8px; padding:16px;">
+  <h3 style="margin:0 0 8px;">Large Email Payload Strategy (regardless of approach)</h3>
+  <div style="font-size:13px; line-height:1.8;">
+    <strong>Rule 1:</strong> Images are NEVER base64 in emails — always CDN URLs (<code>img src="https://cdn.example.com/..."</code>)<br>
+    <strong>Rule 2:</strong> Rendered HTML > 256KB → upload to S3 → worker fetches S3 URL and streams to SES (SES supports raw MIME up to 40MB)<br>
+    <strong>Rule 3:</strong> Kafka max.message.bytes set to 4MB as a safety net, but target is &lt;4KB per message<br>
+    <strong>Rule 4:</strong> Template Service caches rendered output per {template_id + user_segment} (TTL=60s) — bulk sends reuse same render
+  </div>
+</div>

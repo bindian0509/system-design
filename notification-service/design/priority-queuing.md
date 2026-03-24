@@ -129,8 +129,9 @@ sequenceDiagram
   "channel": "SMS",
   "priority": "CRITICAL",
   "template_id": "otp_verification_v2",
-  "rendered_content": {
-    "body": "Your OTP is 847291. Expires in 5 minutes. Do not share."
+  "template_vars": {
+    "otp_code": "847291",
+    "expires_in_minutes": 5
   },
   "recipient": {
     "phone_number": "+919876543210"
@@ -145,7 +146,9 @@ sequenceDiagram
 }
 ```
 
-Note: `rendered_content` is pre-rendered by the gateway at enqueue time using the template + vars. Workers do not need to re-fetch the template — this makes workers stateless with respect to template config.
+**No rendered content in Kafka messages.** The gateway enqueues only `template_id + template_vars` — the actual HTML/SMS body is never stored in Kafka. Workers call the Template Service at dispatch time to render content. This keeps every Kafka message under 4KB regardless of email size, avoids Kafka broker memory pressure at 500M+/day, and ensures template updates propagate immediately (no stale pre-rendered content stuck in the queue).
+
+Template Service rendering is fast due to a Redis cache keyed on `{template_id + user_segment}` (TTL=60s) — bulk marketing sends to millions of users reuse the same cached skeleton; only user-specific vars (name, order ID) are interpolated per message at the worker.
 
 ---
 

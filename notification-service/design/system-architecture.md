@@ -4,6 +4,8 @@
 
 The Notification Service is a **Hub-and-Spoke** system that provides a single REST entry point for all internal e-commerce services to send SMS, Email, and Push notifications. It handles 500M+ notifications/day across three priority tiers, enforcing per-service quotas, deduplication, and user DND preferences before dispatching to third-party providers via independent per-channel workers.
 
+Template rendering is handled by a **separate Template Service** — the Notification Gateway only enqueues `{template_id, template_vars}` into Kafka (keeping messages < 4KB). Workers call the Template Service at dispatch time. Large email payloads (rendered HTML > 256KB) are staged in S3; workers stream them directly to SES rather than passing through Kafka.
+
 ---
 
 ## High-Level Component Diagram
@@ -40,6 +42,13 @@ flowchart TB
         PushWorker[Push Worker]
     end
 
+    subgraph TemplateSvc["Template Service (Independent, Horizontally Scaled)"]
+        direction TB
+        TemplateAPI[Template API\nRender endpoint]
+        TemplateCache[(Redis Cache\nRendered templates TTL=60s)]
+        TemplateDB[(Template Store\nPostgreSQL)]
+    end
+
     subgraph Providers["Third-Party Providers"]
         Twilio[Twilio / AWS SNS]
         SES[AWS SES / SendGrid]
@@ -50,6 +59,7 @@ flowchart TB
         Redis[(Redis Cluster\nQuota + Dedup)]
         PG[(PostgreSQL\nNotif DB + Config)]
         PGRead[(PostgreSQL\nRead Replica)]
+        S3[(S3\nLarge Email Payloads\n> 256KB)]
     end
 
     Callers -->|POST /notify| AUTH
@@ -61,7 +71,7 @@ flowchart TB
     DND -->|read preferences| PGRead
     DND --> ROUTER
 
-    ROUTER -->|priority=CRITICAL| P1
+    ROUTER -->|priority=CRITICAL\nKafka msg: template_id + vars only| P1
     ROUTER -->|priority=TRANSACTIONAL| P2
     ROUTER -->|priority=MARKETING| P3
 
@@ -74,6 +84,15 @@ flowchart TB
     P3 --> SMSWorker
     P3 --> EmailWorker
     P3 --> PushWorker
+
+    EmailWorker -->|render request| TemplateAPI
+    SMSWorker -->|render request| TemplateAPI
+    PushWorker -->|render request| TemplateAPI
+    TemplateAPI <--> TemplateCache
+    TemplateAPI --> TemplateDB
+
+    EmailWorker -->|rendered HTML > 256KB| S3
+    EmailWorker -->|stream from S3| SES
 
     SMSWorker --> Twilio
     EmailWorker --> SES
@@ -102,9 +121,11 @@ sequenceDiagram
     participant PG as PostgreSQL
     participant Kafka as Kafka
     participant Worker as Channel Worker
+    participant TS as Template Service
+    participant S3 as S3
     participant Provider as Third-Party Provider
 
-    Caller->>GW: POST /notify {service_id, user_id, channel, template, priority}
+    Caller->>GW: POST /notify {service_id, user_id, channel, template_id, template_vars, priority}
 
     GW->>Redis: INCR quota:{service_id}:{channel}:{window}
     Redis-->>GW: count=142 (under limit)
@@ -116,11 +137,23 @@ sequenceDiagram
     PG-->>GW: opted_out=false, dnd=inactive
 
     GW->>PG: INSERT INTO notifications (id, status=QUEUED, ...)
-    GW->>Kafka: Produce → notif.critical | notif.transactional | notif.marketing
+    GW->>Kafka: Produce {notification_id, template_id, template_vars, recipient} → priority topic
+    Note over GW,Kafka: Kafka message < 4KB — no rendered content
     GW-->>Caller: 202 Accepted {notification_id}
 
-    Kafka->>Worker: Consume message (at-least-once)
-    Worker->>Provider: Send SMS / Email / Push
+    Kafka->>Worker: Consume message {notification_id, template_id, template_vars, recipient}
+
+    Note over Worker,TS: Template rendering at dispatch time
+    Worker->>TS: POST /render {template_id, template_vars, user_id}
+    TS-->>Worker: {subject, body_html, body_text} (cached or freshly rendered)
+
+    alt Email body > 256KB (large marketing email)
+        Worker->>S3: PUT rendered HTML → s3://notif-payloads/{notification_id}.html
+        Worker->>Provider: SendEmail with S3 reference (SES reads directly from S3)
+    else Normal size
+        Worker->>Provider: Send SMS / Email / Push with inline content
+    end
+
     Provider-->>Worker: 200 OK {provider_message_id}
 
     Worker->>PG: UPDATE notifications SET status=DELIVERED, delivered_at=NOW()
@@ -252,10 +285,12 @@ flowchart TB
 
 | Component | Responsibility |
 |-----------|---------------|
-| **Notification Gateway** | Auth, quota check, dedup, DND resolution, priority routing, enqueue, return 202 |
-| **SMS Worker** | Consume from all topics (P1 first), call Twilio/SNS, retry with backoff, update status |
-| **Email Worker** | Consume from all topics, call SES/SendGrid, retry with backoff, update status |
-| **Push Worker** | Consume from all topics, call FCM/APNs, retry with backoff, update status |
-| **Redis Cluster** | Quota counters (INCR+TTL), dedup keys (SET NX+TTL), rate limiting |
-| **PostgreSQL** | Notification records, service config, quota config, user preferences, audit log |
-| **Kafka** | Priority-ordered durable message passing, replay, DLQ |
+| **Notification Gateway** | Auth, quota check, dedup, DND resolution, priority routing, enqueue `{template_id, vars}`, return 202 |
+| **Template Service** | Template CRUD + versioning, render HTML/text from template_id + vars, Redis cache of rendered output (TTL=60s) |
+| **SMS Worker** | Consume from all topics (P1 first), call Template Service, call Twilio/SNS, retry with backoff, update status |
+| **Email Worker** | Consume from all topics, call Template Service, stage large payloads to S3, call SES/SendGrid, retry with backoff, update status |
+| **Push Worker** | Consume from all topics, call Template Service, call FCM/APNs, retry with backoff, update status |
+| **S3 (Email Payloads)** | Store rendered email HTML > 256KB; Email Worker streams directly from S3 to SES |
+| **Redis Cluster** | Quota counters (INCR+TTL), dedup keys (SET NX+TTL), template render cache (TTL=60s) |
+| **PostgreSQL** | Notification records, service config, quota config, user preferences, audit log, template definitions |
+| **Kafka** | Priority-ordered durable message passing (tiny messages: template_id + vars), replay, DLQ |

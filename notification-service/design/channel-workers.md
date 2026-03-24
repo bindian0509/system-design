@@ -2,9 +2,11 @@
 
 ## Overview
 
-Each channel (SMS, Email, Push) has an independent horizontally-scalable worker service. Workers consume from all three priority Kafka topics (polling critical first), render and dispatch notifications to third-party providers, handle retries with exponential backoff, update delivery status in PostgreSQL, and route permanently-failed messages to the DLQ.
+Each channel (SMS, Email, Push) has an independent horizontally-scalable worker service. Workers consume from all three priority Kafka topics (polling critical first), call the **Template Service** to render content, dispatch to third-party providers, handle retries with exponential backoff, update delivery status in PostgreSQL, and route permanently-failed messages to the DLQ.
 
 Workers are **stateless** — all state lives in PostgreSQL and Kafka offsets. A worker pod crash results in re-delivery of unacknowledged messages.
+
+Kafka messages carry only `{template_id, template_vars, recipient}` — no rendered content. This keeps messages under 4KB regardless of email size. Large rendered email HTML (> 256KB) is staged in S3; the Email Worker streams it directly to SES.
 
 ---
 
@@ -12,10 +14,12 @@ Workers are **stateless** — all state lives in PostgreSQL and Kafka offsets. A
 
 ```mermaid
 flowchart TB
-    subgraph Worker["SMS Worker Pod (same pattern for Email, Push)"]
+    subgraph Worker["Email Worker Pod (SMS/Push follow same pattern, minus S3)"]
         direction TB
         Poller["Priority Poller\n(poll critical → trans → marketing)"]
-        Dispatcher["Provider Dispatcher\n(Twilio client)"]
+        Renderer["Template Renderer\n(calls Template Service)"]
+        PayloadRouter["Payload Router\n(inline vs S3 based on size)"]
+        Dispatcher["Provider Dispatcher\n(SES client)"]
         RetryManager["Retry Manager\n(backoff + attempt tracking)"]
         StatusUpdater["Status Updater\n(PostgreSQL writes)"]
     end
@@ -27,22 +31,40 @@ flowchart TB
         DLQ[notif.dlq]
     end
 
+    subgraph TemplateSvc["Template Service"]
+        TAPI[Render API]
+        TCache[(Redis Cache\nTTL=60s)]
+    end
+
+    subgraph Storage["Storage"]
+        S3[(S3\nLarge payloads > 256KB)]
+        PG[(PostgreSQL)]
+    end
+
     subgraph Providers["Third-Party Providers"]
-        Twilio[Twilio / AWS SNS]
+        SES[AWS SES / SendGrid]
     end
 
     KC --> Poller
     KT --> Poller
     KM --> Poller
 
-    Poller --> Dispatcher
-    Dispatcher --> Twilio
-    Twilio --> RetryManager
+    Poller --> Renderer
+    Renderer -->|GET /render| TAPI
+    TAPI <--> TCache
+
+    Renderer --> PayloadRouter
+    PayloadRouter -->|size <= 256KB| Dispatcher
+    PayloadRouter -->|size > 256KB| S3
+    S3 -->|s3 reference| Dispatcher
+
+    Dispatcher --> SES
+    SES --> RetryManager
     RetryManager -->|retry| Dispatcher
     RetryManager -->|exhausted| DLQ
 
     Dispatcher --> StatusUpdater
-    StatusUpdater --> PG[(PostgreSQL)]
+    StatusUpdater --> PG
 ```
 
 ---
@@ -177,33 +199,61 @@ stateDiagram-v2
 
 ## Email Worker Specifics
 
+### Template Rendering + Large Payload Flow
+
 ```mermaid
 sequenceDiagram
     participant Worker as Email Worker
+    participant TS as Template Service
+    participant S3 as S3
     participant SES as AWS SES
     participant PG as PostgreSQL
-    participant Kafka as notif.dlq
+    participant DLQ as notif.dlq
 
-    Worker->>SES: SendEmail v2\n{from, to, subject, html_body, text_body}
+    Worker->>Worker: Consume {notification_id, template_id,\ntemplate_vars, recipient_email}
 
-    alt Success
+    Worker->>TS: POST /render {template_id, template_vars, user_id}
+    Note over TS: Check Redis cache first\n(key: template_id + segment hash)
+    alt Cache hit
+        TS-->>Worker: {subject, body_html, body_text} (cached skeleton)
+        Worker->>Worker: Interpolate user-specific vars locally
+    else Cache miss
+        TS->>TS: Fetch template from DB\nRender full HTML (Mjml/Handlebars)
+        TS->>TS: Cache rendered skeleton (TTL=60s)
+        TS-->>Worker: {subject, body_html, body_text}
+    end
+
+    Note over Worker: Images are always CDN URLs in template\nNever base64 embedded
+
+    alt body_html size <= 256KB
+        Worker->>SES: SendEmail v2 {from, to, subject, body_html, body_text}
+    else body_html size > 256KB (large marketing email)
+        Worker->>S3: PUT s3://notif-email-payloads/{notification_id}.html
+        S3-->>Worker: ETag confirmed
+        Worker->>SES: SendRawEmail with S3 reference\n(SES streams from S3 directly)
+    end
+
+    alt Delivery success
         SES-->>Worker: MessageId: 0102018...
-        Worker->>PG: UPDATE status=DELIVERED, provider_message_id=010201...
+        Worker->>PG: UPDATE status=DELIVERED, provider_message_id=0102018...
         Worker->>Worker: Commit Kafka offset
-    else SES bounce (permanent — 5xx SMTP)
-        SES-->>Worker: Error: MessageRejected (invalid address)
+    else Hard bounce (invalid address)
+        SES-->>Worker: MessageRejected
         Worker->>PG: UPDATE status=FAILED
-        Worker->>Kafka: Produce DLQ message {reason: INVALID_ADDRESS}
+        Worker->>DLQ: Produce {reason: INVALID_ADDRESS}
         Worker->>Worker: Commit Kafka offset
-    else SES throttle (429)
+    else Throttle (429)
         SES-->>Worker: ThrottlingException
-        Worker->>Worker: Backoff + retry
+        Worker->>Worker: Backoff + retry (same S3 object reused)
     end
 ```
 
 **Email-specific handling**:
-- SES delivery receipts (bounces, complaints) arrive via SNS webhook → update `notifications.status` asynchronously
-- Soft bounces (mailbox full) → retry; hard bounces (invalid address) → DLQ + mark address invalid in user profile
+- **Images**: Always CDN-hosted URLs in templates (`<img src="https://cdn.example.com/...">`). Never base64 — keeps body_html small and enables browser caching
+- **Large payloads**: Rendered HTML > 256KB → uploaded to S3 once, reused across retries (S3 object survives worker retries)
+- **Rendering cache**: Template Service caches rendered skeletons by `{template_id + user_segment}` for 60s — a 100M-user bulk send renders the template once, not 100M times; only user-specific vars (name, order_id) are interpolated per-user at the worker
+- **SES delivery receipts**: Bounces and complaints arrive asynchronously via SNS webhook → update `notifications.status`
+- **Soft bounces** (mailbox full) → retry; **hard bounces** (invalid address) → DLQ + mark address invalid in user profile
 
 ---
 
