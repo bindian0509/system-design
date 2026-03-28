@@ -40,7 +40,7 @@ sequenceDiagram
     GW->>Kafka: Produce to priority topic
     GW-->>S: 202 Accepted with notification_id
 
-    Note over S: Caller is free; delivery is async
+    Note over S: Caller is free delivery is async
 
     Kafka->>Worker: Consume
     Worker->>Provider: Send SMS
