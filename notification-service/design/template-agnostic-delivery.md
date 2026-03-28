@@ -39,8 +39,8 @@ When callers own rendering, a marketing email with rich HTML + inline styles can
 ```mermaid
 flowchart TD
     CALLER[Marketing Service\nrenders 2MB HTML] -->|POST /notify 2MB body| GW[Notification Gateway]
-    GW -->|hold 2MB in memory\nper concurrent request| MEM[Memory pressure\n50K req/s × 2MB = 100GB/s churn]
-    GW -->|must re-upload to S3\nbefore Kafka enqueue| DOUBLE[Double network hop:\nCaller→GW→S3]
+    GW -->|hold 2MB in memory\nper concurrent request| MEM[Memory pressure\n50K req/s x 2MB = 100GB/s churn]
+    GW -->|must re-upload to S3\nbefore Kafka enqueue| DOUBLE[Double network hop:\nCaller to GW to S3]
     GW -->|Kafka can't carry 2MB| KAFKA_BLOCK[Kafka blocked\neven at 4MB limit\nmemory/replication cost]
     DOUBLE & MEM & KAFKA_BLOCK --> BROKEN[REST is wrong transport\nfor large payloads]
 ```
@@ -274,7 +274,7 @@ POST /v1/notify/batch
 
 ```mermaid
 flowchart TD
-    BATCH[POST /notify/batch\n{content_ref, recipients[]}] --> VALIDATE[Validate API key\nQuota check for entire batch atomically]
+    BATCH["POST /notify/batch\ncontent_ref + recipients[]"] --> VALIDATE[Validate API key\nQuota check for entire batch atomically]
     VALIDATE -->|quota insufficient| REJECT_PARTIAL[Partial reject:\nAccept up to quota limit\nReject remainder with 429]
     VALIDATE -->|ok| FANOUT[Fan-out loop\nOne Kafka message per recipient\nAll pointing at same S3 key]
     FANOUT --> KAFKA["notif.marketing\n(one msg per user, < 1KB each)"]
@@ -300,7 +300,7 @@ flowchart TD
 
     CHECK -->|content_ref present\nS3 key| L1{Worker L1 cache\nhit for this S3 key?}
     L1 -->|hit| INTERP[Interpolate vars from message\ninto cached body]
-    L1 -->|miss| S3_GET[GET s3://notif-content/{key}]
+    L1 -->|miss| S3_GET["GET s3://notif-content/key"]
     S3_GET --> L1_STORE[Store in L1 cache\nTTL=30s, max 50MB per pod]
     L1_STORE --> INTERP
     INTERP --> SEND[Stream to SES]
