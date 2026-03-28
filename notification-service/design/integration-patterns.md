@@ -47,8 +47,8 @@ sequenceDiagram
     Provider-->>Worker: OK
 
     Note over S: Optionally poll status
-    S->>GW: GET /v1/notifications/{id}/status
-    GW-->>S: {status: DELIVERED, delivered_at: ...}
+    S->>GW: GET /v1/notifications/id/status
+    GW-->>S: status=DELIVERED, delivered_at=timestamp
 ```
 
 ### When to Use
@@ -173,7 +173,7 @@ sequenceDiagram
     participant KafkaNE as notif.events
     participant NotifConsumer as Notification Event Consumer
     participant GW as Gateway
-    participant KafkaP as notif.critical / transactional / marketing
+    participant KafkaP as Priority Topics
 
     S->>KafkaNE: Produce event_type=SEND_NOTIFICATION with user_id and payload
     Note over S: Fire and forget — no 202

@@ -21,7 +21,7 @@ flowchart TD
     LOAD --> HOURLY["INCR quota:svc:ch:HOURLY:bucket"]
     HOURLY --> H_CHECK{count > hourly_limit?}
     H_CHECK -->|yes| REJECT_H[Return 429\nQUOTA_EXCEEDED\nhourly]
-    H_CHECK -->|no| DAILY[INCR quota:{svc}:{ch}:DAILY:{bucket}]
+    H_CHECK -->|no| DAILY["INCR quota:svc:ch:DAILY:bucket"]
     DAILY --> D_CHECK{count > daily_limit?}
     D_CHECK -->|yes| ROLLBACK[DECR hourly counter\nReturn 429\nQUOTA_EXCEEDED daily]
     D_CHECK -->|no| PASS[Proceed to dedup check]
@@ -92,7 +92,7 @@ flowchart TD
     KEY --> SETNX["Redis: SET NX dedup:key notification_id EX ttl"]
     SETNX --> EXISTS{Key already existed?}
     EXISTS -->|yes — duplicate| RETURN[Return 200\nDUPLICATE_SUPPRESSED\nwith original notification_id]
-    EXISTS -->|no — new| PROCEED[Proceed to DND check\n→ enqueue]
+    EXISTS -->|no — new| PROCEED[Proceed to DND check\nand enqueue]
 ```
 
 ### Idempotency Key Derivation
