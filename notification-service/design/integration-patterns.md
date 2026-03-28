@@ -35,10 +35,10 @@ sequenceDiagram
     participant Worker as SMS Worker
     participant Provider as Twilio
 
-    S->>GW: POST /v1/notify\n{user_id, channel, priority, template_id, ...}
+    S->>GW: POST /v1/notify (user_id, channel, priority, template_id)
     GW->>GW: Auth, quota, dedup, DND
     GW->>Kafka: Produce to priority topic
-    GW-->>S: 202 Accepted {notification_id}
+    GW-->>S: 202 Accepted with notification_id
 
     Note over S: Caller is free; delivery is async
 
@@ -113,16 +113,16 @@ sequenceDiagram
     S->>SDK: client.sendOTP(userId, otpCode)
     SDK->>SDK: Generate idempotency_key = SHA256(svc+user+template+window)
     SDK->>SDK: Inject trace headers from current span
-    SDK->>GW: POST /v1/notify {channel=SMS, priority=CRITICAL, ...}
+    SDK->>GW: POST /v1/notify (channel=SMS, priority=CRITICAL)
     GW-->>SDK: 202 Accepted
-    SDK-->>S: NotificationResult {id, status=QUEUED}
+    SDK-->>S: NotificationResult with id and status=QUEUED
 ```
 
 ### SDK Responsibilities
 
 ```mermaid
 flowchart LR
-    Call[client.send\(\)] --> IdempotencyKey[Auto-generate\nidempotency_key]
+    Call["client.send()"] --> IdempotencyKey[Auto-generate\nidempotency_key]
     IdempotencyKey --> Tracing[Inject trace_id\nfrom current span]
     Tracing --> Timeout[Enforce 2s timeout]
     Timeout --> HTTP[POST /v1/notify]
@@ -170,17 +170,17 @@ Calling services publish notification events to a shared Kafka topic. The Notifi
 ```mermaid
 sequenceDiagram
     participant S as Marketing Service
-    participant KafkaNE as notif.events (shared topic)
+    participant KafkaNE as notif.events
     participant NotifConsumer as Notification Event Consumer
-    participant GW as Gateway (internal)
-    participant Kafka as notif.critical/transactional/marketing
+    participant GW as Gateway
+    participant KafkaP as notif.critical / transactional / marketing
 
-    S->>KafkaNE: Produce {event_type: SEND_NOTIFICATION, user_id, ...}
+    S->>KafkaNE: Produce event_type=SEND_NOTIFICATION with user_id and payload
     Note over S: Fire and forget — no 202
 
     KafkaNE->>NotifConsumer: Consume event
     NotifConsumer->>NotifConsumer: Validate, apply quota + dedup + DND
-    NotifConsumer->>Kafka: Enqueue to priority topic
+    NotifConsumer->>KafkaP: Enqueue to priority topic
 ```
 
 ### When to Use
@@ -191,23 +191,14 @@ sequenceDiagram
 
 ### Trade-offs vs REST
 
-```mermaid
-flowchart LR
-    subgraph REST["REST API"]
-        R1[Immediate quota feedback]
-        R2[Synchronous dedup]
-        R3[Simple HTTP client]
-        R4[Caller knows if rejected]
-    end
-
-    subgraph EventDriven["Event-Driven (Kafka)"]
-        E1[No quota feedback — async rejection only]
-        E2[Dedup harder — consumer-side]
-        E3[Kafka producer setup required]
-        E4[Higher throughput ceiling]
-        E5[Natural backpressure via consumer lag]
-    end
-```
+| | REST API | Event-Driven Kafka |
+|--|----------|-------------------|
+| Quota feedback | Synchronous — 429 returned immediately | Async only — rejection logged after the fact |
+| Dedup | At gateway — simple | Consumer-side — complex distributed state |
+| Client setup | HTTP client | Kafka producer config required |
+| Throughput ceiling | High — gateway scales horizontally | Higher — no HTTP round-trip |
+| Backpressure | HTTP 429 / timeout | Consumer lag naturally throttles |
+| Caller rejection visibility | Immediate | Via DLQ or lag monitoring only |
 
 **Why REST was chosen over Event-Driven for this system**:
 1. Quota enforcement requires synchronous feedback — callers need to know if their quota is exceeded before moving on
@@ -230,12 +221,12 @@ sequenceDiagram
     participant Worker as SMS Worker
     participant Provider as Twilio
 
-    S->>GW: POST /v1/notify {callback_url: "https://order-svc/notif-callback"}
-    GW-->>S: 202 Accepted {notification_id}
+    S->>GW: POST /v1/notify with callback_url=https://order-svc/notif-callback
+    GW-->>S: 202 Accepted with notification_id
 
     Provider-->>Worker: Delivery receipt webhook (SMS delivered)
     Worker->>GW: Callback to order-svc/notif-callback
-    GW->>S: POST /notif-callback {notification_id, status: DELIVERED, delivered_at}
+    GW->>S: POST /notif-callback with notification_id, status=DELIVERED, delivered_at
     S-->>GW: 200 OK
 ```
 
@@ -262,17 +253,18 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-    Q1{Do you need synchronous\nquota/dedup feedback?}
-    Q1 -->|yes| REST[Use REST API\nPOST /v1/notify]
-    Q1 -->|no| Q2{Sending >1M/hour\nfrom this service?}
-    Q2 -->|no| REST
-    Q2 -->|yes| Q3{Already using Kafka\nin this service?}
-    Q3 -->|yes| EventDriven[Consider Event-Driven\n(discuss with Notif team)]
-    Q3 -->|no| SDK[Use SDK\n(wraps REST, simpler API)]
+    Q1{Need synchronous\nquota or dedup feedback?}
+    Q1 -->|yes| Q4{Frequent sender\nwant less boilerplate?}
+    Q1 -->|no| Q2{Sending more than\n1M per hour?}
 
-    REST --> Q4{Frequent sender\nwant less boilerplate?}
-    Q4 -->|yes| SDK2[Use SDK on top of REST]
-    Q4 -->|no| Done[Use raw REST]
+    Q4 -->|yes| UseSDK[Use SDK\nwraps REST with auto-retry\nand tracing]
+    Q4 -->|no| UseREST[Use raw REST API\nPOST /v1/notify]
+
+    Q2 -->|no| Q4
+    Q2 -->|yes| Q3{Already producing\nKafka events?}
+
+    Q3 -->|yes| UseKafka[Consider Event-Driven\ndiscuss with Notif team]
+    Q3 -->|no| Q4
 ```
 
 **Summary**: Start with REST. Adopt SDK if your team sends notifications frequently and wants auto-retry/tracing. Propose event-driven only for bulk marketing sends at extreme volume.

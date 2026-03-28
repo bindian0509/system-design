@@ -106,7 +106,7 @@ flowchart TB
     EmailWorker -->|status update| PG
     PushWorker -->|status update| PG
 
-    Gateway -->|write notification record| PG
+    ROUTER -->|write notification record| PG
 ```
 
 ---
@@ -125,36 +125,36 @@ sequenceDiagram
     participant S3 as S3
     participant Provider as Third-Party Provider
 
-    Caller->>GW: POST /notify {service_id, user_id, channel, template_id, template_vars, priority}
+    Caller->>GW: POST /notify with service_id, user_id, channel, template_id, template_vars, priority
 
-    GW->>Redis: INCR quota:{service_id}:{channel}:{window}
-    Redis-->>GW: count=142 (under limit)
+    GW->>Redis: INCR quota:svc:channel:window
+    Redis-->>GW: count=142 — under limit
 
-    GW->>Redis: SET NX dedup:{idempotency_key} TTL=300s
-    Redis-->>GW: OK (not duplicate)
+    GW->>Redis: SET NX dedup:idempotency_key TTL=300s
+    Redis-->>GW: OK — not duplicate
 
     GW->>PG: SELECT opted_out FROM user_preferences WHERE user_id=? AND channel=?
     PG-->>GW: opted_out=false, dnd=inactive
 
-    GW->>PG: INSERT INTO notifications (id, status=QUEUED, ...)
-    GW->>Kafka: Produce {notification_id, template_id, template_vars, recipient} → priority topic
-    Note over GW,Kafka: Kafka message < 4KB — no rendered content
-    GW-->>Caller: 202 Accepted {notification_id}
+    GW->>PG: INSERT INTO notifications (id, status=QUEUED)
+    GW->>Kafka: Produce notification_id, template_id, template_vars, recipient to priority topic
+    Note over GW,Kafka: Kafka message under 4KB — no rendered content
+    GW-->>Caller: 202 Accepted with notification_id
 
-    Kafka->>Worker: Consume message {notification_id, template_id, template_vars, recipient}
+    Kafka->>Worker: Consume message with notification_id, template_id, template_vars, recipient
 
     Note over Worker,TS: Template rendering at dispatch time
-    Worker->>TS: POST /render {template_id, template_vars, user_id}
-    TS-->>Worker: {subject, body_html, body_text} (cached or freshly rendered)
+    Worker->>TS: POST /render with template_id, template_vars, user_id
+    TS-->>Worker: subject, body_html, body_text — cached or freshly rendered
 
-    alt Email body > 256KB (large marketing email)
-        Worker->>S3: PUT rendered HTML → s3://notif-payloads/{notification_id}.html
-        Worker->>Provider: SendEmail with S3 reference (SES reads directly from S3)
+    alt Email body over 256KB (large marketing email)
+        Worker->>S3: PUT rendered HTML to s3://notif-payloads/notification_id.html
+        Worker->>Provider: SendEmail with S3 reference — SES reads directly from S3
     else Normal size
         Worker->>Provider: Send SMS / Email / Push with inline content
     end
 
-    Provider-->>Worker: 200 OK {provider_message_id}
+    Provider-->>Worker: 200 OK with provider_message_id
 
     Worker->>PG: UPDATE notifications SET status=DELIVERED, delivered_at=NOW()
     Worker->>Kafka: ACK (commit offset)
@@ -173,21 +173,21 @@ sequenceDiagram
 
     Note over GW: Quota exceeded
     Caller->>GW: POST /notify
-    GW->>Redis: INCR quota:{service_id}:{channel}:{window}
+    GW->>Redis: INCR quota:service_id:channel:window
     Redis-->>GW: count=10001 (over limit=10000)
-    GW-->>Caller: 429 Too Many Requests {reason: QUOTA_EXCEEDED}
+    GW-->>Caller: 429 Too Many Requests - reason QUOTA_EXCEEDED
 
     Note over GW: Duplicate suppressed
     Caller->>GW: POST /notify (same idempotency_key)
-    GW->>Redis: SET NX dedup:{key}
+    GW->>Redis: SET NX dedup:key
     Redis-->>GW: nil (key exists)
-    GW-->>Caller: 200 OK {notification_id: original_id, status: DUPLICATE_SUPPRESSED}
+    GW-->>Caller: 200 OK - notification_id is original_id, status DUPLICATE_SUPPRESSED
 
     Note over GW: User opted out
     Caller->>GW: POST /notify
     GW->>PG: SELECT opted_out FROM user_preferences
     PG-->>GW: opted_out=true
-    GW-->>Caller: 200 OK {notification_id: new_id, status: OPTED_OUT}
+    GW-->>Caller: 200 OK - new notification_id, status OPTED_OUT
 ```
 
 ---

@@ -100,7 +100,7 @@ sequenceDiagram
 
     Note over Worker: Retries exhausted
     Worker->>PG: UPDATE status=FAILED, failed_at=NOW()
-    Worker->>DLQ: Produce {notification_id, reason, last_error}
+    Worker->>DLQ: Produce notification_id, reason, last_error
     Worker->>Worker: Commit Kafka source offset
 ```
 

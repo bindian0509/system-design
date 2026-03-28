@@ -18,7 +18,7 @@ Both are enforced in the **Notification Gateway** before any message is enqueued
 ```mermaid
 flowchart TD
     REQ[Incoming POST /notify] --> LOAD[Load quota config\nfrom Redis cache]
-    LOAD --> HOURLY[INCR quota:{svc}:{ch}:HOURLY:{bucket}]
+    LOAD --> HOURLY["INCR quota:svc:ch:HOURLY:bucket"]
     HOURLY --> H_CHECK{count > hourly_limit?}
     H_CHECK -->|yes| REJECT_H[Return 429\nQUOTA_EXCEEDED\nhourly]
     H_CHECK -->|no| DAILY[INCR quota:{svc}:{ch}:DAILY:{bucket}]
@@ -89,7 +89,7 @@ On config change, the Gateway Config Service publishes a `quota_config_updated` 
 ```mermaid
 flowchart TD
     REQ[Incoming POST /notify] --> KEY[Compute idempotency_key]
-    KEY --> SETNX["Redis: SET dedup:{key} {notification_id} NX EX {ttl}"]
+    KEY --> SETNX["Redis: SET NX dedup:key notification_id EX ttl"]
     SETNX --> EXISTS{Key already existed?}
     EXISTS -->|yes — duplicate| RETURN[Return 200\nDUPLICATE_SUPPRESSED\nwith original notification_id]
     EXISTS -->|no — new| PROCEED[Proceed to DND check\n→ enqueue]
@@ -155,12 +155,12 @@ sequenceDiagram
     end
 
     Note over GW,Redis: Step 2 — Deduplication
-    GW->>Redis: SET NX dedup:{key} {notif_id} EX {ttl}
+    GW->>Redis: SET NX dedup:key notif_id EX ttl
     alt Duplicate
         Redis-->>GW: nil (key exists)
-        GW->>Redis: GET dedup:{key}
+        GW->>Redis: GET dedup:key
         Redis-->>GW: original_notification_id
-        GW-->>C: 200 DUPLICATE_SUPPRESSED {original_id}
+        GW-->>C: 200 DUPLICATE_SUPPRESSED with original_id
     end
 
     Note over GW,PG: Step 3 — DND / Opt-out

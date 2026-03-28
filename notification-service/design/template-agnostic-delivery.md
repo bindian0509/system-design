@@ -64,17 +64,17 @@ sequenceDiagram
 
     Note over Caller: Renders 2MB email HTML locally
 
-    Caller->>S3: PUT s3://notif-content/uploads/{service_id}/{content_key}.html
+    Caller->>S3: PUT s3://notif-content/uploads/service_id/content_key.html
     S3-->>Caller: 200 OK, ETag
 
-    Caller->>GW: POST /notify\n{ content_ref: { key, subject }, recipient, priority }
+    Caller->>GW: POST /notify with content_ref (key, subject), recipient, priority
     Note over GW: REST body is < 1KB — just the S3 reference
     GW->>GW: Validate content_ref key owned by calling service
-    GW->>Kafka: Produce { content_ref, recipient, idempotency_key, ... }
-    GW-->>Caller: 202 Accepted { notification_id }
+    GW->>Kafka: Produce content_ref, recipient, idempotency_key to priority topic
+    GW-->>Caller: 202 Accepted with notification_id
 
     Kafka->>Worker: Consume message
-    Worker->>S3: GET s3://notif-content/uploads/{key}.html
+    Worker->>S3: GET s3://notif-content/uploads/key.html
     S3-->>Worker: 2MB HTML body (streamed)
     Worker->>SES: SendRawEmail (stream directly — no full load into memory)
     SES-->>Worker: MessageId
@@ -115,16 +115,16 @@ sequenceDiagram
     participant GW as Notification Gateway
     participant S3 as S3
 
-    Caller->>GW: GET /notify/upload-url\n{ content_type: text/html, size_bytes: 2000000 }
-    GW->>GW: Validate API key\nGenerate content_key = {service_id}/{uuid}.html
+    Caller->>GW: GET /notify/upload-url with content_type=text/html, size_bytes=2000000
+    GW->>GW: Validate API key and generate content_key = service_id/uuid.html
     GW->>S3: Generate pre-signed PUT URL (TTL=5min, max-size enforced)
-    GW-->>Caller: { upload_url, content_key, expires_at }
+    GW-->>Caller: upload_url, content_key, expires_at
 
-    Caller->>S3: PUT {upload_url}\n[2MB HTML body directly]
+    Caller->>S3: PUT upload_url with 2MB HTML body directly
     S3-->>Caller: 200 OK, ETag
 
     Note over Caller,GW: Now send the actual notification
-    Caller->>GW: POST /notify\n{ content_ref: { key: content_key, subject: "..." }, ... }
+    Caller->>GW: POST /notify with content_ref (key=content_key, subject)
     GW-->>Caller: 202 Accepted
 ```
 

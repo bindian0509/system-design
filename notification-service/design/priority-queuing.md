@@ -180,22 +180,22 @@ Critical topic lag triggers immediate scale-out (OTP SLA: delivery < 2s p99). Ma
 ```mermaid
 sequenceDiagram
     participant GW as Notification Gateway
-    participant Kafka as Kafka (notif.critical)
+    participant Kafka as KafkaCritical
     participant Worker as SMS Worker
     participant Twilio as Twilio
     participant PG as PostgreSQL
 
     GW->>PG: INSERT notifications (status=QUEUED)
-    GW->>Kafka: Produce {notification_id, rendered_content, recipient, ...}
+    GW->>Kafka: Produce notification_id, template_id, template_vars, recipient to priority topic
     Kafka-->>GW: ack (offset committed by producer)
     GW-->>Caller: 202 Accepted
 
     Kafka->>Worker: Poll → deliver message
     Worker->>PG: UPDATE status=DISPATCHING, attempt_count=1
-    Worker->>Twilio: POST /Messages {To, Body}
+    Worker->>Twilio: POST /Messages with To and Body
 
     alt Success
-        Twilio-->>Worker: 201 Created {sid: SM...}
+        Twilio-->>Worker: 201 Created with sid SM...
         Worker->>PG: UPDATE status=DELIVERED, provider_message_id=SM..., delivered_at=NOW()
         Worker->>Kafka: Commit offset
     else Twilio error (retryable)

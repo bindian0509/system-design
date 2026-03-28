@@ -276,26 +276,26 @@ sequenceDiagram
     participant PG as PostgreSQL
     participant RE as Render Engine
 
-    Worker->>RA: POST /render {template_id, template_vars, user_id}
+    Worker->>RA: POST /render with template_id, template_vars, user_id
 
     RA->>ABR: Resolve variant for user_id
-    Note over ABR: hash(user_id + template_id) mod 100\nSelect variant by traffic_pct bucket
+    Note over ABR: hash(user_id + template_id) mod 100 — select variant by traffic_pct bucket
     ABR-->>RA: version_id (e.g. variant_b → version 5)
 
-    RA->>Redis: GET render:{template_id}:{version_id}:{segment_hash}
+    RA->>Redis: GET render:template_id:version_id:segment_hash
     alt Cache hit (skeleton)
         Redis-->>RA: cached skeleton HTML
         RA->>RA: Interpolate user-specific vars into skeleton
-        RA-->>Worker: 200 OK {subject, body_html, body_text}
+        RA-->>Worker: 200 OK with subject, body_html, body_text
     else Cache miss
         Redis-->>RA: nil
-        RA->>PG: SELECT * FROM template_versions WHERE version_id=?
-        PG-->>RA: template record (body_mjml, body_text, required_vars)
-        RA->>RE: Compile Mjml → HTML\nRender Handlebars with segment-level vars
-        RE-->>RA: skeleton HTML (user-specific vars left as placeholders)
-        RA->>Redis: SET render:{key} skeleton EX 60
+        RA->>PG: SELECT from template_versions WHERE version_id=?
+        PG-->>RA: template record with body_mjml, body_text, required_vars
+        RA->>RE: Compile Mjml to HTML and render Handlebars with segment-level vars
+        RE-->>RA: skeleton HTML with user-specific vars left as placeholders
+        RA->>Redis: SET render:key skeleton EX 60
         RA->>RA: Interpolate remaining user-specific vars
-        RA-->>Worker: 200 OK {subject, body_html, body_text}
+        RA-->>Worker: 200 OK with subject, body_html, body_text
     end
 ```
 
@@ -367,7 +367,7 @@ sequenceDiagram
     API->>PG: BEGIN TRANSACTION
     API->>PG: UPDATE template_versions SET is_active=FALSE\nWHERE template_id='otp_v3' AND is_active=TRUE
     API->>PG: UPDATE template_versions SET is_active=TRUE\nWHERE template_id='otp_v3' AND version_number=2
-    API->>PG: INSERT template_audit_log {action: ACTIVATED, ...}
+    API->>PG: INSERT template_audit_log with action ACTIVATED
     API->>PG: COMMIT
     API->>Redis: DEL render:otp_v3:* (pattern delete — invalidate all cached renders)
     API-->>Admin: 200 OK {active_version: 2}

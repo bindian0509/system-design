@@ -107,19 +107,19 @@ sequenceDiagram
     C->>GW: POST /notify
 
     GW->>GW: Validate API key
-    GW->>Redis: INCR quota:{svc}:{channel}:{window}
+    GW->>Redis: INCR quota:svc:channel:window
     alt quota exceeded
         Redis-->>GW: count > limit
         GW-->>C: 429 QUOTA_EXCEEDED
     end
 
-    GW->>Redis: SET NX dedup:{idempotency_key} TTL
+    GW->>Redis: SET NX dedup:idempotency_key TTL
     alt duplicate
         Redis-->>GW: nil (key exists)
         GW-->>C: 200 DUPLICATE_SUPPRESSED
     end
 
-    GW->>PG: SELECT opted_out, dnd_* FROM user_preferences
+    GW->>PG: SELECT opted_out, dnd from user_preferences
     alt opted out (non-critical)
         PG-->>GW: opted_out=true
         GW-->>C: 200 OPTED_OUT
@@ -127,7 +127,7 @@ sequenceDiagram
 
     GW->>PG: INSERT INTO notifications
     GW->>Kafka: Produce to priority topic
-    GW-->>C: 202 Accepted {notification_id}
+    GW-->>C: 202 Accepted with notification_id
 ```
 
 ---
@@ -169,7 +169,7 @@ sequenceDiagram
     GW->>GW: Verify API key + ownership (service_id matches)
     GW->>PGRead: SELECT * FROM notifications WHERE notification_id=?
     PGRead-->>GW: notification record
-    GW-->>C: 200 OK {status, timestamps, attempt_count}
+    GW-->>C: 200 OK with status, timestamps, attempt_count
 ```
 
 ---
@@ -225,7 +225,7 @@ sequenceDiagram
     GW->>GW: Validate API key
     GW->>PG: INSERT ... ON CONFLICT (user_id, channel) DO UPDATE
     PG-->>GW: updated row
-    GW-->>UISvc: 200 OK {preferences}
+    GW-->>UISvc: 200 OK with preferences
 ```
 
 ---
@@ -274,10 +274,10 @@ sequenceDiagram
 
     C->>GW: GET /services/{service_id}/quota
     GW->>GW: Validate API key + verify service_id ownership
-    GW->>Redis: GET quota_cfg:{service_id}:* (limits)
-    GW->>Redis: GET quota:{service_id}:*:DAILY:* (current usage)
-    GW->>Redis: GET quota:{service_id}:*:HOURLY:* (current usage)
-    GW-->>C: 200 OK {quota breakdown}
+    GW->>Redis: GET quota_cfg:service_id (limits)
+    GW->>Redis: GET quota:service_id:DAILY (current usage)
+    GW->>Redis: GET quota:service_id:HOURLY (current usage)
+    GW-->>C: 200 OK with quota breakdown
 ```
 
 ---

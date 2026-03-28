@@ -210,17 +210,17 @@ sequenceDiagram
     participant PG as PostgreSQL
     participant DLQ as notif.dlq
 
-    Worker->>Worker: Consume {notification_id, template_id,\ntemplate_vars, recipient_email}
+    Worker->>Worker: Consume notification_id, template_id, template_vars, recipient_email
 
-    Worker->>TS: POST /render {template_id, template_vars, user_id}
-    Note over TS: Check Redis cache first\n(key: template_id + segment hash)
+    Worker->>TS: POST /render with template_id, template_vars, user_id
+    Note over TS: Check Redis cache first (key: template_id + segment hash)
     alt Cache hit
-        TS-->>Worker: {subject, body_html, body_text} (cached skeleton)
+        TS-->>Worker: subject, body_html, body_text (cached skeleton)
         Worker->>Worker: Interpolate user-specific vars locally
     else Cache miss
         TS->>TS: Fetch template from DB\nRender full HTML (Mjml/Handlebars)
         TS->>TS: Cache rendered skeleton (TTL=60s)
-        TS-->>Worker: {subject, body_html, body_text}
+        TS-->>Worker: subject, body_html, body_text
     end
 
     Note over Worker: Images are always CDN URLs in template\nNever base64 embedded
@@ -240,7 +240,7 @@ sequenceDiagram
     else Hard bounce (invalid address)
         SES-->>Worker: MessageRejected
         Worker->>PG: UPDATE status=FAILED
-        Worker->>DLQ: Produce {reason: INVALID_ADDRESS}
+        Worker->>DLQ: Produce with reason INVALID_ADDRESS
         Worker->>Worker: Commit Kafka offset
     else Throttle (429)
         SES-->>Worker: ThrottlingException
@@ -269,16 +269,16 @@ sequenceDiagram
     Worker->>Worker: Determine platform from\ndevice_token prefix or user profile
 
     alt Android (FCM)
-        Worker->>FCM: POST /v1/projects/{id}/messages:send\n{token, notification, data}
-        FCM-->>Worker: {name: projects/.../messages/...}
+        Worker->>FCM: POST /v1/projects/id/messages:send with token, notification, data
+        FCM-->>Worker: 200 OK with message name
         Worker->>PG: UPDATE status=DELIVERED
     else iOS (APNs)
-        Worker->>APNs: POST /3/device/{token}\n(HTTP/2, JWT auth)
-        APNs-->>Worker: 200 OK {apns-id}
+        Worker->>APNs: POST /3/device/token via HTTP/2 JWT auth
+        APNs-->>Worker: 200 OK with apns-id
         Worker->>PG: UPDATE status=DELIVERED
     else Token expired/invalid
         FCM-->>Worker: UNREGISTERED token
-        Worker->>PG: UPDATE status=FAILED\nMark device token as stale
+        Worker->>PG: UPDATE status=FAILED - mark device token as stale
         Note over Worker,PG: Trigger token refresh flow\nvia User Profile Service
     end
 ```

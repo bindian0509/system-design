@@ -14,14 +14,11 @@
 
 ## Availability
 
-```mermaid
-flowchart TB
-    subgraph Targets["Availability Targets"]
-        GW["Gateway API\n99.99%\n~52 min/year downtime"]
-        Workers["Channel Workers\n99.9%\n~8.7 hr/year downtime"]
-        E2E["End-to-End Delivery\n99.9% success rate"]
-    end
-```
+| Component | Availability Target | Downtime Budget |
+|-----------|--------------------|--------------------|
+| Gateway API | 99.99% | ~52 min/year |
+| Channel Workers | 99.9% | ~8.7 hr/year |
+| End-to-End Delivery | 99.9% success rate | — |
 
 ### How Achieved
 
@@ -45,19 +42,13 @@ flowchart TB
 
 ## Scalability
 
-```mermaid
-flowchart LR
-    subgraph Horizontal["Horizontal Scaling"]
-        GW["Gateway\nStateless → add pods\nScale: CPU / request rate"]
-        Workers["Channel Workers\nScale by Kafka consumer lag\nvia KEDA / HPA"]
-        Kafka["Kafka\nScale: add partitions\nRe-balance consumer groups"]
-    end
-
-    subgraph Vertical["Vertical Scaling (Data)"]
-        Redis["Redis Cluster\nResharding for more shards\n(online, no downtime)"]
-        PG["PostgreSQL\nRead replicas for read scale\nPartition notifications table by month"]
-    end
-```
+| Component | Scaling Strategy | Trigger |
+|-----------|-----------------|---------|
+| Gateway | Stateless horizontal — add pods | CPU > 70% or request rate > threshold |
+| Channel Workers | Horizontal — Kafka consumer lag via KEDA/HPA | Consumer lag > tier threshold |
+| Kafka | Add partitions, re-balance consumer groups | Throughput > 80% capacity |
+| Redis Cluster | Online resharding — add shards, no downtime | Memory > 75% per shard |
+| PostgreSQL | Add read replicas; partition `notifications` by month | Read IOPS > 80% capacity |
 
 ### Kafka Partition Sizing
 
@@ -156,15 +147,12 @@ Quotas are configurable in the `service_quotas` table. Changes take effect withi
 
 ## Durability
 
-```mermaid
-flowchart LR
-    subgraph Data["Data Durability Targets"]
-        N["Notifications\nDurable once 202 returned\nKafka + PostgreSQL both written"]
-        A["Audit Log\nPermanent\nAppend-only, no DELETE"]
-        K["Kafka Messages\n7-day retention\n(critical: 24h)"]
-        R["Redis Keys\nBest-effort\nTTL-based, rebuilt on failure"]
-    end
-```
+| Data | Durability | Notes |
+|------|-----------|-------|
+| Notifications | Durable once 202 returned | Kafka + PostgreSQL both written before responding |
+| Audit Log | Permanent | Append-only, no DELETE permission |
+| Kafka Messages | 7-day retention (critical: 24h) | Auto-expiry |
+| Redis Keys | Best-effort, TTL-based | Rebuilt on Redis restart; brief gap acceptable |
 
 ### Storage Retention Policy
 
