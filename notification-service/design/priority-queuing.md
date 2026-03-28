@@ -53,6 +53,62 @@ flowchart LR
 
 ---
 
+## Why Kafka and Not SQS
+
+SQS is a valid choice at moderate scale and is simpler to operate on AWS. The decision to use Kafka comes down to five specific requirements this system has that SQS cannot satisfy cleanly.
+
+### Where SQS Falls Short
+
+**1. Priority-aware consumer polling across queues**
+
+The core priority model requires a single worker to poll `notif.critical` first, drain it, then fall through to transactional, then marketing. A worker with spare capacity should always help drain the highest-priority backlog regardless of which channel it normally handles.
+
+SQS has no mechanism for a single consumer to poll multiple queues with priority awareness in a tight loop. You would need entirely separate worker fleets per queue with no shared capacity — a marketing worker pod cannot absorb critical messages during a quiet marketing period. Kafka consumers subscribing to multiple topics with explicit poll ordering enables this directly.
+
+**2. Replay on worker failure or bug**
+
+Kafka retains messages for the full retention window (7 days for transactional, 24h for critical) regardless of whether they have been consumed. If a worker deploys a bug and processes messages incorrectly for two hours, you reset the consumer group offset and replay. All 500M daily messages are recoverable.
+
+SQS deletes a message the moment a consumer successfully processes it. There is no replay. A two-hour worker bug at 500M/day means ~40M notifications permanently lost with no recovery path.
+
+**3. Throughput at this scale**
+
+`notif.critical` alone needs to sustain ~5,800 msg/s with peaks at 58,000 msg/s on Black Friday. SQS FIFO queues — required for any ordering guarantee on OTP — cap at 3,000 msg/s per queue without batching tricks. SQS Standard has no ordering. Kafka at 60 partitions handles 58,000 msg/s comfortably with headroom.
+
+**4. Consumer lag as a first-class metric**
+
+The entire autoscaling model is driven by Kafka consumer lag per topic per consumer group. This is a precise, real-time metric that KEDA uses to scale worker pods before SLA breach. SQS exposes `ApproximateNumberOfMessagesVisible` — approximate, eventually consistent, and not broken down per consumer. Scaling decisions become imprecise, and the "approximate" qualifier is dangerous for OTP SLA management.
+
+**5. Fan-out to multiple independent consumer groups**
+
+Every Kafka topic is consumed independently by SMS workers, Email workers, Push workers, and WhatsApp workers — each maintaining their own offset. A single message in `notif.critical` is read once by each worker group that needs it.
+
+SQS is destructive: the first consumer to read a message removes it. Fan-out requires SNS in front of multiple SQS queues — one queue per consumer type — adding an extra hop, additional operational surface, and SNS message filtering complexity.
+
+### Where SQS Would Be the Right Choice
+
+SQS is not the wrong tool in general — it is the wrong tool for this specific set of requirements. It would be the right choice if:
+
+- Replay was not a requirement
+- Worker capacity did not need to be shared across priority tiers
+- Throughput stayed well under 3,000 msg/s sustained
+- Fan-out was not needed (single consumer per message)
+- Operational simplicity outweighed the above constraints (valid for early-stage or moderate-scale systems)
+
+### Comparison
+
+| Requirement | Kafka | SQS |
+|-------------|-------|-----|
+| Priority-aware consumer polling (single worker, multiple queues) | Native — poll loop across topics | Not supported — separate fixed fleets required |
+| Message replay after worker bug | Full retention window (days) | Not possible — messages deleted on consume |
+| 58,000 msg/s peak on critical channel | 60 partitions — handled trivially | FIFO cap at 3,000/s; Standard has no ordering |
+| Precise consumer lag for autoscaling | First-class metric, per group, per topic | Approximate, eventually consistent |
+| Fan-out to SMS + Email + Push + WhatsApp workers | Multiple consumer groups, same topic | Requires SNS + separate SQS queue per consumer |
+| Operational complexity | Higher — cluster to manage | Lower — fully managed, serverless |
+| Cost at 500M/day | ~$3,200/month (MSK) | ~$2,000/month (SQS + SNS) — marginally cheaper |
+
+At startup scale or if any of the five requirements above did not apply, SQS would be the pragmatic default. At 500M/day with strict OTP SLAs and the priority-drain consumer model, Kafka earns its operational overhead.
+
 ## Priority Assignment Logic
 
 The gateway assigns priority based on a two-level check:
