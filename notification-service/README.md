@@ -86,6 +86,8 @@ Worker      Worker      Worker
 | [Quota & Deduplication](design/quota-and-dedup.md) | Redis INCR fixed-window quota enforcement, idempotency key derivation, dedup windows per priority tier, combined cost-control flow |
 | [Fault Tolerance](design/fault-tolerance.md) | DLQ design, retry sequences, multi-AZ HA for each data store, failure scenario table, RPO/RTO targets |
 | [Integration Patterns](design/integration-patterns.md) | REST API vs SDK vs Event-Driven vs Webhook — trade-off comparison, decision tree, code examples for how other services onboard |
+| [Observability](design/observability.md) | Metrics instrumentation per component, 5 Grafana dashboards, full alert catalogue (P1/P2/P3), distributed trace flow end-to-end, changes required per component |
+| [Cost Model](design/cost-model.md) | Provider cost breakdown (SMS/Email/Push/WhatsApp), infrastructure cost sizing, unit economics per channel, cost control levers, chargeback attribution, volume discount targets |
 
 ### Alternative Approach & Extensions
 
