@@ -87,6 +87,12 @@ Worker      Worker      Worker
 | [Fault Tolerance](design/fault-tolerance.md) | DLQ design, retry sequences, multi-AZ HA for each data store, failure scenario table, RPO/RTO targets |
 | [Integration Patterns](design/integration-patterns.md) | REST API vs SDK vs Event-Driven vs Webhook — trade-off comparison, decision tree, code examples for how other services onboard |
 
+### Alternative Approach
+
+| Doc | What it covers |
+|-----|---------------|
+| [Template-Agnostic Delivery](design/template-agnostic-delivery.md) | Alternative design where the Notification Service is a pure delivery pipe — callers own rendering. Covers the REST problem for large emails, the Claim Check pattern (S3 pre-upload), pre-signed upload URL flow, batch endpoint for bulk sends, worker L1 cache for S3 objects, and a full comparison against the template-aware approach |
+
 ---
 
 ## Component Summary
