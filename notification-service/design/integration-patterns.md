@@ -35,7 +35,7 @@ sequenceDiagram
     participant Worker as SMS Worker
     participant Provider as Twilio
 
-    S->>GW: POST /v1/notify (user_id, channel, priority, template_id)
+    S->>GW: POST /v1/notify with user_id, channel, priority, template_id
     GW->>GW: Auth, quota, dedup, DND
     GW->>Kafka: Produce to priority topic
     GW-->>S: 202 Accepted with notification_id
@@ -113,7 +113,7 @@ sequenceDiagram
     S->>SDK: client.sendOTP(userId, otpCode)
     SDK->>SDK: Generate idempotency_key = SHA256(svc+user+template+window)
     SDK->>SDK: Inject trace headers from current span
-    SDK->>GW: POST /v1/notify (channel=SMS, priority=CRITICAL)
+    SDK->>GW: POST /v1/notify with channel=SMS, priority=CRITICAL
     GW-->>SDK: 202 Accepted
     SDK-->>S: NotificationResult with id and status=QUEUED
 ```
