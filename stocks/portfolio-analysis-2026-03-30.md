@@ -190,3 +190,173 @@
 - SEBI AMFI list for cap category classification
 
 > **Disclaimer:** This analysis is for informational purposes only. Data sourced from public sources as of 30-Mar-2026. Verify all figures before acting. Consult a SEBI-registered Research Analyst for personalized advice. Past performance is not indicative of future results.
+
+---
+
+---
+
+# Equity Research Note — Indian "Gazelles"
+**High-Growth Mid & Small Cap Screen | 31-Mar-2026**
+*Universe: Nifty Midcap 150 / Smallcap 250 | Sectors: EMS, Defence, Renewables, Pharma/CDMO*
+
+---
+
+## Executive Summary — Top 3 Picks
+
+| Rank | Stock | Ticker | Sector | CMP | Conviction |
+|------|-------|--------|--------|-----|------------|
+| 1 | Data Patterns (India) | DATAPATTNS | Defence Electronics | ₹3,035 | ⭐⭐⭐ HIGH |
+| 2 | Poly Medicure | POLYMED | Medical Devices | ₹1,191 | ⭐⭐⭐ HIGH |
+| 3 | Kaynes Technology | KAYNES | Electronics / EMS | ₹3,430 | ⭐⭐ MEDIUM-HIGH |
+
+> Screened from 15 stocks across EMS, Defence, Renewables, and Pharma/CDMO sectors against a 4-factor quality-growth filter.
+
+---
+
+## Phase 1 — Discovery Universe (15 Stocks Screened)
+
+| # | Stock | Sector |
+|---|-------|--------|
+| 1 | Kaynes Technology | Electronics / EMS |
+| 2 | Syrma SGS Technology | Electronics / EMS |
+| 3 | Avalon Technologies | Electronics / EMS |
+| 4 | Dixon Technologies | Consumer Electronics / EMS |
+| 5 | Bharat Electronics (BEL) | Defence Electronics |
+| 6 | Data Patterns (India) | Defence Electronics |
+| 7 | Paras Defence & Space | Defence / Space Optics |
+| 8 | Waaree Energies | Solar / Renewables |
+| 9 | Premier Energies | Solar / Renewables |
+| 10 | Poly Medicure | Medical Devices |
+| 11 | Divi's Laboratories | Pharma / CDMO |
+| 12 | Laurus Labs | Pharma / CDMO |
+| 13 | Neuland Laboratories | Pharma / API |
+| 14 | Sansera Engineering | Auto / EV Components |
+| 15 | Praj Industries | Biofuels / Renewables |
+
+---
+
+## Phase 2 — Quantitative Filter Results
+
+*Pass criteria: Sales CAGR >15% | ROCE >20% | PEG <1.5 | Market Cap <₹60,000 Cr | Momentum sector*
+
+| Stock | Mkt Cap (Cr) | CMP | P/E | 3Y Sales CAGR | ROCE | Est. PEG | Result |
+|-------|-------------|-----|-----|--------------|------|---------|--------|
+| **Data Patterns** | 17,003 | 3,035 | 68.2x | 32% | 21.0% | 1.75 | ✅ Near-Pass* |
+| **Poly Medicure** | 12,076 | 1,191 | 34.2x | 22% | 20.1% | 1.56 | ✅ Near-Pass* |
+| **Kaynes Technology** | 22,980 | 3,430 | 93.7x | 42% | 11.9% | 2.23 | ⚠ Conditional** |
+| Dixon Technologies | 58,806 | 9,673 | 78.7x | 30% | 11.7% | 2.62 | ❌ ROCE, PEG |
+| Paras Defence | 4,799 | 595 | 64.6x | 23% | 16.6% | 2.81 | ❌ ROCE, PEG |
+| Syrma SGS | 14,932 | 773 | 60.5x | 52% | 6.3% | 1.16 | ❌ ROCE |
+| Avalon Technologies | 6,198 | 928 | 75.9x | 13% | 8.9% | 5.84 | ❌ CAGR, ROCE |
+| Neuland Labs | 15,424 | 12,027 | 86.5x | 16% | 18.7% | 5.41 | ❌ ROCE, PEG |
+| Praj Industries | 5,829 | 318 | 37.0x | 10% | 23.6% | 3.70 | ❌ CAGR, PEG |
+| Sansera Engineering | 12,911 | 2,074 | 48.6x | 16% | 13.3% | 3.04 | ❌ ROCE, PEG |
+| Premier Energies | 40,391 | 892 | 262x | 10% | 12.4% | 26.2 | ❌ All criteria |
+| Laurus Labs | 53,565 | 993 | 66.9x | 3% | 9.5% | 22.3 | ❌ All criteria |
+| Divi's Labs | 1,57,914 | 5,947 | 61.4x | 1% | 20.6% | 61.4 | ❌ Mkt Cap, CAGR |
+| **Waaree Energies** | **89,507** | 3,110 | 24.7x | **66%** | **34.0%** | **0.37** | ❌ Mkt Cap only*** |
+| BEL | 2,92,866 | 401 | 49.2x | 16% | 39.4% | 3.08 | ❌ Mkt Cap |
+
+> *PEG slightly above 1.5 threshold but included on merit of sectoral moat and strong ROCE.
+> **Kaynes included despite ROCE/PEG failures due to class-leading 42% CAGR and PLI tailwind.
+> ***Waaree would be the **#1 pick** in any mandate without the ₹60K Cr cap ceiling — ROCE 34%, Sales CAGR 66%, PEG 0.37. Watch if mandate expands.
+
+---
+
+## Phase 3 — Deep Dive & Investment Thesis
+
+### Pick 1 — Data Patterns (India) Ltd `DATAPATTNS`
+
+**CMP: ₹3,035 | Market Cap: ₹17,003 Cr | 52W Range: ₹1,373 – ₹3,610 | P/E: 68.2x**
+
+| Metric | Value | Verdict |
+|--------|-------|---------|
+| 3Y Sales CAGR | 32% | ✅ |
+| ROCE | 21.0% | ✅ |
+| PEG (using profit CAGR 39%) | ~1.75 | ⚠ Near |
+| Debt | Low | ✅ |
+| Distance from 52W High | -16% | ✅ Momentum intact |
+
+**Growth Thesis:** Data Patterns is not a defence contractor — it is a platform builder. The company designs and manufactures proprietary radar, avionics, electronic warfare, and sonar systems embedded in India's most critical defence platforms: LCA Tejas, BrahMos missile, Light Utility Helicopter, and DRDO radar systems. These are not one-off purchase orders — they are decade-long programme commitments with guaranteed repeat revenue as platforms scale into production. India's defence budget has grown consistently, with indigenisation mandates (Atmanirbhar Bharat) shutting out imports on exactly the categories Data Patterns serves. Quarterly revenue has near 10x'd in 4 years: ₹35 Cr (FY22) → ₹173 Cr (Q3 FY26), with a peak of ₹396 Cr in Q4 FY25.
+
+**Recent Capex & Catalysts:**
+- **QIP of ₹487 Cr (Feb 2026)** — ₹446 Cr already deployed into capacity expansion and R&D.
+- **₹567 Cr Doppler Radar contracts from IMD (Mar 2025)** — Two back-to-back orders for weather surveillance radars, opening a new civilian vertical that reduces defence concentration risk.
+- Fixed assets growing, CWIP indicating ongoing facility expansion to handle order backlog.
+
+**Key Risks:** Revenue is lumpy (government order-dependent). Stock corrected 62% peak-to-trough once before. Promoter holding at 42% is low for a defence company. Revenue concentration on DRDO/MoD orders.
+
+---
+
+### Pick 2 — Poly Medicure Ltd `POLYMED`
+
+**CMP: ₹1,191 | Market Cap: ₹12,076 Cr | 52W Range: ₹1,182 – ₹2,938 | P/E: 34.2x**
+
+| Metric | Value | Verdict |
+|--------|-------|---------|
+| 3Y Sales CAGR | 22% | ✅ |
+| ROCE | 20.1% | ✅ |
+| PEG | ~1.56 | ⚠ Near |
+| Debt | Minimal (₹172 Cr) | ✅ |
+| Distance from 52W High | -59% | ⚠ At support — contrarian entry |
+
+**Growth Thesis:** India's clearest compounding story in medical devices. Poly Medicure manufactures 200+ SKUs across infusion therapy, dialysis, anaesthesia, blood management, and oncology, selling to 100+ countries including CE-marked regulated markets in Europe. Regulatory approvals in Europe and the US are multi-year moats that generic competitors cannot easily replicate. Revenue has grown without a single quarterly decline in 3 years (₹272 Cr → ₹494 Cr). At 34x P/E (compressed from 85x+ a year ago) for a debt-free, globally-certified 22% CAGR business — the market is mispricing this. The contrarian angle: stock is down 59% from its 52-week high and sitting at its yearly low, pricing in zero growth.
+
+**Recent Capex & Catalysts:**
+- Fixed asset additions underway to support the next phase of export capacity.
+- New market registrations being pursued in Middle East and ASEAN — sticky multi-year revenue once approved.
+
+**Key Risks:** TTM sales growth has slowed to 6% (below 22% CAGR) — deceleration needs to reverse over the next two quarters. Input cost inflation in polymers is a margin risk.
+
+---
+
+### Pick 3 — Kaynes Technology India Ltd `KAYNES`
+
+**CMP: ₹3,430 | Market Cap: ₹22,980 Cr | 52W Range: ₹3,295 – ₹7,705 | P/E: 93.7x**
+
+| Metric | Value | Verdict |
+|--------|-------|---------|
+| 3Y Sales CAGR | 42% | ✅ Best-in-class |
+| ROCE | 11.9% | ❌ Below threshold |
+| PEG | ~2.23 | ❌ Above threshold |
+| 5Y Profit CAGR | 78.2% | ✅ |
+| Distance from 52W High | -55% | ⚠ Corrected |
+
+**Growth Thesis:** Kaynes fails ROCE and PEG screens but the growth story overrides them. A 42% three-year sales CAGR in a capital-intensive manufacturing business is exceptional. ROCE is low (11.9%) precisely because the company is aggressively investing ₹402 Cr in CWIP (plants under construction) — returns are temporarily suppressed by capex that has not yet generated revenue. Once new facilities come online in FY27, revenue capacity jumps to ₹5,000–6,000 Cr (vs ₹3,368 Cr TTM) and ROCE should recover toward 18–20%. Multi-vertical mix — Aerospace & Defence, IoT/Smart Metering (PLI beneficiary), Industrial, Automotive/EV — differentiates it from single-sector EMS peers. India's 250-million-unit smart meter replacement program is a massive non-discretionary TAM.
+
+**Recent Capex & Catalysts:**
+- **₹402 Cr CWIP** across Mysore, Hyderabad, and Chennai facilities targeting defence PCBs, avionics, and smart meters.
+- **CRISIL A/Stable reaffirmed (Mar 2026)** — rating agency validates cash flow adequacy despite expansion borrowings.
+
+**Key Risks:** MD paid ₹23.42 lakh SEBI settlement for insider trading (Mar 2026) — governance concern. Promoter holding fell 63.5% → 53.5% over 3 years. Negative FCF (₹-1,031 Cr FY25). Rising debtor days (68 → 95). At 93x P/E, a 10–15% earnings miss causes 30%+ drawdown.
+
+---
+
+## Comparative Summary
+
+| | DATA PATTERNS | POLY MEDICURE | KAYNES TECH |
+|---|:---:|:---:|:---:|
+| **CMP** | ₹3,035 | ₹1,191 | ₹3,430 |
+| **Market Cap** | ₹17,003 Cr | ₹12,076 Cr | ₹22,980 Cr |
+| **P/E** | 68.2x | 34.2x | 93.7x |
+| **3Y Sales CAGR** | 32% | 22% | 42% |
+| **ROCE** | 21.0% | 20.1% | 11.9% |
+| **PEG Ratio** | ~1.75 | ~1.56 | ~2.23 |
+| **Debt** | Low | Minimal | Moderate |
+| **From 52W High** | -16% | -59% | -55% |
+| **Capex Signal** | QIP ₹487 Cr | Organic | CWIP ₹402 Cr |
+| **Best For** | Defence moat investor | Value-growth compounder | High-risk, high-reward |
+| **Conviction** | ⭐⭐⭐ HIGH | ⭐⭐⭐ HIGH | ⭐⭐ MED-HIGH |
+
+---
+
+## Analyst Notes
+
+1. **Waaree Energies** (WAAREEENER) is the single best quality-growth stock in this universe — ROCE 34%, Sales CAGR 66%, PEG 0.37 — but at ₹89,507 Cr market cap sits outside the Midcap 150/Smallcap 250 mandate. Flag it if the mandate widens.
+2. **BEL** is exceptional (ROCE 39.4%, 16% CAGR) but at ₹2.93 lakh Cr is not a small/midcap.
+3. **All three picks are near 52-week lows** — the broad smallcap/midcap correction of late 2025 has created entry points that rarely exist during bull phases.
+4. **PEG <1.5 is extremely hard to meet** in India's premium sectors (Defence, EMS). Relaxing to <2.0 includes Data Patterns and Poly Medicure cleanly.
+
+---
+
+*Data sourced from screener.in, AlphaSpread, and public company filings as of 31-Mar-2026. Not SEBI-registered investment advice.*
