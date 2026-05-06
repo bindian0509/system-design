@@ -15,6 +15,7 @@ mindmap
       Food Delivery
       IoT & Streaming
       Collaboration
+      Media & Analytics
     Patterns
       Communication
       Resilience
@@ -28,11 +29,17 @@ mindmap
       OAuth 2.0
       JWT Auth
       Products API
+      Log Ingestion
+      Stock Signals
     Resources
       Interview Guide
       Compliance Guide
       Job Search HQ
+      Kubernetes Guide
+      Amazon SDM Prep
       Workflow Tools
+    AI & LLM
+      DSAR Agent
 ```
 
 ---
@@ -46,6 +53,7 @@ mindmap
 | **Financial Clearing House** | Interbank settlement system with multilateral netting achieving 93%+ efficiency | Graph algorithms, Two-phase settlement, Saga pattern | [📘 Overview](./financial-clearing-house/README.md) • [🏛️ Architecture](./financial-clearing-house/clearing-house-settlement-design.md) • [🔄 Flow](./financial-clearing-house/clearing-house-system-flow.md) |
 | **Seller Payment System** | E-commerce seller payouts with configurable schedules and fee optimization | Exactly-once semantics, State machines, Idempotency | [📘 Overview](./seller-side-payment-system/README.md) • [🏛️ Architecture](./seller-side-payment-system/design/system-architecture.md) • [💾 Data Models](./seller-side-payment-system/design/data-models.md) |
 | **Fintech Data Platform** | End-to-end data architecture with CDC, event streaming, and federated queries | CDC (Debezium), Kafka, HTAP, Data Lake | [📘 Overview](./fintech-data-platform/fintech-data-architecture.md) • [📊 E2E Diagram](./fintech-data-platform/e2e-system-diagram.md) |
+| **Digital Remittance Platform** | Cross-border money transfer platform (Wise/Remitly-scale) with 1M+ transfers/day across 50+ corridors | FX corridors, Compliance (AML/KYC), Payment rails, Saga pattern | [📘 Overview](./digital-remittance/README.md) • [📋 Blueprint](./digital-remittance/design/) |
 
 ### E-Commerce & Marketplace
 
@@ -60,6 +68,9 @@ mindmap
 | Topic | Description | Key Concepts | Links |
 |-------|-------------|--------------|-------|
 | **Uber Eats Feed** | Restaurant feed with H3 spatial indexing handling 10K+ views/sec | H3 hexagonal grid, Geo-sharding, ML ranking | [📘 Overview](./uber-eats-feed-design/README.md) • [🗺️ Spatial Indexing](./uber-eats-feed-design/spatial-indexing.md) • [📊 Ranking](./uber-eats-feed-design/ranking-system.md) |
+| **Instant Grocery Delivery** | 10-minute grocery delivery across 40 dark stores at 100K orders/day | Geo-routing, Inventory reservation (Redis), Rider dispatch, Kafka backbone | [📋 API Spec](./instant-grocery-app/docs/api-spec.md) • [📐 ADRs](./instant-grocery-app/docs/adr/) • [🏛️ Plan](./instant-grocery-app/docs/plans/) |
+| **Cheapest Flights & Dynamic Pricing** | Google Flights-like aggregation for 100M+ daily searches across 500+ suppliers | Dynamic pricing (ML), Price prediction, Supplier fan-out, Cache hierarchy | [📘 Overview](./flights/README.md) • [🏛️ Architecture](./flights/architecture/) • [🔌 API](./flights/api/) |
+| **Notification Service** | Unified SMS/Email/Push platform at 500M+ notifications/day with priority tiers and quota enforcement | Priority queuing, Deduplication, Template engine, Retry/backoff | [📘 Overview](./notification-service/README.md) • [🏛️ Architecture](./notification-service/design/system-architecture.md) • [📋 API](./notification-service/design/api-contracts.md) |
 
 ### Real-Time & Collaboration
 
@@ -68,11 +79,17 @@ mindmap
 | **Collaborative Editor** | Google Docs-like editor with CRDTs for 100 concurrent editors | CRDT, WebSocket, Offline-first, Causal consistency | [📘 Overview](./collaborative-editor/README.md) • [🧬 CRDT Design](./collaborative-editor/docs/02-crdt-design.md) • [🔄 Sync Protocol](./collaborative-editor/docs/03-sync-protocol.md) |
 | **Real-Time Leaderboard** | Gaming leaderboard for 100M users with global/regional rankings | Redis Sorted Sets, Kafka, WebSocket push | [📘 Overview](./leaderboard/README.md) • [🏛️ Architecture](./leaderboard/docs/architecture.md) • [📊 Redis Deep Dive](./leaderboard/docs/redis-deep-dive.md) |
 
+### Media & Analytics
+
+| Topic | Description | Key Concepts | Links |
+|-------|-------------|--------------|-------|
+| **YouTube Video Views** | 10B view events/day with near-real-time counters (<10s freshness) and OLAP creator analytics | Lambda/Kappa architecture, HyperLogLog dedup, ClickHouse OLAP, Flink streaming | [📘 Overview](./youtube-views/README.md) • [📊 Data Modeling](./youtube-views/data-modeling.md) • [⚡ Fault Tolerance](./youtube-views/fault-tolerance.md) |
+
 ### IoT & Streaming Systems
 
 | Topic | Description | Key Concepts | Links |
 |-------|-------------|--------------|-------|
-| **Trucking Crash Detection** | Real-time crash detection for 1M vehicles with <30s notification | Stream processing, ML inference, IoT ingestion | [📘 Overview](./trucking-crash-detection/README.md) • [🏛️ Architecture](./trucking-crash-detection/system-architecture.md) • [🧠 ML Pipeline](./trucking-crash-detection/ml-pipeline.md) |
+| **Log Ingestion (10 PB/Day)** | Petabyte-scale distributed log ingestion for debugging and compliance with ~115 GB/s average throughput | Fluent Bit/Vector, Kafka, Object storage tiering, Near-real-time queryability | [📘 Overview](./log-ingestion/README.md) • [📄 Docs](./log-ingestion/docs/) |
 
 ---
 
@@ -248,6 +265,34 @@ mindmap
 | **Overview** | [📘 README](./codec-library/README.md) |
 | **Source** | [📦 Go Package](./codec-library/codec/mysql/) |
 
+### Log Ingestion System
+
+> Petabyte-scale distributed log ingestion platform handling 10 PB/day (~115 GB/s average, ~345 GB/s peak)
+
+**Features:** Multi-tier storage (hot/warm/cold) • Near-real-time queryability (<5 min) • Compliance audit trails • Auto-scaling collection agents
+
+**Stack:** Fluent Bit / Vector • Apache Kafka • Object Storage (S3/GCS) • ClickHouse / OpenSearch
+
+| Resource | Link |
+|----------|------|
+| **Overview** | [📘 README](./log-ingestion/README.md) |
+| **Docs** | [📄 Docs](./log-ingestion/docs/) |
+
+### Stock Signal Platform
+
+> Automated Indian equity screener with composite BUY/EXIT signal scoring and real-time alerts
+
+**Features:** Fundamental screener (500 → ~50–100 stocks) • Technical + Momentum + Valuation scoring • Telegram/Email alerts • Web dashboard
+
+**Stack:** Python • yfinance / NSE data • Telegram Bot API
+
+| Resource | Link |
+|----------|------|
+| **Overview** | [📘 README](./stock-signals/README.md) |
+| **Telegram Setup** | [📱 Guide](./stock-signals/TELEGRAM_SETUP.md) |
+| **Backend** | [📦 backend/](./stock-signals/backend/) |
+| **Frontend** | [🖥️ frontend/](./stock-signals/frontend/) |
+
 ---
 
 ## 🎓 Interview & Career Resources
@@ -288,6 +333,26 @@ mindmap
 
 **[📚 Full Job Search Guide](./job-search/README.md)**
 
+### Kubernetes for Engineers
+
+> **[📚 Complete K8s Guide](./k8s/)** — Tailored for MAANG-level system design and EM interviews
+
+| # | Topic | Link |
+|---|-------|------|
+| 01 | Architecture Overview (control plane, worker nodes, EKS) | [📄 Docs](./k8s/01-architecture-overview.md) |
+| 02 | Structure & Components (Pods, Deployments, StatefulSets) | [📄 Docs](./k8s/02-structure-and-components.md) |
+| 03 | Networking (Services, Ingress, CNI) | [📄 Docs](./k8s/03-networking.md) |
+| 04 | Storage & Volumes | [📄 Docs](./k8s/04-storage-volumes.md) |
+| 05 | Secrets Management | [📄 Docs](./k8s/05-secrets-management.md) |
+
+### Amazon SDM Interview Prep
+
+> Leadership principle stories and behavioral frameworks for Amazon SDM (L5/L6) interviews
+
+| Resource | Link |
+|----------|------|
+| **Amazon 16 LPs — Story Bank** | [📄 Guide](./amazon-sdm-prep/amazon-16-lps-arjun-mehta.md) |
+
 ### Interview Experiences
 
 | Company | Type | Link |
@@ -295,6 +360,24 @@ mindmap
 | Agoda | System Design + LLD | [📁 Folder](./interview_experiences/agoda/) |
 | Kuvera | System Design | [📁 Folder](./interview_experiences/kuvera/) |
 | Fintech Org | Architecture Review | [📁 Folder](./interview_experiences/fintech_org/) |
+
+---
+
+## 🤖 AI & LLM Systems
+
+### DSAR Agent (LLM-Powered Privacy Compliance)
+
+> Automated Data Subject Access Request processing with multi-agent LLM orchestration for GDPR/CCPA compliance
+
+**Architecture:** Classifier → Extractor → Validator → Responder (multi-agent pipeline) with RAG over policy docs and human-in-the-loop escalation
+
+**Stack:** Python • LLM orchestration • RAG pipeline • Multi-agent workflow
+
+| Resource | Link |
+|----------|------|
+| **PRD** | [📋 prd.md](./dsar-agent-llm/prd.md) |
+| **Source** | [📦 src/](./dsar-agent-llm/src/) |
+| **Config** | [⚙️ config/](./dsar-agent-llm/config/) |
 
 ---
 
@@ -379,7 +462,7 @@ flowchart LR
 1. **Foundation:** [Messaging Patterns](./distributed-system-architectural-patterns/05-messaging-patterns/)
 2. **Collaboration:** [Collaborative Editor](./collaborative-editor/README.md)
 3. **Geo-Spatial:** [Uber Eats Feed](./uber-eats-feed-design/README.md)
-4. **IoT Streaming:** [Crash Detection](./trucking-crash-detection/README.md)
+4. **Streaming Ingestion:** [Log Ingestion](./log-ingestion/README.md)
 
 ### Path 4: Multi-Tenant Systems
 
@@ -417,14 +500,18 @@ flowchart LR
 |---------|---------|
 | Event Sourcing / CDC | Fintech Data Platform, E-Commerce, Collaborative Editor |
 | CQRS | E-Commerce, Uber Eats Feed, Issue Tracking |
-| Saga Pattern | Financial Clearing House, Seller Payments |
+| Saga Pattern | Financial Clearing House, Seller Payments, Digital Remittance |
 | Exactly-Once Semantics | Clearing House, Seller Payments, Leaderboard |
-| CRDT | Collaborative Editor |
+| CRDT | Collaborative Editor, Uber Cart |
 | Redis Sorted Sets | Leaderboard, Rate Limiter |
-| Batch + Real-time (Lambda) | E-Commerce, Crash Detection |
-| H3 Spatial Indexing | Uber Eats Feed |
-| Circuit Breaker | Rate Limiter, Seller Payments, Leaderboard |
+| Batch + Real-time (Lambda/Kappa) | E-Commerce, YouTube Views, Log Ingestion |
+| H3 Spatial Indexing | Uber Eats Feed, Instant Grocery |
+| Circuit Breaker | Rate Limiter, Seller Payments, Leaderboard, Notification Service |
 | Multi-Tenancy (RLS) | Issue Tracking System |
+| Priority Queuing | Notification Service |
+| HyperLogLog / Count-Min Sketch | YouTube Views |
+| Supplier Fan-out / Aggregation | Cheapest Flights |
+| Multi-Agent LLM Orchestration | DSAR Agent |
 | WebSocket | Collaborative Editor, Leaderboard |
 | OAuth 2.0 / JWT | OAuth 2.0 Demo, JWT Auth |
 | Sharding / Partitioning | All case studies |
