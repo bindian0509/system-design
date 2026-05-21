@@ -27,7 +27,7 @@ python-json-logger==2.0.7
 # Security
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
-python-dotenv==1.0.0
+python-dotenv==1.2.2
 
 # Storage (optional)
 boto3==1.28.78          # AWS S3
