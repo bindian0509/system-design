@@ -1,0 +1,209 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: scheduler_postgres
+    environment:
+      POSTGRES_USER: scheduler
+      POSTGRES_PASSWORD: scheduler
+      POSTGRES_DB: scheduler
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U scheduler"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - scheduler-network
+
+  # RabbitMQ Message Queue
+  rabbitmq:
+    image: rabbitmq:3.12-alpine
+    container_name: scheduler_rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"  # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - scheduler-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: scheduler_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - scheduler-network
+
+  # Prometheus for metrics
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: scheduler_prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - scheduler-network
+    depends_on:
+      - postgres
+      - rabbitmq
+
+  # Grafana for visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: scheduler_grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - scheduler-network
+    depends_on:
+      - prometheus
+
+  # Scheduler API Server
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: scheduler_api
+    depends_on:
+      - postgres
+      - rabbitmq
+      - redis
+    environment:
+      DATABASE_URL: postgresql://scheduler:scheduler@postgres:5432/scheduler
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      REDIS_URL: redis://redis:6379
+      LOG_LEVEL: info
+      JWT_SECRET_KEY: dev-secret-key-change-in-production
+    ports:
+      - "8000:8000"
+    networks:
+      - scheduler-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Job Worker (2 replicas)
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    depends_on:
+      - postgres
+      - rabbitmq
+      - redis
+    environment:
+      DATABASE_URL: postgresql://scheduler:scheduler@postgres:5432/scheduler
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      REDIS_URL: redis://redis:6379
+      WORKER_CONCURRENCY: 5
+      LOG_LEVEL: info
+      RESULT_STORAGE_TYPE: local
+      RESULT_STORAGE_BUCKET: /tmp/job_results
+    volumes:
+      - job_results:/tmp/job_results
+    networks:
+      - scheduler-network
+    deploy:
+      replicas: 2
+
+  # Cron Scheduler
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile.scheduler
+    container_name: scheduler_cron
+    depends_on:
+      - postgres
+      - rabbitmq
+    environment:
+      DATABASE_URL: postgresql://scheduler:scheduler@postgres:5432/scheduler
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      LOG_LEVEL: info
+    networks:
+      - scheduler-network
+    deploy:
+      replicas: 1
+
+  # Retry Handler (Phase 2)
+  error-handler-retry:
+    build:
+      context: .
+      dockerfile: Dockerfile.error-handler
+    depends_on:
+      - postgres
+      - rabbitmq
+    environment:
+      DATABASE_URL: postgresql://scheduler:scheduler@postgres:5432/scheduler
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      HANDLER_TYPE: retry
+      LOG_LEVEL: info
+    networks:
+      - scheduler-network
+    deploy:
+      replicas: 1
+
+  # DLQ Processor (Phase 2)
+  error-handler-dlq:
+    build:
+      context: .
+      dockerfile: Dockerfile.error-handler
+    depends_on:
+      - postgres
+      - rabbitmq
+    environment:
+      DATABASE_URL: postgresql://scheduler:scheduler@postgres:5432/scheduler
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      HANDLER_TYPE: dlq
+      LOG_LEVEL: info
+    networks:
+      - scheduler-network
+    deploy:
+      replicas: 1
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+  job_results:
+
+networks:
+  scheduler-network:
+    driver: bridge

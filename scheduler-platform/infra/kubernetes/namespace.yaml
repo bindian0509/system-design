@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: scheduler
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secret
+  namespace: scheduler
+type: Opaque
+stringData:
+  password: "scheduler"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rabbitmq-secret
+  namespace: scheduler
+type: Opaque
+stringData:
+  password: "guest"

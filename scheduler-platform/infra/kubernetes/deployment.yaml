@@ -1,0 +1,288 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: scheduler-config
+  namespace: scheduler
+data:
+  DATABASE_URL: "postgresql://scheduler:scheduler@postgres:5432/scheduler"
+  RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672/"
+  REDIS_URL: "redis://redis:6379"
+  LOG_LEVEL: "INFO"
+  ENVIRONMENT: "production"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: scheduler
+spec:
+  ports:
+    - port: 5432
+  selector:
+    app: postgres
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: scheduler
+spec:
+  selector:
+    matchLabels:
+      app: postgres
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:16-alpine
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          value: scheduler
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: password
+        - name: POSTGRES_DB
+          value: scheduler
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: postgres-storage
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+  namespace: scheduler
+spec:
+  ports:
+    - name: amqp
+      port: 5672
+    - name: management
+      port: 15672
+  selector:
+    app: rabbitmq
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq
+  namespace: scheduler
+spec:
+  selector:
+    matchLabels:
+      app: rabbitmq
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      containers:
+      - name: rabbitmq
+        image: rabbitmq:3.12-alpine
+        ports:
+        - containerPort: 5672
+        - containerPort: 15672
+        env:
+        - name: RABBITMQ_DEFAULT_USER
+          value: guest
+        - name: RABBITMQ_DEFAULT_PASS
+          valueFrom:
+            secretKeyRef:
+              name: rabbitmq-secret
+              key: password
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: scheduler
+spec:
+  ports:
+    - port: 6379
+  selector:
+    app: redis
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: scheduler
+spec:
+  selector:
+    matchLabels:
+      app: redis
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6379
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: scheduler-api
+  namespace: scheduler
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 8000
+      targetPort: 8000
+  selector:
+    app: scheduler-api
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scheduler-api
+  namespace: scheduler
+spec:
+  selector:
+    matchLabels:
+      app: scheduler-api
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: scheduler-api
+    spec:
+      containers:
+      - name: api
+        image: scheduler-api:latest
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: scheduler-config
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      depends_on:
+        - postgres
+        - rabbitmq
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scheduler-worker
+  namespace: scheduler
+spec:
+  selector:
+    matchLabels:
+      app: scheduler-worker
+  replicas: 5
+  template:
+    metadata:
+      labels:
+        app: scheduler-worker
+    spec:
+      containers:
+      - name: worker
+        image: scheduler-worker:latest
+        env:
+        - name: WORKER_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: WORKER_CONCURRENCY
+          value: "5"
+        envFrom:
+        - configMapRef:
+            name: scheduler-config
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+      depends_on:
+        - rabbitmq
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scheduler-cron
+  namespace: scheduler
+spec:
+  selector:
+    matchLabels:
+      app: scheduler-cron
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: scheduler-cron
+    spec:
+      containers:
+      - name: scheduler
+        image: scheduler-cron:latest
+        env:
+        - name: SCHEDULER_CHECK_INTERVAL_SECONDS
+          value: "60"
+        envFrom:
+        - configMapRef:
+            name: scheduler-config
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "200m"
+      depends_on:
+        - postgres
+        - rabbitmq

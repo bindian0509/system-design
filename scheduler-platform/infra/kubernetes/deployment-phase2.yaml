@@ -1,0 +1,368 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: scheduler
+  labels:
+    name: scheduler
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: scheduler-config
+  namespace: scheduler
+data:
+  LOG_LEVEL: "info"
+  WORKER_CONCURRENCY: "5"
+  RESULT_STORAGE_TYPE: "s3"
+  RESULT_STORAGE_BUCKET: "scheduler-results"
+  # Update these to match your environment
+  DATABASE_POOL_SIZE: "30"
+  DATABASE_POOL_RECYCLE: "3600"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: scheduler-secrets
+  namespace: scheduler
+type: Opaque
+stringData:
+  DATABASE_URL: "postgresql://scheduler:scheduler@postgres.default.svc.cluster.local:5432/scheduler"
+  RABBITMQ_URL: "amqp://guest:guest@rabbitmq.default.svc.cluster.local:5672/"
+  REDIS_URL: "redis://redis.default.svc.cluster.local:6379"
+  JWT_SECRET_KEY: "your-secret-key-here-change-in-production"
+  AWS_ACCESS_KEY_ID: ""
+  AWS_SECRET_ACCESS_KEY: ""
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scheduler-api
+  namespace: scheduler
+  labels:
+    app: scheduler-api
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: scheduler-api
+  template:
+    metadata:
+      labels:
+        app: scheduler-api
+    spec:
+      containers:
+      - name: api
+        image: scheduler-api:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+          name: http
+        envFrom:
+        - configMapRef:
+            name: scheduler-config
+        - secretRef:
+            name: scheduler-secrets
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - scheduler-api
+              topologyKey: kubernetes.io/hostname
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: scheduler-api
+  namespace: scheduler
+  labels:
+    app: scheduler-api
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  selector:
+    app: scheduler-api
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scheduler-worker
+  namespace: scheduler
+  labels:
+    app: scheduler-worker
+spec:
+  replicas: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: scheduler-worker
+  template:
+    metadata:
+      labels:
+        app: scheduler-worker
+    spec:
+      containers:
+      - name: worker
+        image: scheduler-worker:latest
+        imagePullPolicy: IfNotPresent
+        envFrom:
+        - configMapRef:
+            name: scheduler-config
+        - secretRef:
+            name: scheduler-secrets
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+        volumeMounts:
+        - name: results
+          mountPath: /tmp/job_results
+      volumes:
+      - name: results
+        emptyDir:
+          sizeLimit: 10Gi
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - scheduler-worker
+              topologyKey: kubernetes.io/hostname
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scheduler-cron
+  namespace: scheduler
+  labels:
+    app: scheduler-cron
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scheduler-cron
+  template:
+    metadata:
+      labels:
+        app: scheduler-cron
+    spec:
+      containers:
+      - name: scheduler
+        image: scheduler-scheduler:latest
+        imagePullPolicy: IfNotPresent
+        envFrom:
+        - configMapRef:
+            name: scheduler-config
+        - secretRef:
+            name: scheduler-secrets
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scheduler-error-handler-retry
+  namespace: scheduler
+  labels:
+    app: scheduler-error-handler-retry
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scheduler-error-handler-retry
+  template:
+    metadata:
+      labels:
+        app: scheduler-error-handler-retry
+    spec:
+      containers:
+      - name: handler
+        image: scheduler-error-handler:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: HANDLER_TYPE
+          value: retry
+        envFrom:
+        - configMapRef:
+            name: scheduler-config
+        - secretRef:
+            name: scheduler-secrets
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 250m
+            memory: 512Mi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scheduler-error-handler-dlq
+  namespace: scheduler
+  labels:
+    app: scheduler-error-handler-dlq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scheduler-error-handler-dlq
+  template:
+    metadata:
+      labels:
+        app: scheduler-error-handler-dlq
+    spec:
+      containers:
+      - name: handler
+        image: scheduler-error-handler:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: HANDLER_TYPE
+          value: dlq
+        envFrom:
+        - configMapRef:
+            name: scheduler-config
+        - secretRef:
+            name: scheduler-secrets
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 250m
+            memory: 512Mi
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: scheduler-worker-hpa
+  namespace: scheduler
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: scheduler-worker
+  minReplicas: 5
+  maxReplicas: 20
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: scheduler-api-hpa
+  namespace: scheduler
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: scheduler-api
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 75
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: scheduler-api-pdb
+  namespace: scheduler
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: scheduler-api
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: scheduler-worker-pdb
+  namespace: scheduler
+spec:
+  minAvailable: 3
+  selector:
+    matchLabels:
+      app: scheduler-worker
