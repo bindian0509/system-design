@@ -1,0 +1,333 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R 5 0 R 7 0 R 9 0 R 11 0 R 13 0 R 15 0 R 17 0 R 19 0 R 21 0 R] /Count 10 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 792 612] /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> /F2 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >> /F3 << /Type /Font /Subtype /Type1 /BaseFont /Courier >> >> >> /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 1773 >>
+stream
+BT /F2 22 Tf 48 558 Td (1. Executive Framing) Tj ET
+BT /F1 8 Tf 48 530 Td () Tj ET
+BT /F2 12 Tf 48 520 Td (Presenter: Bharat) Tj ET
+BT /F2 12 Tf 48 503 Td (Role context: Senior Engineering Manager, Agent Platform) Tj ET
+BT /F2 12 Tf 48 486 Td (Audience: Peer Engineering Managers, Architects, VP Engineering) Tj ET
+BT /F2 12 Tf 48 469 Td (Problem) Tj ET
+BT /F2 12 Tf 48 452 Td (Customers need a reliable, actionable view of agent operational health) Tj ET
+BT /F2 12 Tf 48 435 Td (across millions of endpoints. Today, health signals are fragmented, noisy,) Tj ET
+BT /F2 12 Tf 48 418 Td (and partially dependent on legacy heartbeat logic that is already creating) Tj ET
+BT /F2 12 Tf 48 401 Td (customer escalations.) Tj ET
+BT /F2 12 Tf 48 384 Td (Product Outcome) Tj ET
+BT /F2 12 Tf 48 367 Td (Build Singularity Health Center as a real-time operational intelligence) Tj ET
+BT /F2 12 Tf 48 350 Td (platform for endpoint health.) Tj ET
+BT /F2 12 Tf 48 333 Td (Success Metrics) Tj ET
+BT /F1 10 Tf 48 316 Td (- Detect high-impact health anomalies within 5 minutes.) Tj ET
+BT /F1 10 Tf 48 302 Td (- Serve dashboard APIs at less than 200 ms p95 for common tenant queries.) Tj ET
+BT /F1 10 Tf 48 288 Td (- Reduce false "Offline" escalations by 50 percent within two quarters.) Tj ET
+BT /F1 10 Tf 48 274 Td (- Provide replay and backfill for missed events.) Tj ET
+BT /F1 10 Tf 48 260 Td (- Establish reusable alerting and coalescing capabilities for future agent-platform use) Tj ET
+BT /F1 10 Tf 48 246 Td (  cases.) Tj ET
+BT /F2 12 Tf 48 232 Td (Leadership Position) Tj ET
+BT /F2 12 Tf 48 215 Td (This is not only a feature delivery. It is a platform modernization effort) Tj ET
+BT /F2 12 Tf 48 198 Td (that must land while we protect customers from current operational pain.) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 792 612] /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> /F2 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >> /F3 << /Type /Font /Subtype /Type1 /BaseFont /Courier >> >> >> /Contents 6 0 R >>
+endobj
+6 0 obj
+<< /Length 1643 >>
+stream
+BT /F2 22 Tf 48 558 Td (2. Requirements And Assumptions) Tj ET
+BT /F1 8 Tf 48 530 Td () Tj ET
+BT /F2 12 Tf 48 520 Td (MVP Functional Scope) Tj ET
+BT /F1 10 Tf 48 503 Td (- Detect agent offline/connectivity loss, agent disabled, anti-tamper disabled, and low) Tj ET
+BT /F1 10 Tf 48 489 Td (  disk/resource risk.) Tj ET
+BT /F1 10 Tf 48 475 Td (- Coalesce repeated events into actionable alerts.) Tj ET
+BT /F1 10 Tf 48 461 Td (- Provide tenant-scoped dashboard, alert list, drill-down, and APIs.) Tj ET
+BT /F1 10 Tf 48 447 Td (- Support alert lifecycle: open, acknowledged, resolved, suppressed.) Tj ET
+BT /F1 10 Tf 48 433 Td (- Run on allowlisted tenants before broad rollout.) Tj ET
+BT /F2 12 Tf 48 419 Td (Non-Functional Requirements) Tj ET
+BT /F1 10 Tf 48 402 Td (- Billions of events per day, millions of agents.) Tj ET
+BT /F1 10 Tf 48 388 Td (- Multi-tenant isolation and fair usage controls.) Tj ET
+BT /F1 10 Tf 48 374 Td (- Less than 5 minute detection freshness.) Tj ET
+BT /F1 10 Tf 48 360 Td (- Less than 200 ms p95 API latency for dashboard read paths.) Tj ET
+BT /F1 10 Tf 48 346 Td (- At-least-once event delivery with idempotent processing.) Tj ET
+BT /F1 10 Tf 48 332 Td (- Replay, backfill, and auditable alert decisions.) Tj ET
+BT /F2 12 Tf 48 318 Td (Key Assumptions) Tj ET
+BT /F1 10 Tf 48 301 Td (- Central Ingestion Gateway remains the long-term telemetry entry point.) Tj ET
+BT /F1 10 Tf 48 287 Td (- Health Center owns event processing, alert state, APIs, and UI.) Tj ET
+BT /F1 10 Tf 48 273 Td (- Legacy heartbeat logic remains customer-facing until Health Center has shadow) Tj ET
+BT /F1 10 Tf 48 259 Td (  validation.) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 792 612] /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> /F2 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >> /F3 << /Type /Font /Subtype /Type1 /BaseFont /Courier >> >> >> /Contents 8 0 R >>
+endobj
+8 0 obj
+<< /Length 1794 >>
+stream
+BT /F2 22 Tf 48 558 Td (3. High-Level Architecture) Tj ET
+BT /F1 8 Tf 48 530 Td () Tj ET
+BT /F3 8 Tf 48 520 Td (Agents) Tj ET
+BT /F3 8 Tf 48 510 Td (|) Tj ET
+BT /F3 8 Tf 48 500 Td (Central Ingestion Gateway) Tj ET
+BT /F3 8 Tf 48 490 Td (|) Tj ET
+BT /F3 8 Tf 48 480 Td (Durable Event Bus) Tj ET
+BT /F3 8 Tf 48 470 Td (Kafka / PubSub / Kinesis-equivalent) Tj ET
+BT /F3 8 Tf 48 460 Td (|) Tj ET
+BT /F3 8 Tf 48 450 Td (Stream Processing) Tj ET
+BT /F3 8 Tf 48 440 Td (Flink / Kafka Streams-equivalent) Tj ET
+BT /F3 8 Tf 48 430 Td (|) Tj ET
+BT /F3 8 Tf 48 420 Td (Rules + Coalescing Engine) Tj ET
+BT /F3 8 Tf 48 410 Td (|) Tj ET
+BT /F3 8 Tf 48 400 Td (Operational Alert Store) Tj ET
+BT /F3 8 Tf 48 390 Td (DynamoDB / Cassandra / Bigtable-equivalent) Tj ET
+BT /F3 8 Tf 48 380 Td (|) Tj ET
+BT /F3 8 Tf 48 370 Td (Read Model + Search Index) Tj ET
+BT /F3 8 Tf 48 360 Td (OpenSearch / Elasticsearch-equivalent) Tj ET
+BT /F3 8 Tf 48 350 Td (|) Tj ET
+BT /F3 8 Tf 48 340 Td (Health Center APIs) Tj ET
+BT /F3 8 Tf 48 330 Td (|) Tj ET
+BT /F3 8 Tf 48 320 Td (SentinelOne Console UI) Tj ET
+BT /F2 12 Tf 48 310 Td (Design Principle) Tj ET
+BT /F2 12 Tf 48 293 Td (Separate the write-heavy real-time path from the read-optimized dashboard) Tj ET
+BT /F2 12 Tf 48 276 Td (path. This protects ingestion and detection from UI query patterns while) Tj ET
+BT /F2 12 Tf 48 259 Td (keeping the console fast.) Tj ET
+BT /F2 12 Tf 48 242 Td (Reusable Platform Capabilities) Tj ET
+BT /F1 10 Tf 48 225 Td (- Health telemetry contract and schema governance.) Tj ET
+BT /F1 10 Tf 48 211 Td (- Stream coalescing library/service.) Tj ET
+BT /F1 10 Tf 48 197 Td (- Alert lifecycle service.) Tj ET
+BT /F1 10 Tf 48 183 Td (- Rule evaluation framework.) Tj ET
+BT /F1 10 Tf 48 169 Td (- Tenant rollout, replay, and backfill tooling.) Tj ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 792 612] /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> /F2 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >> /F3 << /Type /Font /Subtype /Type1 /BaseFont /Courier >> >> >> /Contents 10 0 R >>
+endobj
+10 0 obj
+<< /Length 1408 >>
+stream
+BT /F2 22 Tf 48 558 Td (4. Event Processing And Alert Coalescing) Tj ET
+BT /F1 8 Tf 48 530 Td () Tj ET
+BT /F2 12 Tf 48 520 Td (Recommended Approach) Tj ET
+BT /F2 12 Tf 48 503 Td (Use stream processing for real-time anomaly detection and alert coalescing.) Tj ET
+BT /F2 12 Tf 48 486 Td (Why) Tj ET
+BT /F1 10 Tf 48 469 Td (- The 5 minute freshness requirement is explicit.) Tj ET
+BT /F1 10 Tf 48 455 Td (- Raw event volume makes database-first aggregation expensive and operationally risky.) Tj ET
+BT /F1 10 Tf 48 441 Td (- Stream-time windows naturally model examples such as "50 anti-tamper disabled events) Tj ET
+BT /F1 10 Tf 48 427 Td (  from the same agent in 10 minutes.") Tj ET
+BT /F1 10 Tf 48 413 Td (- Durable event logs allow replay when rules change or processors fail.) Tj ET
+BT /F2 12 Tf 48 399 Td (Coalescing Model) Tj ET
+BT /F1 10 Tf 48 382 Td (- Partition by tenant and agent ID.) Tj ET
+BT /F1 10 Tf 48 368 Td (- Maintain keyed state for active anomaly windows.) Tj ET
+BT /F1 10 Tf 48 354 Td (- Emit alert transitions rather than every raw event.) Tj ET
+BT /F1 10 Tf 48 340 Td (- Store raw event references for audit/debugging, not for every UI query.) Tj ET
+BT /F2 12 Tf 48 326 Td (Trade-Off) Tj ET
+BT /F2 12 Tf 48 309 Td (This adds platform complexity, but it moves complexity into a purpose-built) Tj ET
+BT /F2 12 Tf 48 292 Td (layer where latency, scale, and replay are controllable.) Tj ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 792 612] /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> /F2 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >> /F3 << /Type /Font /Subtype /Type1 /BaseFont /Courier >> >> >> /Contents 12 0 R >>
+endobj
+12 0 obj
+<< /Length 1437 >>
+stream
+BT /F2 22 Tf 48 558 Td (5. Storage And API Read Path) Tj ET
+BT /F1 8 Tf 48 530 Td () Tj ET
+BT /F2 12 Tf 48 520 Td (Storage Roles) Tj ET
+BT /F1 10 Tf 48 503 Td (- Durable event bus: short to medium retention, replay, and consumer decoupling.) Tj ET
+BT /F1 10 Tf 48 489 Td (- Operational alert store: current alert state, lifecycle, idempotency, tenant/agent keys.) Tj ET
+BT /F1 10 Tf 48 475 Td (- Search/read model: low-latency filtering, aggregation, and dashboard queries.) Tj ET
+BT /F1 10 Tf 48 461 Td (- Data lake: long-term retention, analytics, audits, model/rule tuning.) Tj ET
+BT /F2 12 Tf 48 447 Td (API Strategy) Tj ET
+BT /F1 10 Tf 48 430 Td (- Read from precomputed health views, not raw telemetry.) Tj ET
+BT /F1 10 Tf 48 416 Td (- Cache tenant-level dashboard summaries with freshness metadata.) Tj ET
+BT /F1 10 Tf 48 402 Td (- Use cursor pagination for alert lists.) Tj ET
+BT /F1 10 Tf 48 388 Td (- Bound query shapes to protect p95 latency.) Tj ET
+BT /F1 10 Tf 48 374 Td (- Degrade gracefully if search lags by serving current alert state with an explicit) Tj ET
+BT /F1 10 Tf 48 360 Td (  freshness indicator.) Tj ET
+BT /F2 12 Tf 48 346 Td (Latency Budget) Tj ET
+BT /F1 10 Tf 48 329 Td (- API gateway/auth: 20-40 ms.) Tj ET
+BT /F1 10 Tf 48 315 Td (- Service orchestration: 40-60 ms.) Tj ET
+BT /F1 10 Tf 48 301 Td (- Read store/search: 70-90 ms.) Tj ET
+BT /F1 10 Tf 48 287 Td (- Serialization/network buffer: 20-30 ms.) Tj ET
+endstream
+endobj
+13 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 792 612] /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> /F2 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >> /F3 << /Type /Font /Subtype /Type1 /BaseFont /Courier >> >> >> /Contents 14 0 R >>
+endobj
+14 0 obj
+<< /Length 1804 >>
+stream
+BT /F2 22 Tf 48 558 Td (6. Reliability And Sev-1 Response) Tj ET
+BT /F1 8 Tf 48 530 Td () Tj ET
+BT /F2 12 Tf 48 520 Td (Health Center SLOs) Tj ET
+BT /F1 10 Tf 48 503 Td (- Event processing freshness: 99 percent of events processed within 5 minutes.) Tj ET
+BT /F1 10 Tf 48 489 Td (- Dashboard API latency: less than 200 ms p95 for standard queries.) Tj ET
+BT /F1 10 Tf 48 475 Td (- Alert delivery correctness: no silent processing gaps longer than 5 minutes.) Tj ET
+BT /F1 10 Tf 48 461 Td (- Data loss objective: no acknowledged event loss after ingestion into durable bus.) Tj ET
+BT /F2 12 Tf 48 447 Td (Detection Controls) Tj ET
+BT /F1 10 Tf 48 430 Td (- End-to-end synthetic health events per tenant cohort.) Tj ET
+BT /F1 10 Tf 48 416 Td (- Ingestion rate, processing lag, dropped-event, and alert freshness monitors.) Tj ET
+BT /F1 10 Tf 48 402 Td (- Stage-by-stage dashboards: gateway, event bus, processors, stores, APIs.) Tj ET
+BT /F1 10 Tf 48 388 Td (- Canary processors and feature-flagged rollouts.) Tj ET
+BT /F2 12 Tf 48 374 Td (Sev-1: Silent Processing Stop) Tj ET
+BT /F2 12 Tf 48 357 Td (1. Declare incident, assign incident commander, customer/comms lead, and) Tj ET
+BT /F2 12 Tf 48 340 Td (technical leads.) Tj ET
+BT /F2 12 Tf 48 323 Td (2. Determine blast radius by tenant, region, and pipeline stage.) Tj ET
+BT /F2 12 Tf 48 306 Td (3. Compare gateway ingress, event-bus offsets, processor lag, and store) Tj ET
+BT /F2 12 Tf 48 289 Td (writes.) Tj ET
+BT /F2 12 Tf 48 272 Td (4. Mitigate by failing over consumers, disabling bad rules, or pausing) Tj ET
+BT /F2 12 Tf 48 255 Td (rollout.) Tj ET
+BT /F2 12 Tf 48 238 Td (5. Replay from durable event log and backfill missed alerts.) Tj ET
+BT /F2 12 Tf 48 221 Td (6. Publish customer-impact assessment and complete a blameless postmortem.) Tj ET
+endstream
+endobj
+15 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 792 612] /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> /F2 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >> /F3 << /Type /Font /Subtype /Type1 /BaseFont /Courier >> >> >> /Contents 16 0 R >>
+endobj
+16 0 obj
+<< /Length 1535 >>
+stream
+BT /F2 22 Tf 48 558 Td (7. Roadmap: MVP To GA) Tj ET
+BT /F1 8 Tf 48 530 Td () Tj ET
+BT /F2 12 Tf 48 520 Td (Quarter 1: Foundations And MVP) Tj ET
+BT /F1 10 Tf 48 503 Td (- Define telemetry contracts and schema ownership with Ingestion Gateway.) Tj ET
+BT /F1 10 Tf 48 489 Td (- Build ingestion adapter, stream processor skeleton, alert store, and basic APIs.) Tj ET
+BT /F1 10 Tf 48 475 Td (- Implement top four anomaly types and basic coalescing.) Tj ET
+BT /F1 10 Tf 48 461 Td (- Build initial dashboard and tenant allowlist rollout.) Tj ET
+BT /F1 10 Tf 48 447 Td (- Add SLO dashboards, synthetic events, and runbooks from day one.) Tj ET
+BT /F2 12 Tf 48 433 Td (Quarter 2: GA Readiness) Tj ET
+BT /F1 10 Tf 48 416 Td (- Harden scale, replay, idempotency, and backfill.) Tj ET
+BT /F1 10 Tf 48 402 Td (- Add alert lifecycle, suppression, richer drill-down, and search filters.) Tj ET
+BT /F1 10 Tf 48 388 Td (- Shadow-compare Health Center offline status against legacy heartbeat service.) Tj ET
+BT /F1 10 Tf 48 374 Td (- Run load tests, chaos drills, and phased production expansion.) Tj ET
+BT /F2 12 Tf 48 360 Td (Quarter 3: Platformization) Tj ET
+BT /F1 10 Tf 48 343 Td (- Migrate selected offline source-of-truth decisions from legacy heartbeat.) Tj ET
+BT /F1 10 Tf 48 329 Td (- Expand rule catalog and reusable coalescing framework.) Tj ET
+BT /F1 10 Tf 48 315 Td (- Add historical trends, reporting, and notification integrations.) Tj ET
+BT /F1 10 Tf 48 301 Td (- Formalize platform APIs for other SentinelOne health use cases.) Tj ET
+endstream
+endobj
+17 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 792 612] /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> /F2 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >> /F3 << /Type /Font /Subtype /Type1 /BaseFont /Courier >> >> >> /Contents 18 0 R >>
+endobj
+18 0 obj
+<< /Length 1325 >>
+stream
+BT /F2 22 Tf 48 558 Td (8. Dependency Delay: Ingestion Gateway) Tj ET
+BT /F1 8 Tf 48 530 Td () Tj ET
+BT /F2 12 Tf 48 520 Td (Scenario) Tj ET
+BT /F2 12 Tf 48 503 Td (The core Ingestion Gateway team is delayed by two months and cannot route) Tj ET
+BT /F2 12 Tf 48 486 Td (new health telemetry on the original timeline.) Tj ET
+BT /F2 12 Tf 48 469 Td (Response) Tj ET
+BT /F1 10 Tf 48 452 Td (- Do not idle the team.) Tj ET
+BT /F1 10 Tf 48 438 Td (- Freeze an explicit telemetry contract and build an adapter boundary.) Tj ET
+BT /F1 10 Tf 48 424 Td (- Generate synthetic and replayed telemetry streams to unblock processors, APIs, UI, and) Tj ET
+BT /F1 10 Tf 48 410 Td (  QA.) Tj ET
+BT /F1 10 Tf 48 396 Td (- Use existing heartbeat/agent metadata streams for a reduced MVP where possible.) Tj ET
+BT /F1 10 Tf 48 382 Td (- Negotiate a thin gateway integration first: route minimal high-value signals before the) Tj ET
+BT /F1 10 Tf 48 368 Td (  full contract.) Tj ET
+BT /F1 10 Tf 48 354 Td (- Move GA dates only for dependency-bound scope, not for all downstream development.) Tj ET
+BT /F2 12 Tf 48 340 Td (Leadership Message) Tj ET
+BT /F2 12 Tf 48 323 Td (The plan absorbs dependency risk by decoupling interfaces, validating) Tj ET
+BT /F2 12 Tf 48 306 Td (downstream systems early, and preserving customer-visible progress.) Tj ET
+endstream
+endobj
+19 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 792 612] /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> /F2 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >> /F3 << /Type /Font /Subtype /Type1 /BaseFont /Courier >> >> >> /Contents 20 0 R >>
+endobj
+20 0 obj
+<< /Length 1596 >>
+stream
+BT /F2 22 Tf 48 558 Td (9. Operational Drain: Legacy Offline Escalations) Tj ET
+BT /F1 8 Tf 48 530 Td () Tj ET
+BT /F2 12 Tf 48 520 Td (Scenario) Tj ET
+BT /F2 12 Tf 48 503 Td (Support escalations rose 40 percent because agents are incorrectly showing) Tj ET
+BT /F2 12 Tf 48 486 Td (as "Offline" in the console. The status logic depends on a legacy heartbeat) Tj ET
+BT /F2 12 Tf 48 469 Td (service the team still owns.) Tj ET
+BT /F2 12 Tf 48 452 Td (Response) Tj ET
+BT /F1 10 Tf 48 435 Td (- Treat this as customer trust risk, not background maintenance.) Tj ET
+BT /F1 10 Tf 48 421 Td (- Create a short-lived stabilization lane with 2 engineers plus QA support.) Tj ET
+BT /F1 10 Tf 48 407 Td (- Keep 6 engineers focused on Health Center MVP, with one tech lead coordinating) Tj ET
+BT /F1 10 Tf 48 393 Td (  interfaces and risk.) Tj ET
+BT /F1 10 Tf 48 379 Td (- Add targeted instrumentation, identify false-offline causes, and ship a narrow patch.) Tj ET
+BT /F1 10 Tf 48 365 Td (- Use findings to improve Health Center offline semantics and migration tests.) Tj ET
+BT /F2 12 Tf 48 351 Td (Allocation) Tj ET
+BT /F1 10 Tf 48 334 Td (- Legacy stabilization: 2 engineers.) Tj ET
+BT /F1 10 Tf 48 320 Td (- Health Center build: 6 engineers.) Tj ET
+BT /F1 10 Tf 48 306 Td (- QA/release validation: 1 engineer.) Tj ET
+BT /F1 10 Tf 48 292 Td (- Tech lead/SEM coordination: 1 engineer.) Tj ET
+BT /F2 12 Tf 48 278 Td (Decision Rule) Tj ET
+BT /F2 12 Tf 48 261 Td (Escalate allocation only if the legacy issue creates active Sev-1/Sev-2) Tj ET
+BT /F2 12 Tf 48 244 Td (customer impact across major tenants.) Tj ET
+endstream
+endobj
+21 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 792 612] /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> /F2 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >> /F3 << /Type /Font /Subtype /Type1 /BaseFont /Courier >> >> >> /Contents 22 0 R >>
+endobj
+22 0 obj
+<< /Length 1875 >>
+stream
+BT /F2 22 Tf 48 558 Td (10. Leadership, Risks, And Outcomes) Tj ET
+BT /F1 8 Tf 48 530 Td () Tj ET
+BT /F2 12 Tf 48 520 Td (Alert Coalescing Conflict) Tj ET
+BT /F1 10 Tf 48 503 Td (- Establish decision criteria: freshness, scale, cost, operability, delivery risk.) Tj ET
+BT /F1 10 Tf 48 489 Td (- Run a one-week design spike with realistic load and failure scenarios.) Tj ET
+BT /F1 10 Tf 48 475 Td (- Make the decision using evidence, not seniority or preference.) Tj ET
+BT /F1 10 Tf 48 461 Td (- Commit as one team, document trade-offs, and revisit only if assumptions change) Tj ET
+BT /F1 10 Tf 48 447 Td (  materially.) Tj ET
+BT /F2 12 Tf 48 433 Td (Major Risks) Tj ET
+BT /F1 10 Tf 48 416 Td (- Gateway dependency slips.) Tj ET
+BT /F1 10 Tf 48 402 Td (- Stream processing complexity impacts delivery.) Tj ET
+BT /F1 10 Tf 48 388 Td (- Legacy escalations consume roadmap capacity.) Tj ET
+BT /F1 10 Tf 48 374 Td (- Dashboard query patterns threaten API latency.) Tj ET
+BT /F1 10 Tf 48 360 Td (- Tenant-specific noise creates alert fatigue.) Tj ET
+BT /F2 12 Tf 48 346 Td (Mitigations) Tj ET
+BT /F1 10 Tf 48 329 Td (- Adapter contracts, synthetic streams, and phased integration.) Tj ET
+BT /F1 10 Tf 48 315 Td (- Start with narrow rules and reusable framework, not a generic rule engine.) Tj ET
+BT /F1 10 Tf 48 301 Td (- Dedicated stabilization lane with explicit exit criteria.) Tj ET
+BT /F1 10 Tf 48 287 Td (- Precomputed read models and bounded queries.) Tj ET
+BT /F1 10 Tf 48 273 Td (- Coalescing, suppression, tenant rollout, and feedback loops.) Tj ET
+BT /F2 12 Tf 48 259 Td (Expected Outcomes) Tj ET
+BT /F1 10 Tf 48 242 Td (- Faster and more trustworthy agent-health visibility.) Tj ET
+BT /F1 10 Tf 48 228 Td (- Reduced support burden from false offline states.) Tj ET
+BT /F1 10 Tf 48 214 Td (- A durable platform foundation for future operational health use cases.) Tj ET
+endstream
+endobj
+xref
+0 23
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000176 00000 n 
+0000000472 00000 n 
+0000002297 00000 n 
+0000002593 00000 n 
+0000004288 00000 n 
+0000004584 00000 n 
+0000006430 00000 n 
+0000006727 00000 n 
+0000008188 00000 n 
+0000008486 00000 n 
+0000009976 00000 n 
+0000010274 00000 n 
+0000012131 00000 n 
+0000012429 00000 n 
+0000014017 00000 n 
+0000014315 00000 n 
+0000015693 00000 n 
+0000015991 00000 n 
+0000017640 00000 n 
+0000017938 00000 n 
+trailer
+<< /Size 23 /Root 1 0 R >>
+startxref
+19866
+%%EOF
