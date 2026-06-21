@@ -17,6 +17,7 @@ The platform serves 20 internal teams and supports roughly 440,000 job runs per 
 
 - [Requirements Blueprint](requirements.md)
 - [Reference Architecture](reference-architecture.md)
+- [Data Model and Schemas](data-model.md)
 - [Interview Questions and Mature Answers](interview-qa.md)
 - [Calibration Report](calibration.md)
 
